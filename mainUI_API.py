@@ -32,7 +32,7 @@ class MainWindow(QtWidgets.QDialog):
         self.createWidgets()
         self.createLayout()
         self.createUIConnection()
-
+        
     def createWidgets(self):
         self.createLocatorBut = QtWidgets.QPushButton('Create Locator')
         self.createLocatorBut.clicked.connect(self.createLocator)
