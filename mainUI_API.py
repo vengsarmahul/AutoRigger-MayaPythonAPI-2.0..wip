@@ -70,19 +70,6 @@ class MainWindow(QtWidgets.QDialog):
         horizonLayout.addWidget(self.mirrorLocatorBut)
         horizonLayout.addLayout(form_layout_2)
 
-        jnt_HorizonLayout = QtWidgets.QHBoxLayout()
-        jnt_HorizonLayout.addWidget(self.createJointBut)
-        jnt_HorizonLayout.addWidget(self.deleteJointBut)
-        #horizonLayout.addWidget(self.mirrorCheckBox)
-        #horizonLayout.addWidget(self.editModeCheckBox)
-        #subLayoutH.addStretch()
-
-        mainLayoutV = QtWidgets.QVBoxLayout(self)
-        mainLayoutV.addLayout(form_layout_3)
-        mainLayoutV.addLayout(horizonLayout)
-        mainLayoutV.addLayout(form_layout_1)
-        mainLayoutV.addLayout(jnt_HorizonLayout)
-
     def createUIConnection(self):
         self.editModeCheckBox.toggled.connect(self.editMode)
 
@@ -195,26 +182,6 @@ class MainWindow(QtWidgets.QDialog):
                 lshoulder_plug_t[0], lshoulder_plug_t[1] = 2.5, ((int(self.createSpineText.text())-1)*0.5)+0.50
                 self.lshoulder_transform.setTranslation(lshoulder_plug_t, om.MSpace.kTransform)
 
-
-        if side == -1:
-            try:
-                obj_list.add(loc_shoulder[1])
-            except:
-                self.r_shoulder_tn = shoulderloc_grp.create("transform", "loc_R_shoulder", self.spine_tn)
-                r_shoulder_ln = shoulderloc_grp.create("locator", "locatorShape1", self.r_shoulder_tn)
-
-                self.rshoulder_transform = om.MFnTransform(self.r_shoulder_tn)
-
-                rshoulder_plug_s = self.rshoulder_transform.findPlug("scale", False)
-                if rshoulder_plug_s.isCompound:
-                    for i in range(rshoulder_plug_s.numChildren()):
-                        child_plug = rshoulder_plug_s.child(i)
-                        attr_value = child_plug.setDouble(0.5)
-
-                rshoulder_plug_t = self.rshoulder_transform.translation(om.MSpace.kTransform)
-                rshoulder_plug_t[0], rshoulder_plug_t[1] = -2.5, ((int(self.createSpineText.text())-1)*0.5)+0.50
-                self.rshoulder_transform.setTranslation(rshoulder_plug_t, om.MSpace.kTransform)
-
     def createArms(self, side):
         loc_arm = ["loc_L_arm_grp", "loc_R_arm_grp"]
         obj_list = om.MSelectionList()
@@ -251,39 +218,7 @@ class MainWindow(QtWidgets.QDialog):
                 self.lwristloc_transform.setTranslation(lwristloc_t, om.MSpace.kTransform)
 
                 self.createHands(1)
-
-        if side == -1:
-            try:
-                obj_list.add(loc_arm[1])
-                print("loc_Larm_grp already exist")
-            except:
-                self.r_arm_Grp = armloc_grp.create("transform", "loc_R_arm_grp", self.r_shoulder_tn)
-                up_Rarm_tn = armloc_grp.create("transform", "loc_R_upperarm", self.r_arm_Grp)
-                up_Rarm_ln = armloc_grp.create("locator", "locatorShape1", up_Rarm_tn)
-
-                self.rarmloc_transform = om.MFnTransform(self.r_arm_Grp)
-                rarmloc_t = self.rarmloc_transform.translation(om.MSpace.kTransform)
-                rarmloc_t[0], rarmloc_t[1] = -4.5, -(((int(self.createSpineText.text())-1)*0.5)+2)
-                self.rarmloc_transform.setTranslation(rarmloc_t, om.MSpace.kTransform)
-
-                r_elbow_tn = armloc_grp.create("transform", "loc_R_elbow", up_Rarm_tn)
-                r_elbow_ln = armloc_grp.create("locator", "locatorShape1", r_elbow_tn)
-
-                self.relbowloc_transform = om.MFnTransform(r_elbow_tn)
-                relbowloc_t = self.relbowloc_transform.translation(om.MSpace.kTransform)
-                relbowloc_t[0], relbowloc_t[1] = -4.35, -(((int(self.createSpineText.text())-1)*0.5)+5.25)
-                self.relbowloc_transform.setTranslation(relbowloc_t, om.MSpace.kTransform)
-
-                self.r_wrist_tn = armloc_grp.create("transform", "loc_R_wrist", r_elbow_tn)
-                r_wrist_ln = armloc_grp.create("locator", "locatorShape1", self.r_wrist_tn)
-
-                self.rwristloc_transform = om.MFnTransform(self.r_wrist_tn)
-                rwristloc_t = self.rwristloc_transform.translation(om.MSpace.kTransform)
-                rwristloc_t[0], rwristloc_t[1] = -6.35, -(((int(self.createSpineText.text())-1)*0.5)+6.25)
-                self.rwristloc_transform.setTranslation(rwristloc_t, om.MSpace.kTransform)
-
-                self.createHands(-1)
-
+                
     def createHands(self, side):
         loc_hand = ["loc_L_hand_grp", "loc_R_hand_grp"]
         obj_list = om.MSelectionList()
@@ -353,149 +288,6 @@ class MainWindow(QtWidgets.QDialog):
                             attr_valueX = child_plugX.setDouble(1)
                             attr_valueY = child_plugY.setDouble(-1)
 
-            if side == -1:
-                if i == 0:
-                    self.loc_rfinger_tn = fingerloc_grp.create("transform", "loc_R_finger_"+str(count)+"_"+str(i), self.r_hand_tn)
-                    loc_rfinger_ln = fingerloc_grp.create("locator", "locatorShape1", self.loc_rfinger_tn)
-
-                    r_finger_transform_t = om.MFnTransform(self.loc_rfinger_tn)
-
-                    r_finger_plug_t = r_finger_transform_t.translation(om.MSpace.kTransform)
-                    r_finger_plug_t[0], r_finger_plug_t[1], r_finger_plug_t[2] = -1, -2, count*1
-                    r_finger_transform_t.setTranslation(r_finger_plug_t, om.MSpace.kTransform)
-
-                    r_finger_plug_s = r_finger_transform_t.findPlug("scale", False)
-
-                    if r_finger_plug_s.isCompound:
-                        for i in range(r_finger_plug_s.numChildren()):
-                            child_plug = r_finger_plug_s.child(i)
-
-                            attr_value = child_plug.setDouble(0.5)
-                else:
-                    self.loc_rfinger_tn = fingerloc_grp.create("transform", "loc_R_finger_"+str(count)+"_"+str(i), self.loc_rfinger_tn)
-                    loc_rfinger_ln = fingerloc_grp.create("locator", "locatorShape1", self.loc_rfinger_tn)
-
-                    r_finger_transform_t = om.MFnTransform(self.loc_rfinger_tn)
-                    r_finger_plug_t = r_finger_transform_t.findPlug("translate", False)
-
-                    if r_finger_plug_t.isCompound:
-                        for i in range(r_finger_plug_t.numChildren()):
-                            child_plugX = r_finger_plug_t.child(0)
-                            child_plugY = r_finger_plug_t.child(1)
-
-                            attr_valueX = child_plugX.setDouble(-1)
-                            attr_valueY = child_plugY.setDouble(-1)
-
-    def createLegs(self, side):
-        loc_leg = ["loc_L_leg_grp", "loc_R_leg_grp"]
-        obj_list = om.MSelectionList()
-        legloc_grp = om.MFnDagNode()
-
-        if side == 1:
-            try:
-                obj_list.add(loc_leg[0])
-            except:
-                l_leg_Grp = legloc_grp.create("transform", "loc_L_leg_grp", self.loc_root_tn)
-                l_upleg_tn = legloc_grp.create("transform", "loc_L_upperleg", l_leg_Grp)
-                l_upleg_ln = legloc_grp.create("locator", "locatorShape1", l_upleg_tn)
-
-                l_leg_transform_t = om.MFnTransform(l_leg_Grp)
-                l_leg_plug_tx = l_leg_transform_t.findPlug("translateX", False)
-                l_leg_plug_ty = l_leg_transform_t.findPlug("translateY", False)
-                l_leg_plug_tx.setDouble(2.35)
-                l_leg_plug_ty.setDouble(-(((int(self.createSpineText.text()))*0.5)+1))
-
-                l_leg_transform_s = om.MFnTransform(l_upleg_tn)
-                l_leg_plug_s = l_leg_transform_s.findPlug("scale", False)
-
-                if l_leg_plug_s.isCompound:
-                    for i in range(l_leg_plug_s.numChildren()):
-                        child_plug = l_leg_plug_s.child(i)
-
-                        attr_value = child_plug.setDouble(0.7)
-
-                l_knee_tn = legloc_grp.create("transform", "loc_L_knee", l_upleg_tn)
-                l_knee_ln = legloc_grp.create("locator", "locatorShape1", l_knee_tn)
-
-                l_knee_transform_t = om.MFnTransform(l_knee_tn)
-                l_knee_plug_ty = l_knee_transform_t.findPlug("translateY", False)
-                l_knee_plug_ty.setDouble(-((int(self.createSpineText.text())*2.5)))
-
-                l_football_tn = legloc_grp.create("transform", "loc_L_football", l_knee_tn)
-                l_football_ln = legloc_grp.create("locator", "locatorShape1", l_football_tn)
-
-                l_football_transform_t = om.MFnTransform(l_football_tn)
-                l_football_plug_ty = l_football_transform_t.findPlug("translateY", False)
-                l_football_plug_ty.setDouble(-((int(self.createSpineText.text())*3.5)))
-
-                l_foot_tn = legloc_grp.create("transform", "loc_L_foot", l_football_tn)
-                l_football_ln = legloc_grp.create("locator", "locatorShape1", l_foot_tn)
-
-                l_foot_transform_t = om.MFnTransform(l_foot_tn)
-                l_foot_plug_ty = l_foot_transform_t.findPlug("translateY", False)
-                l_foot_plug_tz = l_foot_transform_t.findPlug("translateZ", False)
-                l_foot_plug_ty.setDouble(-((int(self.createSpineText.text())*0.5)))
-                l_foot_plug_tz.setDouble(((int(self.createSpineText.text())*0.7)))
-
-                l_toe_tn = legloc_grp.create("transform", "loc_L_toe", l_foot_tn)
-                l_toe_ln = legloc_grp.create("locator", "locatorShape1", l_toe_tn)
-
-                l_toe_transform_t = om.MFnTransform(l_toe_tn)
-                l_toe_plug_tz = l_toe_transform_t.findPlug("translateZ", False)
-                l_toe_plug_tz.setDouble(((int(self.createSpineText.text())*0.7)))
-
-        if side == -1:
-            try:
-                obj_list.add(loc_leg[1])
-            except:
-                r_leg_Grp = legloc_grp.create("transform", "loc_R_leg_grp", self.loc_root_tn)
-                r_upleg_tn = legloc_grp.create("transform", "loc_R_upperleg", r_leg_Grp)
-                r_upleg_ln = legloc_grp.create("locator", "locatorShape1", r_upleg_tn)
-
-                r_leg_transform_t = om.MFnTransform(r_leg_Grp)
-                r_leg_plug_tx = r_leg_transform_t.findPlug("translateX", False)
-                r_leg_plug_ty = r_leg_transform_t.findPlug("translateY", False)
-                r_leg_plug_tx.setDouble(-2.35)
-                r_leg_plug_ty.setDouble(-(((int(self.createSpineText.text()))*0.5)+1))
-
-                r_leg_transform_s = om.MFnTransform(r_upleg_tn)
-                r_leg_plug_s = r_leg_transform_s.findPlug("scale", False)
-
-                if r_leg_plug_s.isCompound:
-                    for i in range(r_leg_plug_s.numChildren()):
-                        child_plug = r_leg_plug_s.child(i)
-
-                        attr_value = child_plug.setDouble(0.7)
-
-                r_knee_tn = legloc_grp.create("transform", "loc_R_knee", r_upleg_tn)
-                r_knee_ln = legloc_grp.create("locator", "locatorShape1", r_knee_tn)
-
-                r_knee_transform_t = om.MFnTransform(r_knee_tn)
-                r_knee_plug_ty = r_knee_transform_t.findPlug("translateY", False)
-                r_knee_plug_ty.setDouble(-((int(self.createSpineText.text())*2.5)))
-
-                r_football_tn = legloc_grp.create("transform", "loc_R_football", r_knee_tn)
-                r_football_ln = legloc_grp.create("locator", "locatorShape1", r_football_tn)
-
-                r_football_transform_t = om.MFnTransform(r_football_tn)
-                r_football_plug_ty = r_football_transform_t.findPlug("translateY", False)
-                r_football_plug_ty.setDouble(-((int(self.createSpineText.text())*3.5)))
-
-                r_foot_tn = legloc_grp.create("transform", "loc_R_foot", r_football_tn)
-                r_football_ln = legloc_grp.create("locator", "locatorShape1", r_foot_tn)
-
-                r_foot_transform_t = om.MFnTransform(r_foot_tn)
-                r_foot_plug_ty = r_foot_transform_t.findPlug("translateY", False)
-                r_foot_plug_tz = r_foot_transform_t.findPlug("translateZ", False)
-                r_foot_plug_ty.setDouble(-((int(self.createSpineText.text())*0.5)))
-                r_foot_plug_tz.setDouble(((int(self.createSpineText.text())*0.7)))
-
-                r_toe_tn = legloc_grp.create("transform", "loc_R_toe", r_foot_tn)
-                r_toe_ln = legloc_grp.create("locator", "locatorShape1", r_toe_tn)
-
-                r_toe_transform_t = om.MFnTransform(r_toe_tn)
-                r_toe_plug_tz = r_toe_transform_t.findPlug("translateZ", False)
-                r_toe_plug_tz.setDouble(((int(self.createSpineText.text())*0.7)))
 
     def mirrorLocator(self):
         allLeftLocator = "loc_L_*"
@@ -586,9 +378,6 @@ class MainWindow(QtWidgets.QDialog):
             rfinger_lst.add(rfinger_loc)
 
             self.createFingerJoints()
-
-    def deleteJoints(self):
-        cmds.delete("Rig_grp")
 
 try:
     display_dailog.close()
