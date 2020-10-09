@@ -38,6 +38,8 @@ class MainWindow(QtWidgets.QDialog):
         self.createLayout()
         self.createUIConnection()
 
+        self.MDG_mod = om2.MDGModifier()
+
     def createWidgets(self):
         self.createLocatorBut = QtWidgets.QPushButton('Create Locator')
         self.deleteLocatorBut = QtWidgets.QPushButton('Delete Locator')
@@ -254,12 +256,6 @@ class MainWindow(QtWidgets.QDialog):
 
                 self.lshoulder_transform = om2.MFnTransform(self.l_shoulder_tn)
 
-                # lshoulder_plug_s = self.lshoulder_transform.findPlug("scale", False)
-                # if lshoulder_plug_s.isCompound:
-                #     for i in range(lshoulder_plug_s.numChildren()):
-                #         child_plug = lshoulder_plug_s.child(i)
-                #         attr_value = child_plug.setDouble(0.5)
-
                 lshoulder_plug_t = self.lshoulder_transform.translation(om2.MSpace.kTransform)
                 lshoulder_plug_t[0], lshoulder_plug_t[1] = 2.5, ((int(self.createSpineText.text())-1)*0.5)+0.50
                 self.lshoulder_transform.setTranslation(lshoulder_plug_t, om2.MSpace.kTransform)
@@ -273,12 +269,6 @@ class MainWindow(QtWidgets.QDialog):
                 r_shoulder_ln = shoulderloc_grp.create("locator", "locatorShape1", self.r_shoulder_tn)
 
                 self.rshoulder_transform = om2.MFnTransform(self.r_shoulder_tn)
-
-                # rshoulder_plug_s = self.rshoulder_transform.findPlug("scale", False)
-                # if rshoulder_plug_s.isCompound:
-                #     for i in range(rshoulder_plug_s.numChildren()):
-                #         child_plug = rshoulder_plug_s.child(i)
-                #         attr_value = child_plug.setDouble(0.5)
 
                 rshoulder_plug_t = self.rshoulder_transform.translation(om2.MSpace.kTransform)
                 rshoulder_plug_t[0], rshoulder_plug_t[1] = -2.5, ((int(self.createSpineText.text())-1)*0.5)+0.50
@@ -599,7 +589,7 @@ class MainWindow(QtWidgets.QDialog):
         except:
             self.jnt_grp = spinejnt_grp.create("transform", "Biped_jnt_grp")
             self.donttouchjnt_grp = spinejnt_grp.create("transform", "DoNotTouch", self.jnt_grp)
-            self.splineik_grp = spinejnt_grp.create("transform", "SplineIk_grp", self.donttouchjnt_grp)
+            self.splineik_grp = spinejnt_grp.create("transform", "SplineIk_grp", self.jnt_grp)
             self.jnt_root_tn = spinejnt_grp.create("joint", "Hip", self.jnt_grp)
             self.jnt_ikroot_tn = spinejnt_grp.create("joint", "IkHip", self.splineik_grp)
             self.jnt_ikrootcv_tn = spinejnt_grp.create("joint", "IkCvHip", self.donttouchjnt_grp)
@@ -673,6 +663,107 @@ class MainWindow(QtWidgets.QDialog):
             rfinger_lst.add(rfinger_loc)
 
             self.createFingerJoints()
+
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.translateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.translateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.translateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.rotateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.rotateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.rotateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.scaleX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.scaleY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.scaleZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.visibility" 0')
+        self.MDG_mod.commandToExecute('select -hierarchy "DoNotTouch"; hide -clearSelection;')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.translateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.translateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.translateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.rotateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.rotateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.rotateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.scaleX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.scaleY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.scaleZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.visibility" 0')
+        self.MDG_mod.commandToExecute('select -hierarchy "FkLeftJointLeg_grp"; hide -clearSelection;')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkLeftJointLeg_grp.translateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkLeftJointLeg_grp.translateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkLeftJointLeg_grp.translateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkLeftJointLeg_grp.rotateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkLeftJointLeg_grp.rotateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkLeftJointLeg_grp.rotateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkLeftJointLeg_grp.scaleX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkLeftJointLeg_grp.scaleY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkLeftJointLeg_grp.scaleZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkLeftJointLeg_grp.visibility" 0')
+        self.MDG_mod.commandToExecute('select -hierarchy "IkLeftJointLeg_grp"; hide -clearSelection;')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "LeftLegIk_grp.translateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "LeftLegIk_grp.translateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "LeftLegIk_grp.translateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "LeftLegIk_grp.rotateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "LeftLegIk_grp.rotateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "LeftLegIk_grp.rotateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "LeftLegIk_grp.scaleX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "LeftLegIk_grp.scaleY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "LeftLegIk_grp.scaleZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "LeftLegIk_grp.visibility" 0')
+        self.MDG_mod.commandToExecute('select -hierarchy "LeftLegIk_grp"; hide -clearSelection;')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.translateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.translateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.translateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.rotateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.rotateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.rotateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.scaleX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.scaleY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.scaleZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.visibility" 0')
+        self.MDG_mod.commandToExecute('select -hierarchy "IkStretchyLeftJointLeg_grp"; hide -clearSelection;')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.translateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.translateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.translateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.rotateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.rotateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.rotateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.scaleX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.scaleY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.scaleZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.visibility" 0')
+        self.MDG_mod.commandToExecute('select -hierarchy "FkRightJointLeg_grp"; hide -clearSelection;')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkRightJointLeg_grp.translateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkRightJointLeg_grp.translateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkRightJointLeg_grp.translateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkRightJointLeg_grp.rotateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkRightJointLeg_grp.rotateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkRightJointLeg_grp.rotateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkRightJointLeg_grp.scaleX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkRightJointLeg_grp.scaleY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkRightJointLeg_grp.scaleZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkRightJointLeg_grp.visibility" 0')
+        self.MDG_mod.commandToExecute('select -hierarchy "IkRightJointLeg_grp"; hide -clearSelection;')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "RightLegIk_grp.translateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "RightLegIk_grp.translateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "RightLegIk_grp.translateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "RightLegIk_grp.rotateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "RightLegIk_grp.rotateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "RightLegIk_grp.rotateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "RightLegIk_grp.scaleX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "RightLegIk_grp.scaleY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "RightLegIk_grp.scaleZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "RightLegIk_grp.visibility" 0')
+        self.MDG_mod.commandToExecute('select -hierarchy "RightLegIk_grp"; hide -clearSelection;')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyRightJointLeg_grp.translateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyRightJointLeg_grp.translateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyRightJointLeg_grp.translateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyRightJointLeg_grp.rotateX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyRightJointLeg_grp.rotateY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyRightJointLeg_grp.rotateZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyRightJointLeg_grp.scaleX"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyRightJointLeg_grp.scaleY"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyRightJointLeg_grp.scaleZ"')
+        self.MDG_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyRightJointLeg_grp.visibility" 0')
+        self.MDG_mod.commandToExecute('select -hierarchy "IkStretchyRightJointLeg_grp"; hide -clearSelection;')
+        self.MDG_mod.doIt()
 
     def createHeadJoints(self):
         headjnt_grp = om2.MFnDagNode()
@@ -760,12 +851,22 @@ class MainWindow(QtWidgets.QDialog):
         shoulder_loc_ls = om2.MSelectionList()
         shoulder_loc_ls.add(shoulder_loc[0])
         lshoulder_loc_obj = shoulder_loc_ls.getDependNode(0)
-        lshoulder_loc_transform = om2.MFnTransform(lshoulder_loc_obj)
-        loc_lshoulder_transform = lshoulder_loc_transform.transformation()
+        lshoulder_loc_transform1 = om2.MFnTransform(lshoulder_loc_obj)
+        loc_lshoulder_transform = lshoulder_loc_transform1.transformation()
+
+        lshoulder_loc_path_n = om2.MDagPath()
+        lshoulder_loc_path = lshoulder_loc_path_n.getAPathTo(lshoulder_loc_obj)
+        loc_lshoulder_transform2 = om2.MFnTransform(lshoulder_loc_path)
+        self.loc_lshoulder_t = loc_lshoulder_transform2.translation(om2.MSpace.kWorld)
 
         rshoulder_loc_obj = shoulder_loc_ls.getDependNode(1)
         rshoulder_loc_transform = om2.MFnTransform(rshoulder_loc_obj)
         loc_rshoulder_transform = rshoulder_loc_transform.transformation()
+
+        rshoulder_loc_path_n = om2.MDagPath()
+        rshoulder_loc_path = rshoulder_loc_path_n.getAPathTo(rshoulder_loc_obj)
+        loc_rshoulder_transform2 = om2.MFnTransform(rshoulder_loc_path)
+        self.loc_rshoulder_t = loc_rshoulder_transform2.translation(om2.MSpace.kWorld)
 
         if side == 1:
             self.jnt_lshoulder = shoulderjnt_grp.create("joint", "LeftShoulder", self.spine_jnt)
@@ -786,69 +887,256 @@ class MainWindow(QtWidgets.QDialog):
         hand_loc_ls = om2.MSelectionList()
 
         if side == 1:
-            self.jnt_lupperarm = armjnt_grp.create("joint", "LeftArm", self.jnt_lshoulder)
-            self.jnt_fklupperarm = armjnt_grp.create("joint", "FkLeftArm", self.jnt_lshoulder)
-            self.jnt_iklupperarm = armjnt_grp.create("joint", "IkLeftArm", self.jnt_lshoulder)
+            self.larmik_grp = armjnt_grp.create("transform", "LeftArmIk_grp", self.donttouchjnt_grp)
+            self.larmikcluster_grp = armjnt_grp.create("transform", "LeftArmIkCluster_grp", self.splineik_grp)
+            self.lupperarmikcluster_grp = armjnt_grp.create("transform", "LeftUpperArmIkCluster_grp", self.larmikcluster_grp)
+            self.lupperarmikcluster0_grp = armjnt_grp.create("transform", "LeftUpperArmIkCluster0_grp", self.lupperarmikcluster_grp)
+            self.lupperarmikcluster1_grp = armjnt_grp.create("transform", "LeftUpperArmIkCluster1_grp", self.lupperarmikcluster_grp)
+            self.lupperarmikcluster2_grp = armjnt_grp.create("transform", "LeftUpperArmIkCluster2_grp", self.lupperarmikcluster_grp)
+            self.llowerarmikcluster_grp = armjnt_grp.create("transform", "LeftLowerArmIkCluster_grp", self.larmikcluster_grp)
+            self.llowerarmikcluster0_grp = armjnt_grp.create("transform", "LeftLowerArmIkCluster0_grp", self.llowerarmikcluster_grp)
+            self.llowerarmikcluster1_grp = armjnt_grp.create("transform", "LeftLowerArmIkCluster1_grp", self.llowerarmikcluster_grp)
+            self.llowerarmikcluster2_grp = armjnt_grp.create("transform", "LeftLowerArmIkCluster2_grp", self.llowerarmikcluster_grp)
+
+            grp_lupperarm = armjnt_grp.create("transform", "LeftJointArm_grp", self.jnt_lshoulder)
+            self.jnt_lupperarm = armjnt_grp.create("joint", "LeftArm", grp_lupperarm)
+
+            grp_fklupperarm = armjnt_grp.create("transform", "FkLeftJointArm_grp", self.jnt_lshoulder)
+            self.jnt_fklupperarm = armjnt_grp.create("joint", "FkLeftArm", grp_fklupperarm)
+
+            grp_iklupperarm = armjnt_grp.create("transform", "IkLeftJointArm_grp", self.jnt_lshoulder)
+            self.jnt_iklupperarm = armjnt_grp.create("joint", "IkLeftArm", grp_iklupperarm)
+            jnt_iknofliplupperarm = armjnt_grp.create("joint", "IkNoFlipLeftUpArm", grp_iklupperarm)
+            jnt_ikpvlupperarm = armjnt_grp.create("joint", "IkPVLeftUpArm", grp_iklupperarm)
 
             hand_loc_ls.add(hand_loc[0])
             lupperarm_loc_obj = hand_loc_ls.getDependNode(0)
-            lupperarm_loc_transform = om2.MFnTransform(lupperarm_loc_obj)
-            loc_lupperarm_transform = lupperarm_loc_transform.transformation()
+            lupperarm_loc_transform1 = om2.MFnTransform(lupperarm_loc_obj)
+            loc_lupperarm_localtransform = lupperarm_loc_transform1.transformation()
+
+            lupperarm_loc_path_n = om2.MDagPath()
+            lupperarm_loc_path = lupperarm_loc_path_n.getAPathTo(lupperarm_loc_obj)
+            loc_lupperarm_transform2 = om2.MFnTransform(lupperarm_loc_path)
+            loc_lupperarm_t = loc_lupperarm_transform2.translation(om2.MSpace.kWorld)
 
             jnt_lupperarm_transform = om2.MFnTransform(self.jnt_lupperarm)
-            jnt_lupperarm_transform.setTransformation(loc_lupperarm_transform)
+            jnt_lupperarm_transform.setTransformation(loc_lupperarm_localtransform)
 
             jnt_fklupperarm_transform = om2.MFnTransform(self.jnt_fklupperarm)
-            jnt_fklupperarm_transform.setTransformation(loc_lupperarm_transform)
+            jnt_fklupperarm_transform.setTransformation(loc_lupperarm_localtransform)
 
             jnt_iklupperarm_transform = om2.MFnTransform(self.jnt_iklupperarm)
-            jnt_iklupperarm_transform.setTransformation(loc_lupperarm_transform)
+            jnt_iklupperarm_transform.setTransformation(loc_lupperarm_localtransform)
+
+            jnt_iknofliplupperarm_transform = om2.MFnTransform(jnt_iknofliplupperarm)
+            jnt_iknofliplupperarm_transform.setTransformation(loc_lupperarm_localtransform)
+
+            jnt_ikpvlupperarm_transform = om2.MFnTransform(jnt_ikpvlupperarm)
+            jnt_ikpvlupperarm_transform.setTransformation(loc_lupperarm_localtransform)
 
             jnt_lelbow = armjnt_grp.create("joint", "LeftForeArm", self.jnt_lupperarm)
             jnt_fklelbow = armjnt_grp.create("joint", "FkLeftForeArm", self.jnt_fklupperarm)
             jnt_iklelbow = armjnt_grp.create("joint", "IkLeftForeArm", self.jnt_iklupperarm)
+            jnt_iknofliplelbow = armjnt_grp.create("joint", "IkNoFlipLeftForeArm", jnt_iknofliplupperarm)
+            jnt_ikpvlelbow = armjnt_grp.create("joint", "IkPVLeftForeArm", jnt_ikpvlupperarm)
 
             hand_loc_ls.add(hand_loc[1])
-            larm_loc_obj = hand_loc_ls.getDependNode(1)
-            larm_loc_transform = om2.MFnTransform(larm_loc_obj)
-            loc_lelbow_transform = larm_loc_transform.transformation()
+            lelbow_loc_obj = hand_loc_ls.getDependNode(1)
+            lelbow_loc_transform1 = om2.MFnTransform(lelbow_loc_obj)
+            loc_lelbow_localtransform = lelbow_loc_transform1.transformation()
+            loc_lelbow_t1 = lelbow_loc_transform1.translation(om2.MSpace.kTransform)
+
+            lelbow_loc_path_n = om2.MDagPath()
+            lelbow_loc_path = lelbow_loc_path_n.getAPathTo(lelbow_loc_obj)
+            lelbow_loc_transform2 = om2.MFnTransform(lelbow_loc_path)
+            loc_lelbow_t2 = lelbow_loc_transform2.translation(om2.MSpace.kWorld)
 
             jnt_lelbow_transform = om2.MFnTransform(jnt_lelbow)
-            jnt_lelbow_transform.setTransformation(loc_lelbow_transform)
+            jnt_lelbow_transform.setTransformation(loc_lelbow_localtransform)
 
             jnt_fklelbow_transform = om2.MFnTransform(jnt_fklelbow)
-            jnt_fklelbow_transform.setTransformation(loc_lelbow_transform)
+            jnt_fklelbow_transform.setTransformation(loc_lelbow_localtransform)
 
             jnt_iklelbow_transform = om2.MFnTransform(jnt_iklelbow)
-            jnt_iklelbow_transform.setTransformation(loc_lelbow_transform)
+            jnt_iklelbow_transform.setTransformation(loc_lelbow_localtransform)
+
+            jnt_iknofliplelbow_transform = om2.MFnTransform(jnt_iknofliplelbow)
+            jnt_iknofliplelbow_transform.setTransformation(loc_lelbow_localtransform)
+
+            jnt_ikpvlelbow_transform = om2.MFnTransform(jnt_ikpvlelbow)
+            jnt_ikpvlelbow_transform.setTransformation(loc_lelbow_localtransform)
 
             self.jnt_lwrist = armjnt_grp.create("joint", "LeftHand", jnt_lelbow)
             self.jnt_fklwrist = armjnt_grp.create("joint", "FkLeftHand", jnt_fklelbow)
             self.jnt_iklwrist = armjnt_grp.create("joint", "IkLeftHand", jnt_iklelbow)
+            jnt_iknofliplwrist = armjnt_grp.create("joint", "IkNoFlipLeftHand", jnt_iknofliplelbow)
+            jnt_ikpvlwrist = armjnt_grp.create("joint", "IkPVLeftHand", jnt_ikpvlelbow)
 
             hand_loc_ls.add(hand_loc[2])
-            lelbow_loc_obj = hand_loc_ls.getDependNode(2)
-            lelbow_loc_transform = om2.MFnTransform(lelbow_loc_obj)
-            loc_lwrist_transform = lelbow_loc_transform.transformation()
+            lwrist_loc_obj = hand_loc_ls.getDependNode(2)
+            lwrist_loc_transform1 = om2.MFnTransform(lwrist_loc_obj)
+            loc_lwrist_localtransform = lwrist_loc_transform1.transformation()
+            loc_lwrist_t1 = lwrist_loc_transform1.translation(om2.MSpace.kTransform)
+
+            lwrist_loc_path_n = om2.MDagPath()
+            lwrist_loc_path = lwrist_loc_path_n.getAPathTo(lwrist_loc_obj)
+            lwrist_loc_transform2 = om2.MFnTransform(lwrist_loc_path)
+            loc_lwrist_t2 = lwrist_loc_transform2.translation(om2.MSpace.kWorld)
 
             jnt_lwrist_transform = om2.MFnTransform(self.jnt_lwrist)
-            jnt_lwrist_transform.setTransformation(loc_lwrist_transform)
+            jnt_lwrist_transform.setTransformation(loc_lwrist_localtransform)
 
             jnt_fklwrist_transform = om2.MFnTransform(self.jnt_fklwrist)
-            jnt_fklwrist_transform.setTransformation(loc_lwrist_transform)
+            jnt_fklwrist_transform.setTransformation(loc_lwrist_localtransform)
 
             jnt_iklwrist_transform = om2.MFnTransform(self.jnt_iklwrist)
-            jnt_iklwrist_transform.setTransformation(loc_lwrist_transform)
+            jnt_iklwrist_transform.setTransformation(loc_lwrist_localtransform)
+
+            jnt_iknofliplwrist_transform = om2.MFnTransform(jnt_iknofliplwrist)
+            jnt_iknofliplwrist_transform.setTransformation(loc_lwrist_localtransform)
+
+            jnt_ikpvlwrist_transform = om2.MFnTransform(jnt_ikpvlwrist)
+            jnt_ikpvlwrist_transform.setTransformation(loc_lwrist_localtransform)
+
+            grp_stretchyiklarm = armjnt_grp.create("transform", "IkStretchyLeftJointArm_grp", self.splineik_grp)
+
+            grp_stretchyiklarm_transform = om2.MFnTransform(grp_stretchyiklarm)
+            grp_stretchyiklarm_transform.setTranslation(self.loc_lshoulder_t, om2.MSpace.kTransform)
+
+            jnt_stretchyiklupperarm0 = armjnt_grp.create("joint", "IkSplineLeftUpperArm0", grp_stretchyiklarm)
+            jnt_stretchyikcvlupperarm0 = armjnt_grp.create("joint", "IkCvSplineLeftUpperArm0", self.lupperarmikcluster0_grp)
+
+            jnt_stretchyiklupperarm0_transform = om2.MFnTransform(jnt_stretchyiklupperarm0)
+            jnt_stretchyiklupperarm0_transform.setTransformation(loc_lupperarm_localtransform)
+
+            jnt_stretchyikcvlupperarm0_transform = om2.MFnTransform(self.lupperarmikcluster_grp)
+            jnt_stretchyikcvlupperarm0_transform.setTranslation(loc_lupperarm_t, om2.MSpace.kTransform)
+
+            jnt_stretchyiklupperarm1 = armjnt_grp.create("joint", "IkSplineLeftUpperArm1", jnt_stretchyiklupperarm0)
+
+            jnt_stretchyiklupperarm1_transform = om2.MFnTransform(jnt_stretchyiklupperarm1)
+            jnt_stretchyiklupperarm1_transform_t = jnt_stretchyiklupperarm1_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyiklupperarm1_transform_t[0], jnt_stretchyiklupperarm1_transform_t[1], jnt_stretchyiklupperarm1_transform_t[2] = loc_lelbow_t1[0]/4, loc_lelbow_t1[1]/4, loc_lelbow_t1[2]/4
+            jnt_stretchyiklupperarm1_transform.setTranslation(jnt_stretchyiklupperarm1_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyiklupperarm2 = armjnt_grp.create("joint", "IkSplineLeftUpperArm2", jnt_stretchyiklupperarm1)
+            jnt_stretchyikcvlupperarm1 = armjnt_grp.create("joint", "IkCvSplineLeftUpperArm1", self.lupperarmikcluster1_grp)
+
+            jnt_stretchyiklupperarm2_transform = om2.MFnTransform(jnt_stretchyiklupperarm2)
+            jnt_stretchyiklupperarm2_transform_t = jnt_stretchyiklupperarm2_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyiklupperarm2_transform_t[0], jnt_stretchyiklupperarm2_transform_t[1], jnt_stretchyiklupperarm2_transform_t[2] = (loc_lelbow_t1[0]/2)-jnt_stretchyiklupperarm1_transform_t[0], (loc_lelbow_t1[1]/2)-jnt_stretchyiklupperarm1_transform_t[1], (loc_lelbow_t1[2]/2)-jnt_stretchyiklupperarm1_transform_t[2]
+            jnt_stretchyiklupperarm2_transform.setTranslation(jnt_stretchyiklupperarm2_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvlupperarm0_transform_t = jnt_stretchyikcvlupperarm0_transform.translation(om2.MSpace.kTransform)
+
+            jnt_stretchyikcvlupperarm1grp_transform = om2.MFnTransform(self.lupperarmikcluster1_grp)
+            jnt_stretchyikcvlupperleg1grp_transform_t = jnt_stretchyikcvlupperarm1grp_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvlupperleg1grp_transform_t[0], jnt_stretchyikcvlupperleg1grp_transform_t[1], jnt_stretchyikcvlupperleg1grp_transform_t[2] = -(jnt_stretchyikcvlupperarm0_transform_t[0]-loc_lelbow_t2[0])/2, -(jnt_stretchyikcvlupperarm0_transform_t[1]-loc_lelbow_t2[1])/2, -(jnt_stretchyikcvlupperarm0_transform_t[2]-loc_lelbow_t2[2])/2 #loc_lkneeleg_t[0]+(loc_lupperleg_t[0]-loc_lkneeleg_t[0])/2, loc_lkneeleg_t[1]+(loc_lupperleg_t[1]-loc_lkneeleg_t[1])/2, loc_lkneeleg_t[2]+(loc_lupperleg_t[2]-loc_lkneeleg_t[2])/2
+            jnt_stretchyikcvlupperarm1grp_transform.setTranslation(jnt_stretchyikcvlupperleg1grp_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyiklupperarm3 = armjnt_grp.create("joint", "IkSplineLeftUpperArm3", jnt_stretchyiklupperarm2)
+
+            jnt_stretchyiklupperarm3_transform = om2.MFnTransform(jnt_stretchyiklupperarm3)
+            jnt_stretchyiklupperarm3_transform_t = jnt_stretchyiklupperarm3_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyiklupperarm3_transform_t[0], jnt_stretchyiklupperarm3_transform_t[1], jnt_stretchyiklupperarm3_transform_t[2] = jnt_stretchyiklupperarm2_transform_t[0], jnt_stretchyiklupperarm2_transform_t[1], jnt_stretchyiklupperarm2_transform_t[2]
+            jnt_stretchyiklupperarm3_transform.setTranslation(jnt_stretchyiklupperarm3_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyiklupperarm4 = armjnt_grp.create("joint", "IkSplineLeftUpperArm4", jnt_stretchyiklupperarm3)
+            jnt_stretchyikcvlupperarm2 = armjnt_grp.create("joint", "IkCvSplineLeftUpperArm2", self.lupperarmikcluster2_grp)
+
+            jnt_stretchyiklupperarm4_transform = om2.MFnTransform(jnt_stretchyiklupperarm4)
+            jnt_stretchyiklupperarm4_transform_t = jnt_stretchyiklupperarm4_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyiklupperarm4_transform_t[0], jnt_stretchyiklupperarm4_transform_t[1], jnt_stretchyiklupperarm4_transform_t[2] = jnt_stretchyiklupperarm3_transform_t[0], jnt_stretchyiklupperarm3_transform_t[1], jnt_stretchyiklupperarm3_transform_t[2]
+            jnt_stretchyiklupperarm4_transform.setTranslation(jnt_stretchyiklupperarm4_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvlupperarm2_transform = om2.MFnTransform(self.lupperarmikcluster2_grp)
+            jnt_stretchyikcvlupperarm2_transform_t = jnt_stretchyikcvlupperarm2_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvlupperarm2_transform_t[0], jnt_stretchyikcvlupperarm2_transform_t[1], jnt_stretchyikcvlupperarm2_transform_t[2] = -(jnt_stretchyikcvlupperarm0_transform_t[0]-loc_lelbow_t2[0]), -(jnt_stretchyikcvlupperarm0_transform_t[1]-loc_lelbow_t2[1]), -(jnt_stretchyikcvlupperarm0_transform_t[2]-loc_lelbow_t2[2]) #loc_lkneeleg_t[0], loc_lkneeleg_t[1], loc_lkneeleg_t[2]
+            jnt_stretchyikcvlupperarm2_transform.setTranslation(jnt_stretchyikcvlupperarm2_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikllowerarm0 = armjnt_grp.create("joint", "IkSplineLeftLowerArm0", grp_stretchyiklarm)
+            jnt_stretchyikcvllowerarm0 = armjnt_grp.create("joint", "IkCvSplineLeftLowerArm0", self.llowerarmikcluster0_grp)
+
+            jnt_stretchyikllowerarm0_transform = om2.MFnTransform(jnt_stretchyikllowerarm0)
+            jnt_stretchyikllowerarm0_transform.setTranslation(loc_lelbow_t2-grp_stretchyiklarm_transform.translation(om2.MSpace.kTransform), om2.MSpace.kTransform)
+
+            jnt_stretchyikcvllowerarm0_transform = om2.MFnTransform(self.llowerarmikcluster_grp)
+            jnt_stretchyikcvllowerarm0_transform.setTranslation(loc_lelbow_t2, om2.MSpace.kTransform)
+
+            jnt_stretchyikllowerarm1 = armjnt_grp.create("joint", "IkSplineLeftLowerArm1", jnt_stretchyikllowerarm0)
+
+            jnt_stretchyikllowerarm1_transform = om2.MFnTransform(jnt_stretchyikllowerarm1)
+            jnt_stretchyikllowerarm1_transform_t = jnt_stretchyikllowerarm1_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikllowerarm1_transform_t[0], jnt_stretchyikllowerarm1_transform_t[1], jnt_stretchyikllowerarm1_transform_t[2] = loc_lwrist_t1[0]/4, loc_lwrist_t1[1]/4, loc_lwrist_t1[2]/4
+            jnt_stretchyikllowerarm1_transform.setTranslation(jnt_stretchyikllowerarm1_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikllowerarm2 = armjnt_grp.create("joint", "IkSplineLeftLowerArm2", jnt_stretchyikllowerarm1)
+            jnt_stretchyikvcvllowerarm1 = armjnt_grp.create("joint", "IkCvSplineLeftLowerArm1", self.llowerarmikcluster1_grp)
+
+            jnt_stretchyikllowerarm2_transform = om2.MFnTransform(jnt_stretchyikllowerarm2)
+            jnt_stretchyikllowerarm2_transform_t = jnt_stretchyikllowerarm2_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikllowerarm2_transform_t[0], jnt_stretchyikllowerarm2_transform_t[1], jnt_stretchyikllowerarm2_transform_t[2] = (loc_lwrist_t1[0]/2)-jnt_stretchyikllowerarm1_transform_t[0], (loc_lwrist_t1[1]/2)-jnt_stretchyikllowerarm1_transform_t[1], (loc_lwrist_t1[2]/2)-jnt_stretchyikllowerarm1_transform_t[2]
+            jnt_stretchyikllowerarm2_transform.setTranslation(jnt_stretchyikllowerarm2_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvllowerarm0_transform_t = jnt_stretchyikcvllowerarm0_transform.translation(om2.MSpace.kTransform)
+
+            jnt_stretchyikcvllowerarm1_transform = om2.MFnTransform(self.llowerarmikcluster1_grp)
+            jnt_stretchyikcvllowerarm1_transform_t = jnt_stretchyikcvllowerarm1_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvllowerarm1_transform_t[0], jnt_stretchyikcvllowerarm1_transform_t[1], jnt_stretchyikcvllowerarm1_transform_t[2] = -(jnt_stretchyikcvllowerarm0_transform_t[0]-loc_lwrist_t2[0])/2, -(jnt_stretchyikcvllowerarm0_transform_t[1]-loc_lwrist_t2[1])/2, -(jnt_stretchyikcvllowerarm0_transform_t[2]-loc_lwrist_t2[2])/2 #loc_lfootballleg_t[0]+((loc_lkneeleg_t[0]-loc_lfootballleg_t[0])/2), loc_lfootballleg_t[1]+((loc_lkneeleg_t[1]-loc_lfootballleg_t[1])/2), loc_lfootballleg_t[2]+((loc_lkneeleg_t[2]-loc_lfootballleg_t[2])/2)
+            jnt_stretchyikcvllowerarm1_transform.setTranslation(jnt_stretchyikcvllowerarm1_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikllowerarm3 = armjnt_grp.create("joint", "IkSplineLeftLowerArm3", jnt_stretchyikllowerarm2)
+
+            jnt_stretchyikllowerarm3_transform = om2.MFnTransform(jnt_stretchyikllowerarm3)
+            jnt_stretchyikllowearm3_transform_t = jnt_stretchyikllowerarm3_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikllowearm3_transform_t[0], jnt_stretchyikllowearm3_transform_t[1], jnt_stretchyikllowearm3_transform_t[2] = jnt_stretchyikllowerarm2_transform_t[0], jnt_stretchyikllowerarm2_transform_t[1], jnt_stretchyikllowerarm2_transform_t[2]
+            jnt_stretchyikllowerarm3_transform.setTranslation(jnt_stretchyikllowearm3_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikllowerarm4 = armjnt_grp.create("joint", "IkSplineLeftLowerArm4", jnt_stretchyikllowerarm3)
+            jnt_stretchyikvcvllowerarm2 = armjnt_grp.create("joint", "IkCvSplineLeftLowerArm2", self.llowerarmikcluster2_grp)
+
+            jnt_stretchyikllowerarm4_transform = om2.MFnTransform(jnt_stretchyikllowerarm4)
+            jnt_stretchyikllowerarm4_transform_t = jnt_stretchyikllowerarm4_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikllowerarm4_transform_t[0], jnt_stretchyikllowerarm4_transform_t[1], jnt_stretchyikllowerarm4_transform_t[2] = jnt_stretchyikllowearm3_transform_t[0], jnt_stretchyikllowearm3_transform_t[1], jnt_stretchyikllowearm3_transform_t[2]
+            jnt_stretchyikllowerarm4_transform.setTranslation(jnt_stretchyikllowerarm4_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvllowerarm4_transform = om2.MFnTransform(self.llowerarmikcluster2_grp)
+            jnt_stretchyikcvllowerarm4_transform_t = jnt_stretchyikcvllowerarm4_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvllowerarm4_transform_t[0], jnt_stretchyikcvllowerarm4_transform_t[1], jnt_stretchyikcvllowerarm4_transform_t[2] = -(jnt_stretchyikcvllowerarm0_transform_t[0]-loc_lwrist_t2[0]), -(jnt_stretchyikcvllowerarm0_transform_t[1]-loc_lwrist_t2[1]), -(jnt_stretchyikcvllowerarm0_transform_t[2]-loc_lwrist_t2[2]) #loc_lfootballleg_t[0], loc_lfootballleg_t[1], loc_lfootballleg_t[2]
+            jnt_stretchyikcvllowerarm4_transform.setTranslation(jnt_stretchyikcvllowerarm4_transform_t, om2.MSpace.kTransform)
 
         if side == -1:
-            self.jnt_rupperarm = armjnt_grp.create("joint", "RightArm", self.jnt_rshoulder)
-            self.jnt_fkrupperarm = armjnt_grp.create("joint", "FkRightArm", self.jnt_rshoulder)
-            self.jnt_ikrupperarm = armjnt_grp.create("joint", "IkRightArm", self.jnt_rshoulder)
+            self.rarmik_grp = armjnt_grp.create("transform", "RightArmIk_grp", self.donttouchjnt_grp)
+            self.rarmikcluster_grp = armjnt_grp.create("transform", "RightArmIkCluster_grp", self.splineik_grp)
+            self.rupperarmikcluster_grp = armjnt_grp.create("transform", "RightUpperArmIkCluster_grp", self.rarmikcluster_grp)
+            self.rupperarmikcluster0_grp = armjnt_grp.create("transform", "RightUpperArmIkCluster0_grp", self.rupperarmikcluster_grp)
+            self.rupperarmikcluster1_grp = armjnt_grp.create("transform", "RightUpperArmIkCluster1_grp", self.rupperarmikcluster_grp)
+            self.rupperarmikcluster2_grp = armjnt_grp.create("transform", "RightUpperArmIkCluster2_grp", self.rupperarmikcluster_grp)
+            self.rlowerarmikcluster_grp = armjnt_grp.create("transform", "RightLowerArmIkCluster_grp", self.rarmikcluster_grp)
+            self.rlowerarmikcluster0_grp = armjnt_grp.create("transform", "RightLowerArmIkCluster0_grp", self.rlowerarmikcluster_grp)
+            self.rlowerarmikcluster1_grp = armjnt_grp.create("transform", "RightLowerArmIkCluster1_grp", self.rlowerarmikcluster_grp)
+            self.rlowerarmikcluster2_grp = armjnt_grp.create("transform", "RightLowerArmIkCluster2_grp", self.rlowerarmikcluster_grp)
+
+            grp_rupperarm = armjnt_grp.create("transform", "RightJointArm_grp", self.jnt_rshoulder)
+            self.jnt_rupperarm = armjnt_grp.create("joint", "RightArm", grp_rupperarm)
+
+            grp_fkrupperarm = armjnt_grp.create("transform", "FkRightJointArm_grp", self.jnt_rshoulder)
+            self.jnt_fkrupperarm = armjnt_grp.create("joint", "FkRightArm", grp_fkrupperarm)
+
+            grp_ikrupperarm = armjnt_grp.create("transform", "IkLeftJointArm_grp", self.jnt_rshoulder)
+            self.jnt_ikrupperarm = armjnt_grp.create("joint", "IkRightArm",grp_ikrupperarm)
+            jnt_iknofliprupperarm = armjnt_grp.create("joint", "IkNoFlipRightUpArm", grp_ikrupperarm)
+            jnt_ikpvrupperarm = armjnt_grp.create("joint", "IkPVRightUpArm", grp_ikrupperarm)
 
             hand_loc_ls.add(hand_loc[3])
             rupperarm_loc_obj = hand_loc_ls.getDependNode(0)
-            rupperarm_loc_transform = om2.MFnTransform(rupperarm_loc_obj)
-            loc_rupperarm_transform = rupperarm_loc_transform.transformation()
+            rupperarm_loc_transform1 = om2.MFnTransform(rupperarm_loc_obj)
+            loc_rupperarm_transform = rupperarm_loc_transform1.transformation()
+
+            rupperarm_loc_path_n = om2.MDagPath()
+            rupperarm_loc_path = rupperarm_loc_path_n.getAPathTo(rupperarm_loc_obj)
+            rupperarm_loc_transform2 = om2.MFnTransform(rupperarm_loc_path)
+            loc_rupperarm_t = rupperarm_loc_transform2.translation(om2.MSpace.kWorld)
 
             jnt_rupperarm_transform = om2.MFnTransform(self.jnt_rupperarm)
             jnt_rupperarm_transform.setTransformation(loc_rupperarm_transform)
@@ -859,32 +1147,58 @@ class MainWindow(QtWidgets.QDialog):
             jnt_ikrupperarm_transform = om2.MFnTransform(self.jnt_ikrupperarm)
             jnt_ikrupperarm_transform.setTransformation(loc_rupperarm_transform)
 
+            jnt_iknofliprupperarm_transform = om2.MFnTransform(jnt_iknofliprupperarm)
+            jnt_iknofliprupperarm_transform.setTransformation(loc_rupperarm_transform)
+
+            jnt_ikpvrupperarm_transform = om2.MFnTransform(jnt_ikpvrupperarm)
+            jnt_ikpvrupperarm_transform.setTransformation(loc_rupperarm_transform)
+
             jnt_relbow = armjnt_grp.create("joint", "RightForeArm", self.jnt_rupperarm)
             jnt_fkrelbow = armjnt_grp.create("joint", "FkRightForeArm", self.jnt_fkrupperarm)
             jnt_ikrelbow = armjnt_grp.create("joint", "IkRightForeArm", self.jnt_ikrupperarm)
+            jnt_iknofliprelbow = armjnt_grp.create("joint", "IkNoFlipRightForeArm", jnt_iknofliprupperarm)
+            jnt_ikpvrelbow = armjnt_grp.create("joint", "IkPVRightForeArm", jnt_ikpvrupperarm)
 
             hand_loc_ls.add(hand_loc[4])
-            rarm_loc_obj = hand_loc_ls.getDependNode(1)
-            rarm_loc_transform = om2.MFnTransform(rarm_loc_obj)
-            loc_relbow_transform = rarm_loc_transform.transformation()
+            relbow_loc_obj = hand_loc_ls.getDependNode(1)
+            relbow_loc_transform1 = om2.MFnTransform(relbow_loc_obj)
+            loc_relbow_localtransform = relbow_loc_transform1.transformation()
+
+            relbowleg_loc_path_n = om2.MDagPath()
+            relbowleg_loc_path = relbowleg_loc_path_n.getAPathTo(relbow_loc_obj)
+            relbow_loc_transform2 = om2.MFnTransform(relbowleg_loc_path)
+            loc_relbowleg_t = relbow_loc_transform2.translation(om2.MSpace.kWorld)
 
             jnt_relbow_transform = om2.MFnTransform(jnt_relbow)
-            jnt_relbow_transform.setTransformation(loc_relbow_transform)
+            jnt_relbow_transform.setTransformation(loc_relbow_localtransform)
 
             jnt_fkrelbow_transform = om2.MFnTransform(jnt_fkrelbow)
-            jnt_fkrelbow_transform.setTransformation(loc_relbow_transform)
+            jnt_fkrelbow_transform.setTransformation(loc_relbow_localtransform)
 
             jnt_ikrelbow_transform = om2.MFnTransform(jnt_ikrelbow)
-            jnt_ikrelbow_transform.setTransformation(loc_relbow_transform)
+            jnt_ikrelbow_transform.setTransformation(loc_relbow_localtransform)
+
+            jnt_iknofliprelbow_transform = om2.MFnTransform(jnt_iknofliprelbow)
+            jnt_iknofliprelbow_transform.setTransformation(loc_relbow_localtransform)
+
+            jnt_ikpvrelbow_transform = om2.MFnTransform(jnt_ikpvrelbow)
+            jnt_ikpvrelbow_transform.setTransformation(loc_relbow_localtransform)
 
             self.jnt_rwrist = armjnt_grp.create("joint", "RightHand", jnt_relbow)
             self.jnt_fkrwrist = armjnt_grp.create("joint", "FkRightHand", jnt_fkrelbow)
             self.jnt_ikrwrist = armjnt_grp.create("joint", "IkRightHand", jnt_ikrelbow)
+            jnt_iknofliprwrist = armjnt_grp.create("joint", "IkNoFlipRightHand", jnt_iknofliprelbow)
+            jnt_ikpvrwrist = armjnt_grp.create("joint", "IkPVRightHand", jnt_ikpvrelbow)
 
             hand_loc_ls.add(hand_loc[5])
-            relbow_loc_obj = hand_loc_ls.getDependNode(2)
-            relbow_loc_transform = om2.MFnTransform(relbow_loc_obj)
-            loc_rwrist_transform = relbow_loc_transform.transformation()
+            rwrist_loc_obj = hand_loc_ls.getDependNode(2)
+            rwrist_loc_transform1 = om2.MFnTransform(rwrist_loc_obj)
+            loc_rwrist_transform = rwrist_loc_transform1.transformation()
+
+            rwrist_loc_path_n = om2.MDagPath()
+            rwrist_loc_path = rwrist_loc_path_n.getAPathTo(rwrist_loc_obj)
+            loc_rwrist_transform2 = om2.MFnTransform(rwrist_loc_path)
+            loc_rwrist_t = loc_rwrist_transform2.translation(om2.MSpace.kWorld)
 
             jnt_rwrist_transform = om2.MFnTransform(self.jnt_rwrist)
             jnt_rwrist_transform.setTransformation(loc_rwrist_transform)
@@ -894,6 +1208,119 @@ class MainWindow(QtWidgets.QDialog):
 
             jnt_ikrwrist_transform = om2.MFnTransform(self.jnt_ikrwrist)
             jnt_ikrwrist_transform.setTransformation(loc_rwrist_transform)
+
+            jnt_iknofliprwrist_transform = om2.MFnTransform(jnt_iknofliprwrist)
+            jnt_iknofliprwrist_transform.setTransformation(loc_rwrist_transform)
+
+            jnt_ikpvrwrist_transform = om2.MFnTransform(jnt_ikpvrwrist)
+            jnt_ikpvrwrist_transform.setTransformation(loc_rwrist_transform)
+
+            # grp_stretchyiklarm = armjnt_grp.create("transform", "IkStretchyLeftJointArm_grp", self.splineik_grp)
+            #
+            # grp_stretchyiklarm_transform = om2.MFnTransform(grp_stretchyiklarm)
+            # grp_stretchyiklarm_transform.setTranslation(self.loc_lshoulder_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyiklupperarm0 = armjnt_grp.create("joint", "IkSplineLeftUpperArm0", grp_stretchyiklarm)
+            # jnt_stretchyikcvlupperarm0 = armjnt_grp.create("joint", "IkCvSplineLeftUpperArm0", self.lupperarmikcluster0_grp)
+            #
+            # jnt_stretchyiklupperarm0_transform = om2.MFnTransform(jnt_stretchyiklupperarm0)
+            # jnt_stretchyiklupperarm0_transform.setTransformation(loc_lupperarm_localtransform)
+            #
+            # jnt_stretchyikcvlupperarm0_transform = om2.MFnTransform(self.lupperarmikcluster_grp)
+            # jnt_stretchyikcvlupperarm0_transform.setTranslation(loc_lupperarm_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyiklupperarm1 = armjnt_grp.create("joint", "IkSplineLeftUpperArm1", jnt_stretchyiklupperarm0)
+            #
+            # jnt_stretchyiklupperarm1_transform = om2.MFnTransform(jnt_stretchyiklupperarm1)
+            # jnt_stretchyiklupperarm1_transform_t = jnt_stretchyiklupperarm1_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyiklupperarm1_transform_t[0], jnt_stretchyiklupperarm1_transform_t[1], jnt_stretchyiklupperarm1_transform_t[2] = loc_lelbow_t1[0]/4, loc_lelbow_t1[1]/4, loc_lelbow_t1[2]/4
+            # jnt_stretchyiklupperarm1_transform.setTranslation(jnt_stretchyiklupperarm1_transform_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyiklupperarm2 = armjnt_grp.create("joint", "IkSplineLeftUpperArm2", jnt_stretchyiklupperarm1)
+            # jnt_stretchyikcvlupperarm1 = armjnt_grp.create("joint", "IkCvSplineLeftUpperArm1", self.lupperarmikcluster1_grp)
+            #
+            # jnt_stretchyiklupperarm2_transform = om2.MFnTransform(jnt_stretchyiklupperarm2)
+            # jnt_stretchyiklupperarm2_transform_t = jnt_stretchyiklupperarm2_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyiklupperarm2_transform_t[0], jnt_stretchyiklupperarm2_transform_t[1], jnt_stretchyiklupperarm2_transform_t[2] = (loc_lelbow_t1[0]/2)-jnt_stretchyiklupperarm1_transform_t[0], (loc_lelbow_t1[1]/2)-jnt_stretchyiklupperarm1_transform_t[1], (loc_lelbow_t1[2]/2)-jnt_stretchyiklupperarm1_transform_t[2]
+            # jnt_stretchyiklupperarm2_transform.setTranslation(jnt_stretchyiklupperarm2_transform_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikcvlupperarm0_transform_t = jnt_stretchyikcvlupperarm0_transform.translation(om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikcvlupperarm1grp_transform = om2.MFnTransform(self.lupperarmikcluster1_grp)
+            # jnt_stretchyikcvlupperleg1grp_transform_t = jnt_stretchyikcvlupperarm1grp_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyikcvlupperleg1grp_transform_t[0], jnt_stretchyikcvlupperleg1grp_transform_t[1], jnt_stretchyikcvlupperleg1grp_transform_t[2] = -(jnt_stretchyikcvlupperarm0_transform_t[0]-loc_lelbow_t2[0])/2, -(jnt_stretchyikcvlupperarm0_transform_t[1]-loc_lelbow_t2[1])/2, -(jnt_stretchyikcvlupperarm0_transform_t[2]-loc_lelbow_t2[2])/2 #loc_lkneeleg_t[0]+(loc_lupperleg_t[0]-loc_lkneeleg_t[0])/2, loc_lkneeleg_t[1]+(loc_lupperleg_t[1]-loc_lkneeleg_t[1])/2, loc_lkneeleg_t[2]+(loc_lupperleg_t[2]-loc_lkneeleg_t[2])/2
+            # jnt_stretchyikcvlupperarm1grp_transform.setTranslation(jnt_stretchyikcvlupperleg1grp_transform_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyiklupperarm3 = armjnt_grp.create("joint", "IkSplineLeftUpperArm3", jnt_stretchyiklupperarm2)
+            #
+            # jnt_stretchyiklupperarm3_transform = om2.MFnTransform(jnt_stretchyiklupperarm3)
+            # jnt_stretchyiklupperarm3_transform_t = jnt_stretchyiklupperarm3_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyiklupperarm3_transform_t[0], jnt_stretchyiklupperarm3_transform_t[1], jnt_stretchyiklupperarm3_transform_t[2] = jnt_stretchyiklupperarm2_transform_t[0], jnt_stretchyiklupperarm2_transform_t[1], jnt_stretchyiklupperarm2_transform_t[2]
+            # jnt_stretchyiklupperarm3_transform.setTranslation(jnt_stretchyiklupperarm3_transform_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyiklupperarm4 = armjnt_grp.create("joint", "IkSplineLeftUpperArm4", jnt_stretchyiklupperarm3)
+            # jnt_stretchyikcvlupperarm2 = armjnt_grp.create("joint", "IkCvSplineLeftUpperArm2", self.lupperarmikcluster2_grp)
+            #
+            # jnt_stretchyiklupperarm4_transform = om2.MFnTransform(jnt_stretchyiklupperarm4)
+            # jnt_stretchyiklupperarm4_transform_t = jnt_stretchyiklupperarm4_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyiklupperarm4_transform_t[0], jnt_stretchyiklupperarm4_transform_t[1], jnt_stretchyiklupperarm4_transform_t[2] = jnt_stretchyiklupperarm3_transform_t[0], jnt_stretchyiklupperarm3_transform_t[1], jnt_stretchyiklupperarm3_transform_t[2]
+            # jnt_stretchyiklupperarm4_transform.setTranslation(jnt_stretchyiklupperarm4_transform_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikcvlupperarm2_transform = om2.MFnTransform(self.lupperarmikcluster2_grp)
+            # jnt_stretchyikcvlupperarm2_transform_t = jnt_stretchyikcvlupperarm2_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyikcvlupperarm2_transform_t[0], jnt_stretchyikcvlupperarm2_transform_t[1], jnt_stretchyikcvlupperarm2_transform_t[2] = -(jnt_stretchyikcvlupperarm0_transform_t[0]-loc_lelbow_t2[0]), -(jnt_stretchyikcvlupperarm0_transform_t[1]-loc_lelbow_t2[1]), -(jnt_stretchyikcvlupperarm0_transform_t[2]-loc_lelbow_t2[2]) #loc_lkneeleg_t[0], loc_lkneeleg_t[1], loc_lkneeleg_t[2]
+            # jnt_stretchyikcvlupperarm2_transform.setTranslation(jnt_stretchyikcvlupperarm2_transform_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikllowerarm0 = armjnt_grp.create("joint", "IkSplineLeftLowerArm0", grp_stretchyiklarm)
+            # jnt_stretchyikcvllowerarm0 = armjnt_grp.create("joint", "IkCvSplineLeftLowerArm0", self.llowerarmikcluster0_grp)
+            #
+            # jnt_stretchyikllowerarm0_transform = om2.MFnTransform(jnt_stretchyikllowerarm0)
+            # jnt_stretchyikllowerarm0_transform.setTranslation(loc_lelbow_t2-grp_stretchyiklarm_transform.translation(om2.MSpace.kTransform), om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikcvllowerarm0_transform = om2.MFnTransform(self.llowerarmikcluster_grp)
+            # jnt_stretchyikcvllowerarm0_transform.setTranslation(loc_lelbow_t2, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikllowerarm1 = armjnt_grp.create("joint", "IkSplineLeftLowerArm1", jnt_stretchyikllowerarm0)
+            #
+            # jnt_stretchyikllowerarm1_transform = om2.MFnTransform(jnt_stretchyikllowerarm1)
+            # jnt_stretchyikllowerarm1_transform_t = jnt_stretchyikllowerarm1_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyikllowerarm1_transform_t[0], jnt_stretchyikllowerarm1_transform_t[1], jnt_stretchyikllowerarm1_transform_t[2] = loc_lwrist_t1[0]/4, loc_lwrist_t1[1]/4, loc_lwrist_t1[2]/4
+            # jnt_stretchyikllowerarm1_transform.setTranslation(jnt_stretchyikllowerarm1_transform_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikllowerarm2 = armjnt_grp.create("joint", "IkSplineLeftLowerArm2", jnt_stretchyikllowerarm1)
+            # jnt_stretchyikvcvllowerarm1 = armjnt_grp.create("joint", "IkCvSplineLeftLowerArm1", self.llowerarmikcluster1_grp)
+            #
+            # jnt_stretchyikllowerarm2_transform = om2.MFnTransform(jnt_stretchyikllowerarm2)
+            # jnt_stretchyikllowerarm2_transform_t = jnt_stretchyikllowerarm2_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyikllowerarm2_transform_t[0], jnt_stretchyikllowerarm2_transform_t[1], jnt_stretchyikllowerarm2_transform_t[2] = (loc_lwrist_t1[0]/2)-jnt_stretchyikllowerarm1_transform_t[0], (loc_lwrist_t1[1]/2)-jnt_stretchyikllowerarm1_transform_t[1], (loc_lwrist_t1[2]/2)-jnt_stretchyikllowerarm1_transform_t[2]
+            # jnt_stretchyikllowerarm2_transform.setTranslation(jnt_stretchyikllowerarm2_transform_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikcvllowerarm0_transform_t = jnt_stretchyikcvllowerarm0_transform.translation(om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikcvllowerarm1_transform = om2.MFnTransform(self.llowerarmikcluster1_grp)
+            # jnt_stretchyikcvllowerarm1_transform_t = jnt_stretchyikcvllowerarm1_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyikcvllowerarm1_transform_t[0], jnt_stretchyikcvllowerarm1_transform_t[1], jnt_stretchyikcvllowerarm1_transform_t[2] = -(jnt_stretchyikcvllowerarm0_transform_t[0]-loc_lwrist_t2[0])/2, -(jnt_stretchyikcvllowerarm0_transform_t[1]-loc_lwrist_t2[1])/2, -(jnt_stretchyikcvllowerarm0_transform_t[2]-loc_lwrist_t2[2])/2 #loc_lfootballleg_t[0]+((loc_lkneeleg_t[0]-loc_lfootballleg_t[0])/2), loc_lfootballleg_t[1]+((loc_lkneeleg_t[1]-loc_lfootballleg_t[1])/2), loc_lfootballleg_t[2]+((loc_lkneeleg_t[2]-loc_lfootballleg_t[2])/2)
+            # jnt_stretchyikcvllowerarm1_transform.setTranslation(jnt_stretchyikcvllowerarm1_transform_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikllowerarm3 = armjnt_grp.create("joint", "IkSplineLeftLowerArm3", jnt_stretchyikllowerarm2)
+            #
+            # jnt_stretchyikllowerarm3_transform = om2.MFnTransform(jnt_stretchyikllowerarm3)
+            # jnt_stretchyikllowearm3_transform_t = jnt_stretchyikllowerarm3_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyikllowearm3_transform_t[0], jnt_stretchyikllowearm3_transform_t[1], jnt_stretchyikllowearm3_transform_t[2] = jnt_stretchyikllowerarm2_transform_t[0], jnt_stretchyikllowerarm2_transform_t[1], jnt_stretchyikllowerarm2_transform_t[2]
+            # jnt_stretchyikllowerarm3_transform.setTranslation(jnt_stretchyikllowearm3_transform_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikllowerarm4 = armjnt_grp.create("joint", "IkSplineLeftLowerArm4", jnt_stretchyikllowerarm3)
+            # jnt_stretchyikvcvllowerarm2 = armjnt_grp.create("joint", "IkCvSplineLeftLowerArm2", self.llowerarmikcluster2_grp)
+            #
+            # jnt_stretchyikllowerarm4_transform = om2.MFnTransform(jnt_stretchyikllowerarm4)
+            # jnt_stretchyikllowerarm4_transform_t = jnt_stretchyikllowerarm4_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyikllowerarm4_transform_t[0], jnt_stretchyikllowerarm4_transform_t[1], jnt_stretchyikllowerarm4_transform_t[2] = jnt_stretchyikllowearm3_transform_t[0], jnt_stretchyikllowearm3_transform_t[1], jnt_stretchyikllowearm3_transform_t[2]
+            # jnt_stretchyikllowerarm4_transform.setTranslation(jnt_stretchyikllowerarm4_transform_t, om2.MSpace.kTransform)
+            #
+            # jnt_stretchyikcvllowerarm4_transform = om2.MFnTransform(self.llowerarmikcluster2_grp)
+            # jnt_stretchyikcvllowerarm4_transform_t = jnt_stretchyikcvllowerarm4_transform.translation(om2.MSpace.kTransform)
+            # jnt_stretchyikcvllowerarm4_transform_t[0], jnt_stretchyikcvllowerarm4_transform_t[1], jnt_stretchyikcvllowerarm4_transform_t[2] = -(jnt_stretchyikcvllowerarm0_transform_t[0]-loc_lwrist_t2[0]), -(jnt_stretchyikcvllowerarm0_transform_t[1]-loc_lwrist_t2[1]), -(jnt_stretchyikcvllowerarm0_transform_t[2]-loc_lwrist_t2[2]) #loc_lfootballleg_t[0], loc_lfootballleg_t[1], loc_lfootballleg_t[2]
+            # jnt_stretchyikcvllowerarm4_transform.setTranslation(jnt_stretchyikcvllowerarm4_transform_t, om2.MSpace.kTransform)
 
     def createFingerJoints(self):
         for i in range(0, self.lfinger_lst.length()/4):
@@ -1121,8 +1548,8 @@ class MainWindow(QtWidgets.QDialog):
 
             grp_iklupperleg = legjnt_grp.create("transform", "IkLeftJointLeg_grp", self.jnt_root_tn)
             jnt_iklupperleg = legjnt_grp.create("joint", "IkLeftUpLeg", grp_iklupperleg)
-            jnt_iknofliprupperleg = legjnt_grp.create("joint", "IkNoFlipLeftUpLeg", grp_iklupperleg)
-            jnt_ikpvrupperleg = legjnt_grp.create("joint", "IkPVLeftUpLeg", grp_iklupperleg)
+            jnt_iknofliplupperleg = legjnt_grp.create("joint", "IkNoFlipLeftUpLeg", grp_iklupperleg)
+            jnt_ikpvlupperleg = legjnt_grp.create("joint", "IkPVLeftUpLeg", grp_iklupperleg)
 
             leg_loc_ls.add(leg_loc[0])
             lupperleg_loc_obj = leg_loc_ls.getDependNode(0)
@@ -1142,269 +1569,269 @@ class MainWindow(QtWidgets.QDialog):
 
             jnt_iklupperleg_transform = om2.MFnTransform(jnt_iklupperleg)
             jnt_iklupperleg_transform.setTransformation(loc_lupperleg_transform)
-        #
-        #     jnt_iknofliplupperleg_transform = om2.MFnTransform(jnt_iknofliplupperleg)
-        #     jnt_iknofliplupperleg_transform.setTransformation(loc_lupperleg_transform)
-        #
-        #     jnt_ikpvlupperleg_transform = om2.MFnTransform(jnt_ikpvlupperleg)
-        #     jnt_ikpvlupperleg_transform.setTransformation(loc_lupperleg_transform)
-        #
-        #     jnt_lknee = legjnt_grp.create("joint", "LeftLeg", jnt_lupperleg)
-        #     jnt_fklknee = legjnt_grp.create("joint", "FkLeftLeg", jnt_fklupperleg)
-        #     jnt_iklknee = legjnt_grp.create("joint", "IkLeftLeg", jnt_iklupperleg)
-        #     jnt_iknofliplknee = legjnt_grp.create("joint", "IkNoFlipLeftLeg", jnt_iknofliplupperleg)
-        #     jnt_ikpvlknee = legjnt_grp.create("joint", "IkPVLeftLeg", jnt_ikpvlupperleg)
-        #
-        #     leg_loc_ls.add(leg_loc[1])
-        #     lknee_loc_obj = leg_loc_ls.getDependNode(1)
-        #     lknee_loc_transform = om2.MFnTransform(lknee_loc_obj)
-        #     loc_lknee_transform = lknee_loc_transform.transformation()
-        #     loc_lknee_transform_t = loc_lknee_transform.translation(om2.MSpace.kTransform)
-        #
-        #     lkneeleg_loc_path_n = om2.MDagPath()
-        #     lkneeleg_loc_path = lkneeleg_loc_path_n.getAPathTo(lknee_loc_obj)
-        #     loc_lkneeleg_transform = om2.MFnTransform(lkneeleg_loc_path)
-        #     loc_lkneeleg_t = loc_lkneeleg_transform.translation(om2.MSpace.kWorld)
-        #
-        #     jnt_lknee_transform = om2.MFnTransform(jnt_lknee)
-        #     jnt_lknee_transform.setTransformation(loc_lknee_transform)
-        #
-        #     jnt_fklknee_transform = om2.MFnTransform(jnt_fklknee)
-        #     jnt_fklknee_transform.setTransformation(loc_lknee_transform)
-        #
-        #     jnt_iklknee_transform = om2.MFnTransform(jnt_iklknee)
-        #     jnt_iklknee_transform.setTransformation(loc_lknee_transform)
-        #
-        #     jnt_iknofliplknee_transform = om2.MFnTransform(jnt_iknofliplknee)
-        #     jnt_iknofliplknee_transform.setTransformation(loc_lknee_transform)
-        #
-        #     jnt_ikpvlknee_transform = om2.MFnTransform(jnt_ikpvlknee)
-        #     jnt_ikpvlknee_transform.setTransformation(loc_lknee_transform)
-        #
-        #     jnt_lfootball = legjnt_grp.create("joint", "LeftFoot", jnt_lknee)
-        #     jnt_fklfootball = legjnt_grp.create("joint", "FkLeftFoot", jnt_fklknee)
-        #     jnt_iklfootball = legjnt_grp.create("joint", "IkLeftFoot", jnt_iklknee)
-        #     jnt_iknofliplfootball = legjnt_grp.create("joint", "IkNoFlipLeftFoot", jnt_iknofliplknee)
-        #     jnt_ikpvlfootball = legjnt_grp.create("joint", "IkPVLeftFoot", jnt_ikpvlknee)
-        #     lreversefoot_hell = legjnt_grp.create("transform", "LeftReverseFootHeel")
-        #     lreversefoot_hell_ln = legjnt_grp.create("locator", "LeftReverseFootHeelShape", lreversefoot_hell)
-        #
-        #     leg_loc_ls.add(leg_loc[2])
-        #     lfootball_loc_obj = leg_loc_ls.getDependNode(2)
-        #     lfootball_loc_transform = om2.MFnTransform(lfootball_loc_obj)
-        #     loc_lfootball_transform = lfootball_loc_transform.transformation()
-        #     loc_lfootball_t = lfootball_loc_transform.translation(om2.MSpace.kTransform)
-        #
-        #     lfootballleg_loc_path_n = om2.MDagPath()
-        #     lfootballleg_loc_path = lfootballleg_loc_path_n.getAPathTo(lfootball_loc_obj)
-        #     loc_lfootballleg_transform = om2.MFnTransform(lfootballleg_loc_path)
-        #     loc_lfootballleg_t = loc_lfootballleg_transform.translation(om2.MSpace.kWorld)
-        #
-        #     jnt_lfootball_transform = om2.MFnTransform(jnt_lfootball)
-        #     jnt_lfootball_transform.setTransformation(loc_lfootball_transform)
-        #
-        #     jnt_fklfootball_transform = om2.MFnTransform(jnt_fklfootball)
-        #     jnt_fklfootball_transform.setTransformation(loc_lfootball_transform)
-        #
-        #     jnt_iklfootball_transform = om2.MFnTransform(jnt_iklfootball)
-        #     jnt_iklfootball_transform.setTransformation(loc_lfootball_transform)
-        #
-        #     jnt_iknofliplfootball_transform = om2.MFnTransform(jnt_iknofliplfootball)
-        #     jnt_iknofliplfootball_transform.setTransformation(loc_lfootball_transform)
-        #
-        #     jnt_ikpvlfootball_transform = om2.MFnTransform(jnt_ikpvlfootball)
-        #     jnt_ikpvlfootball_transform.setTransformation(loc_lfootball_transform)
-        #
-        #     lreversefoot_hell_transform = om2.MFnTransform(lreversefoot_hell)
-        #     lreversefoot_hell_transform_t = lreversefoot_hell_transform.translation(om2.MSpace.kTransform)
-        #     lreversefoot_hell_transform_t[0], lreversefoot_hell_transform_t[1], lreversefoot_hell_transform_t[2] = loc_lfootballleg_t[0], loc_lfootballleg_t[1], -loc_lfootballleg_t[2]*10
-        #     lreversefoot_hell_transform.setTranslation(lreversefoot_hell_transform_t, om2.MSpace.kTransform)
-        #
-        #     grp_llegik_transform = om2.MFnTransform(self.llegik_grp)
-        #     grp_llegik_transform.setTranslation(loc_lfootballleg_t, om2.MSpace.kTransform)
-        #
-        #     jnt_lfoot = legjnt_grp.create("joint", "LeftToeBase", jnt_lfootball)
-        #     jnt_fklfoot = legjnt_grp.create("joint", "FkLeftToeBase", jnt_fklfootball)
-        #     jnt_iklfoot = legjnt_grp.create("joint", "IkLeftToeBase", jnt_iklfootball)
-        #     lreversefoot_foot = legjnt_grp.create("transform", "LeftReverseFootToe")
-        #     lreversefoot_foot_ln = legjnt_grp.create("locator", "LeftReverseFootToeShape", lreversefoot_foot)
-        #     lreverseinner_foot = legjnt_grp.create("transform", "LeftReverseInnerFoot")
-        #     lreverseinner_foot_ln = legjnt_grp.create("locator", "LeftReverseInnerFootShape", lreverseinner_foot)
-        #     lreverseouter_foot = legjnt_grp.create("transform", "LeftReverseOuterFoot")
-        #     lreverseouter_foot_ln = legjnt_grp.create("locator", "LeftReverseOuterFootShape", lreverseouter_foot)
-        #
-        #     leg_loc_ls.add(leg_loc[3])
-        #     lfoot_loc_obj = leg_loc_ls.getDependNode(3)
-        #     lfoot_loc_transform = om2.MFnTransform(lfoot_loc_obj)
-        #     loc_lfoot_transform = lfoot_loc_transform.transformation()
-        #
-        #     lfootleg_loc_path_n = om2.MDagPath()
-        #     lfootleg_loc_path = lfootleg_loc_path_n.getAPathTo(lfoot_loc_obj)
-        #     loc_lfootleg_transform = om2.MFnTransform(lfootleg_loc_path)
-        #     loc_lfootleg_t = loc_lfootleg_transform.translation(om2.MSpace.kWorld)
-        #
-        #     jnt_lfoot_transform = om2.MFnTransform(jnt_lfoot)
-        #     jnt_lfoot_transform.setTransformation(loc_lfoot_transform)
-        #
-        #     jnt_fklfoot_transform = om2.MFnTransform(jnt_fklfoot)
-        #     jnt_fklfoot_transform.setTransformation(loc_lfoot_transform)
-        #
-        #     jnt_iklfoot_transform = om2.MFnTransform(jnt_iklfoot)
-        #     jnt_iklfoot_transform.setTransformation(loc_lfoot_transform)
-        #
-        #     lreversefoot_foot_transform = om2.MFnTransform(lreversefoot_foot)
-        #     lreversefoot_foot_transform.setTranslation(loc_lfootleg_t, om2.MSpace.kTransform)
-        #
-        #     lreverseinner_foot_transform = om2.MFnTransform(lreverseinner_foot)
-        #     lreverseinner_foot_transform_t = lreverseinner_foot_transform.translation(om2.MSpace.kTransform)
-        #     lreverseinner_foot_transform_t[0], lreverseinner_foot_transform_t[2], lreverseinner_foot_transform_t[2] = loc_lfootleg_t[0]*0.1, loc_lfootleg_t[1], loc_lfootleg_t[2]
-        #     lreverseinner_foot_transform.setTranslation(lreverseinner_foot_transform_t, om2.MSpace.kTransform)
-        #
-        #     lreverseouter_foot_transform = om2.MFnTransform(lreverseouter_foot)
-        #     lreverseouter_foot_transform_t = lreverseouter_foot_transform.translation(om2.MSpace.kTransform)
-        #     lreverseouter_foot_transform_t[0], lreverseouter_foot_transform_t[2], lreverseouter_foot_transform_t[2] = loc_lfootleg_t[0]*1.9, loc_lfootleg_t[1], loc_lfootleg_t[2]
-        #     lreverseouter_foot_transform.setTranslation(lreverseouter_foot_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_ltoe = legjnt_grp.create("joint", "LeftToeEnd", jnt_lfoot)
-        #     jnt_fkltoe = legjnt_grp.create("joint", "FkLeftToeEnd", jnt_fklfoot)
-        #     jnt_ikltoe = legjnt_grp.create("joint", "IkLeftToeEnd", jnt_iklfoot)
-        #     lreversefoot_toe = legjnt_grp.create("transform", "LeftReverseFootToeEnd")
-        #     lreversefoot_toe_ln = legjnt_grp.create("locator", "LeftReverseFootToeEndShape", lreversefoot_toe)
-        #     lreversefoot_toewiggle = legjnt_grp.create("transform", "LeftReverseFootToeWiggle", lreversefoot_toe)
-        #
-        #     leg_loc_ls.add(leg_loc[4])
-        #     ltoe_loc_obj = leg_loc_ls.getDependNode(4)
-        #     ltoe_loc_transform = om2.MFnTransform(ltoe_loc_obj)
-        #     loc_ltoe_transform = ltoe_loc_transform.transformation()
-        #
-        #     ltoeleg_loc_path_n = om2.MDagPath()
-        #     ltoeleg_loc_path = ltoeleg_loc_path_n.getAPathTo(ltoe_loc_obj)
-        #     loc_ltoeleg_transform = om2.MFnTransform(ltoeleg_loc_path)
-        #     loc_ltoeleg_t = loc_ltoeleg_transform.translation(om2.MSpace.kWorld)
-        #
-        #     jnt_ltoe_transform = om2.MFnTransform(jnt_ltoe)
-        #     jnt_ltoe_transform.setTransformation(loc_ltoe_transform)
-        #
-        #     jnt_fkltoe_transform = om2.MFnTransform(jnt_fkltoe)
-        #     jnt_fkltoe_transform.setTransformation(loc_ltoe_transform)
-        #
-        #     jnt_ikltoe_transform = om2.MFnTransform(jnt_ikltoe)
-        #     jnt_ikltoe_transform.setTransformation(loc_ltoe_transform)
-        #
-        #     lreversefoot_toe_transform = om2.MFnTransform(lreversefoot_toe)
-        #     lreversefoot_toe_transform.setTranslation(loc_ltoeleg_t, om2.MSpace.kTransform)
-        #
-        #     lfoottoewiggle_path_n = om2.MDagPath()
-        #     lfoottoewiggle_path = lfoottoewiggle_path_n.getAPathTo(lreversefoot_toewiggle)
-        #     lfoottoewiggle_worldtransform = om2.MFnTransform(lfoottoewiggle_path)
-        #     lfoottoewiggle_worldtransform.setRotatePivot(om2.MPoint(loc_lfootleg_t), om2.MSpace.kWorld, False)
-        #
-        #     grp_stretchyiklleg = legjnt_grp.create("transform", "IkStretchyLeftJointLeg_grp", self.splineik_grp)
-        #
-        #     grp_stretchyiklleg_transform = om2.MFnTransform(grp_stretchyiklleg)
-        #     grp_stretchyiklleg_transform.setTransformation(self.loc_root_transform)
-        #
-        #     jnt_stretchyiklupperleg0 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg0", grp_stretchyiklleg)
-        #     jnt_stretchyikcvlupperleg0 = legjnt_grp.create("joint", "IkCvSplineLeftUpperLeg0", self.lupperlegikcluster0_grp)
-        #
-        #     jnt_stretchyiklupperleg0_transform = om2.MFnTransform(jnt_stretchyiklupperleg0)
-        #     jnt_stretchyiklupperleg0_transform.setTransformation(loc_lupperleg_transform)
-        #
-        #     jnt_stretchyikcvlupperleg0_transform = om2.MFnTransform(self.lupperlegikcluster_grp)
-        #     jnt_stretchyikcvlupperleg0_transform.setTranslation(loc_lupperleg_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyiklupperleg1 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg1", jnt_stretchyiklupperleg0)
-        #
-        #     jnt_stretchyiklupperleg1_transform = om2.MFnTransform(jnt_stretchyiklupperleg1)
-        #     jnt_stretchyiklupperleg1_transform_t = jnt_stretchyiklupperleg1_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyiklupperleg1_transform_t[0], jnt_stretchyiklupperleg1_transform_t[1], jnt_stretchyiklupperleg1_transform_t[2] = loc_lknee_transform_t[0]/4, loc_lknee_transform_t[1]/4, loc_lknee_transform_t[2]/4
-        #     jnt_stretchyiklupperleg1_transform.setTranslation(jnt_stretchyiklupperleg1_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyiklupperleg2 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg2", jnt_stretchyiklupperleg1)
-        #     jnt_stretchyikcvlupperleg1 = legjnt_grp.create("joint", "IkCvSplineLeftUpperLeg1", self.lupperlegikcluster1_grp)
-        #
-        #     jnt_stretchyiklupperleg2_transform = om2.MFnTransform(jnt_stretchyiklupperleg2)
-        #     jnt_stretchyiklupperleg2_transform_t = jnt_stretchyiklupperleg2_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyiklupperleg2_transform_t[0], jnt_stretchyiklupperleg2_transform_t[1], jnt_stretchyiklupperleg2_transform_t[2] = loc_lknee_transform_t[0]/2, (loc_lknee_transform_t[1]/2)-jnt_stretchyiklupperleg1_transform_t[1], (loc_lknee_transform_t[2]/2)-jnt_stretchyiklupperleg1_transform_t[2]
-        #     jnt_stretchyiklupperleg2_transform.setTranslation(jnt_stretchyiklupperleg2_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikcvlupperleg0_transform_t = jnt_stretchyikcvlupperleg0_transform.translation(om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikcvlupperleg1grp_transform = om2.MFnTransform(self.lupperlegikcluster1_grp)
-        #     jnt_stretchyikcvlupperleg1grp_transform_t = jnt_stretchyikcvlupperleg1grp_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyikcvlupperleg1grp_transform_t[0], jnt_stretchyikcvlupperleg1grp_transform_t[1], jnt_stretchyikcvlupperleg1grp_transform_t[2] = -(jnt_stretchyikcvlupperleg0_transform_t[0]-loc_lkneeleg_t[0])/2, -(jnt_stretchyikcvlupperleg0_transform_t[1]-loc_lkneeleg_t[1])/2, -(jnt_stretchyikcvlupperleg0_transform_t[2]-loc_lkneeleg_t[2])/2 #loc_lkneeleg_t[0]+(loc_lupperleg_t[0]-loc_lkneeleg_t[0])/2, loc_lkneeleg_t[1]+(loc_lupperleg_t[1]-loc_lkneeleg_t[1])/2, loc_lkneeleg_t[2]+(loc_lupperleg_t[2]-loc_lkneeleg_t[2])/2
-        #     jnt_stretchyikcvlupperleg1grp_transform.setTranslation(jnt_stretchyikcvlupperleg1grp_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyiklupperleg3 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg3", jnt_stretchyiklupperleg2)
-        #
-        #     jnt_stretchyiklupperleg3_transform = om2.MFnTransform(jnt_stretchyiklupperleg3)
-        #     jnt_stretchyiklupperleg3_transform_t = jnt_stretchyiklupperleg3_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyiklupperleg3_transform_t[0], jnt_stretchyiklupperleg3_transform_t[1], jnt_stretchyiklupperleg3_transform_t[2] = jnt_stretchyiklupperleg2_transform_t[0], jnt_stretchyiklupperleg2_transform_t[1], jnt_stretchyiklupperleg2_transform_t[2]
-        #     jnt_stretchyiklupperleg3_transform.setTranslation(jnt_stretchyiklupperleg3_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyiklupperleg4 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg4", jnt_stretchyiklupperleg3)
-        #     jnt_stretchyikcvlupperleg2 = legjnt_grp.create("joint", "IkCvSplineLeftUpperLeg2", self.lupperlegikcluster2_grp)
-        #
-        #     jnt_stretchyiklupperleg4_transform = om2.MFnTransform(jnt_stretchyiklupperleg4)
-        #     jnt_stretchyiklupperleg4_transform_t = jnt_stretchyiklupperleg4_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyiklupperleg4_transform_t[0], jnt_stretchyiklupperleg4_transform_t[1], jnt_stretchyiklupperleg4_transform_t[2] = jnt_stretchyiklupperleg3_transform_t[0], jnt_stretchyiklupperleg3_transform_t[1], jnt_stretchyiklupperleg3_transform_t[2]
-        #     jnt_stretchyiklupperleg4_transform.setTranslation(jnt_stretchyiklupperleg4_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikcvlupperleg2_transform = om2.MFnTransform(self.lupperlegikcluster2_grp)
-        #     jnt_stretchyikcvlupperleg2_transform_t = jnt_stretchyikcvlupperleg2_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyikcvlupperleg2_transform_t[0], jnt_stretchyikcvlupperleg2_transform_t[1], jnt_stretchyikcvlupperleg2_transform_t[2] = -(jnt_stretchyikcvlupperleg0_transform_t[0]-loc_lkneeleg_t[0]), -(jnt_stretchyikcvlupperleg0_transform_t[1]-loc_lkneeleg_t[1]), -(jnt_stretchyikcvlupperleg0_transform_t[2]-loc_lkneeleg_t[2]) #loc_lkneeleg_t[0], loc_lkneeleg_t[1], loc_lkneeleg_t[2]
-        #     jnt_stretchyikcvlupperleg2_transform.setTranslation(jnt_stretchyikcvlupperleg2_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikllowerleg0 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg0", grp_stretchyiklleg)
-        #     jnt_stretchyikcvllowerleg0 = legjnt_grp.create("joint", "IkCvSplineLeftLowerLeg0", self.llowerlegikcluster0_grp)
-        #
-        #     jnt_stretchyikllowerleg0_transform = om2.MFnTransform(jnt_stretchyikllowerleg0)
-        #     jnt_stretchyikllowerleg0_transform.setTranslation(loc_lkneeleg_t-grp_stretchyiklleg_transform.translation(om2.MSpace.kTransform), om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikcvllowerleg0_transform = om2.MFnTransform(self.llowerlegikcluster_grp)
-        #     jnt_stretchyikcvllowerleg0_transform.setTranslation(loc_lkneeleg_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikllowerleg1 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg1", jnt_stretchyikllowerleg0)
-        #
-        #     jnt_stretchyikllowerleg1_transform = om2.MFnTransform(jnt_stretchyikllowerleg1)
-        #     jnt_stretchyikllowerleg1_transform_t = jnt_stretchyikllowerleg1_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyikllowerleg1_transform_t[0], jnt_stretchyikllowerleg1_transform_t[1], jnt_stretchyikllowerleg1_transform_t[2] = loc_lfootball_t[0]/4, loc_lfootball_t[1]/4, loc_lfootball_t[2]/4
-        #     jnt_stretchyikllowerleg1_transform.setTranslation(jnt_stretchyikllowerleg1_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikllowerleg2 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg2", jnt_stretchyikllowerleg1)
-        #     jnt_stretchyikvcvllowerleg1 = legjnt_grp.create("joint", "IkCvSplineLeftLowerLeg1", self.llowerlegikcluster1_grp)
-        #
-        #     jnt_stretchyikllowerleg2_transform = om2.MFnTransform(jnt_stretchyikllowerleg2)
-        #     jnt_stretchyikllowerleg2_transform_t = jnt_stretchyikllowerleg2_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyikllowerleg2_transform_t[0], jnt_stretchyikllowerleg2_transform_t[1], jnt_stretchyikllowerleg2_transform_t[2] = (loc_lfootball_t[0]/2)-jnt_stretchyikllowerleg1_transform_t[0], (loc_lfootball_t[1]/2)-jnt_stretchyikllowerleg1_transform_t[1], (loc_lfootball_t[2]/2)-jnt_stretchyikllowerleg1_transform_t[2]
-        #     jnt_stretchyikllowerleg2_transform.setTranslation(jnt_stretchyikllowerleg2_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikcvllowerleg0_transform_t = jnt_stretchyikcvllowerleg0_transform.translation(om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikcvllowerleg1_transform = om2.MFnTransform(self.llowerlegikcluster1_grp)
-        #     jnt_stretchyikcvllowerleg1_transform_t = jnt_stretchyikcvllowerleg1_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyikcvllowerleg1_transform_t[0], jnt_stretchyikcvllowerleg1_transform_t[1], jnt_stretchyikcvllowerleg1_transform_t[2] = -(jnt_stretchyikcvllowerleg0_transform_t[0]-loc_lfootballleg_t[0])/2, -(jnt_stretchyikcvllowerleg0_transform_t[1]-loc_lfootballleg_t[1])/2, -(jnt_stretchyikcvllowerleg0_transform_t[2]-loc_lfootballleg_t[2])/2 #loc_lfootballleg_t[0]+((loc_lkneeleg_t[0]-loc_lfootballleg_t[0])/2), loc_lfootballleg_t[1]+((loc_lkneeleg_t[1]-loc_lfootballleg_t[1])/2), loc_lfootballleg_t[2]+((loc_lkneeleg_t[2]-loc_lfootballleg_t[2])/2)
-        #     jnt_stretchyikcvllowerleg1_transform.setTranslation(jnt_stretchyikcvllowerleg1_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikllowerleg3 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg3", jnt_stretchyikllowerleg2)
-        #
-        #     jnt_stretchyikllowerleg3_transform = om2.MFnTransform(jnt_stretchyikllowerleg3)
-        #     jnt_stretchyikllowerleg3_transform_t = jnt_stretchyikllowerleg3_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyikllowerleg3_transform_t[0], jnt_stretchyikllowerleg3_transform_t[1], jnt_stretchyikllowerleg3_transform_t[2] = jnt_stretchyikllowerleg2_transform_t[0], jnt_stretchyikllowerleg2_transform_t[1], jnt_stretchyikllowerleg2_transform_t[2]
-        #     jnt_stretchyikllowerleg3_transform.setTranslation(jnt_stretchyikllowerleg3_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikllowerleg4 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg4", jnt_stretchyikllowerleg3)
-        #     jnt_stretchyikvcvllowerleg2 = legjnt_grp.create("joint", "IkCvSplineLeftLowerLeg2", self.llowerlegikcluster2_grp)
-        #
-        #     jnt_stretchyikllowerleg4_transform = om2.MFnTransform(jnt_stretchyikllowerleg4)
-        #     jnt_stretchyikllowerleg4_transform_t = jnt_stretchyikllowerleg4_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyikllowerleg4_transform_t[0], jnt_stretchyikllowerleg4_transform_t[1], jnt_stretchyikllowerleg4_transform_t[2] = jnt_stretchyikllowerleg3_transform_t[0], jnt_stretchyikllowerleg3_transform_t[1], jnt_stretchyikllowerleg3_transform_t[2]
-        #     jnt_stretchyikllowerleg4_transform.setTranslation(jnt_stretchyikllowerleg4_transform_t, om2.MSpace.kTransform)
-        #
-        #     jnt_stretchyikcvllowerleg4_transform = om2.MFnTransform(self.llowerlegikcluster2_grp)
-        #     jnt_stretchyikcvllowerleg4_transform_t = jnt_stretchyikcvllowerleg4_transform.translation(om2.MSpace.kTransform)
-        #     jnt_stretchyikcvllowerleg4_transform_t[0], jnt_stretchyikcvllowerleg4_transform_t[1], jnt_stretchyikcvllowerleg4_transform_t[2] = -(jnt_stretchyikcvllowerleg0_transform_t[0]-loc_lfootballleg_t[0]), -(jnt_stretchyikcvllowerleg0_transform_t[1]-loc_lfootballleg_t[1]), -(jnt_stretchyikcvllowerleg0_transform_t[2]-loc_lfootballleg_t[2]) #loc_lfootballleg_t[0], loc_lfootballleg_t[1], loc_lfootballleg_t[2]
-        #     jnt_stretchyikcvllowerleg4_transform.setTranslation(jnt_stretchyikcvllowerleg4_transform_t, om2.MSpace.kTransform)
+
+            jnt_iknofliplupperleg_transform = om2.MFnTransform(jnt_iknofliplupperleg)
+            jnt_iknofliplupperleg_transform.setTransformation(loc_lupperleg_transform)
+
+            jnt_ikpvlupperleg_transform = om2.MFnTransform(jnt_ikpvlupperleg)
+            jnt_ikpvlupperleg_transform.setTransformation(loc_lupperleg_transform)
+
+            jnt_lknee = legjnt_grp.create("joint", "LeftLeg", jnt_lupperleg)
+            jnt_fklknee = legjnt_grp.create("joint", "FkLeftLeg", jnt_fklupperleg)
+            jnt_iklknee = legjnt_grp.create("joint", "IkLeftLeg", jnt_iklupperleg)
+            jnt_iknofliplknee = legjnt_grp.create("joint", "IkNoFlipLeftLeg", jnt_iknofliplupperleg)
+            jnt_ikpvlknee = legjnt_grp.create("joint", "IkPVLeftLeg", jnt_ikpvlupperleg)
+
+            leg_loc_ls.add(leg_loc[1])
+            lknee_loc_obj = leg_loc_ls.getDependNode(1)
+            lknee_loc_transform = om2.MFnTransform(lknee_loc_obj)
+            loc_lknee_transform = lknee_loc_transform.transformation()
+            loc_lknee_transform_t = loc_lknee_transform.translation(om2.MSpace.kTransform)
+
+            lkneeleg_loc_path_n = om2.MDagPath()
+            lkneeleg_loc_path = lkneeleg_loc_path_n.getAPathTo(lknee_loc_obj)
+            loc_lkneeleg_transform = om2.MFnTransform(lkneeleg_loc_path)
+            loc_lkneeleg_t = loc_lkneeleg_transform.translation(om2.MSpace.kWorld)
+
+            jnt_lknee_transform = om2.MFnTransform(jnt_lknee)
+            jnt_lknee_transform.setTransformation(loc_lknee_transform)
+
+            jnt_fklknee_transform = om2.MFnTransform(jnt_fklknee)
+            jnt_fklknee_transform.setTransformation(loc_lknee_transform)
+
+            jnt_iklknee_transform = om2.MFnTransform(jnt_iklknee)
+            jnt_iklknee_transform.setTransformation(loc_lknee_transform)
+
+            jnt_iknofliplknee_transform = om2.MFnTransform(jnt_iknofliplknee)
+            jnt_iknofliplknee_transform.setTransformation(loc_lknee_transform)
+
+            jnt_ikpvlknee_transform = om2.MFnTransform(jnt_ikpvlknee)
+            jnt_ikpvlknee_transform.setTransformation(loc_lknee_transform)
+
+            jnt_lfootball = legjnt_grp.create("joint", "LeftFoot", jnt_lknee)
+            jnt_fklfootball = legjnt_grp.create("joint", "FkLeftFoot", jnt_fklknee)
+            jnt_iklfootball = legjnt_grp.create("joint", "IkLeftFoot", jnt_iklknee)
+            jnt_iknofliplfootball = legjnt_grp.create("joint", "IkNoFlipLeftFoot", jnt_iknofliplknee)
+            jnt_ikpvlfootball = legjnt_grp.create("joint", "IkPVLeftFoot", jnt_ikpvlknee)
+            lreversefoot_hell = legjnt_grp.create("transform", "LeftReverseFootHeel", self.donttouchjnt_grp)
+            lreversefoot_hell_ln = legjnt_grp.create("locator", "LeftReverseFootHeelShape", lreversefoot_hell)
+
+            leg_loc_ls.add(leg_loc[2])
+            lfootball_loc_obj = leg_loc_ls.getDependNode(2)
+            lfootball_loc_transform = om2.MFnTransform(lfootball_loc_obj)
+            loc_lfootball_transform = lfootball_loc_transform.transformation()
+            loc_lfootball_t = lfootball_loc_transform.translation(om2.MSpace.kTransform)
+
+            lfootballleg_loc_path_n = om2.MDagPath()
+            lfootballleg_loc_path = lfootballleg_loc_path_n.getAPathTo(lfootball_loc_obj)
+            loc_lfootballleg_transform = om2.MFnTransform(lfootballleg_loc_path)
+            loc_lfootballleg_t = loc_lfootballleg_transform.translation(om2.MSpace.kWorld)
+
+            jnt_lfootball_transform = om2.MFnTransform(jnt_lfootball)
+            jnt_lfootball_transform.setTransformation(loc_lfootball_transform)
+
+            jnt_fklfootball_transform = om2.MFnTransform(jnt_fklfootball)
+            jnt_fklfootball_transform.setTransformation(loc_lfootball_transform)
+
+            jnt_iklfootball_transform = om2.MFnTransform(jnt_iklfootball)
+            jnt_iklfootball_transform.setTransformation(loc_lfootball_transform)
+
+            jnt_iknofliplfootball_transform = om2.MFnTransform(jnt_iknofliplfootball)
+            jnt_iknofliplfootball_transform.setTransformation(loc_lfootball_transform)
+
+            jnt_ikpvlfootball_transform = om2.MFnTransform(jnt_ikpvlfootball)
+            jnt_ikpvlfootball_transform.setTransformation(loc_lfootball_transform)
+
+            lreversefoot_hell_transform = om2.MFnTransform(lreversefoot_hell)
+            lreversefoot_hell_transform_t = lreversefoot_hell_transform.translation(om2.MSpace.kTransform)
+            lreversefoot_hell_transform_t[0], lreversefoot_hell_transform_t[1], lreversefoot_hell_transform_t[2] = loc_lfootballleg_t[0], loc_lfootballleg_t[1], -loc_lfootballleg_t[2]*10
+            lreversefoot_hell_transform.setTranslation(lreversefoot_hell_transform_t, om2.MSpace.kTransform)
+
+            grp_llegik_transform = om2.MFnTransform(self.llegik_grp)
+            grp_llegik_transform.setTranslation(loc_lfootballleg_t, om2.MSpace.kTransform)
+
+            jnt_lfoot = legjnt_grp.create("joint", "LeftToeBase", jnt_lfootball)
+            jnt_fklfoot = legjnt_grp.create("joint", "FkLeftToeBase", jnt_fklfootball)
+            jnt_iklfoot = legjnt_grp.create("joint", "IkLeftToeBase", jnt_iklfootball)
+            lreversefoot_foot = legjnt_grp.create("transform", "LeftReverseFootToe", self.donttouchjnt_grp)
+            lreversefoot_foot_ln = legjnt_grp.create("locator", "LeftReverseFootToeShape", lreversefoot_foot)
+            lreverseinner_foot = legjnt_grp.create("transform", "LeftReverseInnerFoot", self.donttouchjnt_grp)
+            lreverseinner_foot_ln = legjnt_grp.create("locator", "LeftReverseInnerFootShape", lreverseinner_foot)
+            lreverseouter_foot = legjnt_grp.create("transform", "LeftReverseOuterFoot", self.donttouchjnt_grp)
+            lreverseouter_foot_ln = legjnt_grp.create("locator", "LeftReverseOuterFootShape", lreverseouter_foot)
+
+            leg_loc_ls.add(leg_loc[3])
+            lfoot_loc_obj = leg_loc_ls.getDependNode(3)
+            lfoot_loc_transform = om2.MFnTransform(lfoot_loc_obj)
+            loc_lfoot_transform = lfoot_loc_transform.transformation()
+
+            lfootleg_loc_path_n = om2.MDagPath()
+            lfootleg_loc_path = lfootleg_loc_path_n.getAPathTo(lfoot_loc_obj)
+            loc_lfootleg_transform = om2.MFnTransform(lfootleg_loc_path)
+            loc_lfootleg_t = loc_lfootleg_transform.translation(om2.MSpace.kWorld)
+
+            jnt_lfoot_transform = om2.MFnTransform(jnt_lfoot)
+            jnt_lfoot_transform.setTransformation(loc_lfoot_transform)
+
+            jnt_fklfoot_transform = om2.MFnTransform(jnt_fklfoot)
+            jnt_fklfoot_transform.setTransformation(loc_lfoot_transform)
+
+            jnt_iklfoot_transform = om2.MFnTransform(jnt_iklfoot)
+            jnt_iklfoot_transform.setTransformation(loc_lfoot_transform)
+
+            lreversefoot_foot_transform = om2.MFnTransform(lreversefoot_foot)
+            lreversefoot_foot_transform.setTranslation(loc_lfootleg_t, om2.MSpace.kTransform)
+
+            lreverseinner_foot_transform = om2.MFnTransform(lreverseinner_foot)
+            lreverseinner_foot_transform_t = lreverseinner_foot_transform.translation(om2.MSpace.kTransform)
+            lreverseinner_foot_transform_t[0], lreverseinner_foot_transform_t[2], lreverseinner_foot_transform_t[2] = loc_lfootleg_t[0]*0.1, loc_lfootleg_t[1], loc_lfootleg_t[2]
+            lreverseinner_foot_transform.setTranslation(lreverseinner_foot_transform_t, om2.MSpace.kTransform)
+
+            lreverseouter_foot_transform = om2.MFnTransform(lreverseouter_foot)
+            lreverseouter_foot_transform_t = lreverseouter_foot_transform.translation(om2.MSpace.kTransform)
+            lreverseouter_foot_transform_t[0], lreverseouter_foot_transform_t[2], lreverseouter_foot_transform_t[2] = loc_lfootleg_t[0]*1.9, loc_lfootleg_t[1], loc_lfootleg_t[2]
+            lreverseouter_foot_transform.setTranslation(lreverseouter_foot_transform_t, om2.MSpace.kTransform)
+
+            jnt_ltoe = legjnt_grp.create("joint", "LeftToeEnd", jnt_lfoot)
+            jnt_fkltoe = legjnt_grp.create("joint", "FkLeftToeEnd", jnt_fklfoot)
+            jnt_ikltoe = legjnt_grp.create("joint", "IkLeftToeEnd", jnt_iklfoot)
+            lreversefoot_toe = legjnt_grp.create("transform", "LeftReverseFootToeEnd", self.donttouchjnt_grp)
+            lreversefoot_toe_ln = legjnt_grp.create("locator", "LeftReverseFootToeEndShape", lreversefoot_toe)
+            lreversefoot_toewiggle = legjnt_grp.create("transform", "LeftReverseFootToeWiggle", lreversefoot_toe)
+
+            leg_loc_ls.add(leg_loc[4])
+            ltoe_loc_obj = leg_loc_ls.getDependNode(4)
+            ltoe_loc_transform = om2.MFnTransform(ltoe_loc_obj)
+            loc_ltoe_transform = ltoe_loc_transform.transformation()
+
+            ltoeleg_loc_path_n = om2.MDagPath()
+            ltoeleg_loc_path = ltoeleg_loc_path_n.getAPathTo(ltoe_loc_obj)
+            loc_ltoeleg_transform = om2.MFnTransform(ltoeleg_loc_path)
+            loc_ltoeleg_t = loc_ltoeleg_transform.translation(om2.MSpace.kWorld)
+
+            jnt_ltoe_transform = om2.MFnTransform(jnt_ltoe)
+            jnt_ltoe_transform.setTransformation(loc_ltoe_transform)
+
+            jnt_fkltoe_transform = om2.MFnTransform(jnt_fkltoe)
+            jnt_fkltoe_transform.setTransformation(loc_ltoe_transform)
+
+            jnt_ikltoe_transform = om2.MFnTransform(jnt_ikltoe)
+            jnt_ikltoe_transform.setTransformation(loc_ltoe_transform)
+
+            lreversefoot_toe_transform = om2.MFnTransform(lreversefoot_toe)
+            lreversefoot_toe_transform.setTranslation(loc_ltoeleg_t, om2.MSpace.kTransform)
+
+            lfoottoewiggle_path_n = om2.MDagPath()
+            lfoottoewiggle_path = lfoottoewiggle_path_n.getAPathTo(lreversefoot_toewiggle)
+            lfoottoewiggle_worldtransform = om2.MFnTransform(lfoottoewiggle_path)
+            lfoottoewiggle_worldtransform.setRotatePivot(om2.MPoint(loc_lfootleg_t), om2.MSpace.kWorld, False)
+
+            grp_stretchyiklleg = legjnt_grp.create("transform", "IkStretchyLeftJointLeg_grp", self.splineik_grp)
+
+            grp_stretchyiklleg_transform = om2.MFnTransform(grp_stretchyiklleg)
+            grp_stretchyiklleg_transform.setTransformation(self.loc_root_transform)
+
+            jnt_stretchyiklupperleg0 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg0", grp_stretchyiklleg)
+            jnt_stretchyikcvlupperleg0 = legjnt_grp.create("joint", "IkCvSplineLeftUpperLeg0", self.lupperlegikcluster0_grp)
+
+            jnt_stretchyiklupperleg0_transform = om2.MFnTransform(jnt_stretchyiklupperleg0)
+            jnt_stretchyiklupperleg0_transform.setTransformation(loc_lupperleg_transform)
+
+            jnt_stretchyikcvlupperleg0_transform = om2.MFnTransform(self.lupperlegikcluster_grp)
+            jnt_stretchyikcvlupperleg0_transform.setTranslation(loc_lupperleg_t, om2.MSpace.kTransform)
+
+            jnt_stretchyiklupperleg1 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg1", jnt_stretchyiklupperleg0)
+
+            jnt_stretchyiklupperleg1_transform = om2.MFnTransform(jnt_stretchyiklupperleg1)
+            jnt_stretchyiklupperleg1_transform_t = jnt_stretchyiklupperleg1_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyiklupperleg1_transform_t[0], jnt_stretchyiklupperleg1_transform_t[1], jnt_stretchyiklupperleg1_transform_t[2] = loc_lknee_transform_t[0]/4, loc_lknee_transform_t[1]/4, loc_lknee_transform_t[2]/4
+            jnt_stretchyiklupperleg1_transform.setTranslation(jnt_stretchyiklupperleg1_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyiklupperleg2 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg2", jnt_stretchyiklupperleg1)
+            jnt_stretchyikcvlupperleg1 = legjnt_grp.create("joint", "IkCvSplineLeftUpperLeg1", self.lupperlegikcluster1_grp)
+
+            jnt_stretchyiklupperleg2_transform = om2.MFnTransform(jnt_stretchyiklupperleg2)
+            jnt_stretchyiklupperleg2_transform_t = jnt_stretchyiklupperleg2_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyiklupperleg2_transform_t[0], jnt_stretchyiklupperleg2_transform_t[1], jnt_stretchyiklupperleg2_transform_t[2] = (loc_lknee_transform_t[0]/2)-jnt_stretchyiklupperleg1_transform_t[0], (loc_lknee_transform_t[1]/2)-jnt_stretchyiklupperleg1_transform_t[1], (loc_lknee_transform_t[2]/2)-jnt_stretchyiklupperleg1_transform_t[2]
+            jnt_stretchyiklupperleg2_transform.setTranslation(jnt_stretchyiklupperleg2_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvlupperleg0_transform_t = jnt_stretchyikcvlupperleg0_transform.translation(om2.MSpace.kTransform)
+
+            jnt_stretchyikcvlupperleg1grp_transform = om2.MFnTransform(self.lupperlegikcluster1_grp)
+            jnt_stretchyikcvlupperleg1grp_transform_t = jnt_stretchyikcvlupperleg1grp_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvlupperleg1grp_transform_t[0], jnt_stretchyikcvlupperleg1grp_transform_t[1], jnt_stretchyikcvlupperleg1grp_transform_t[2] = -(jnt_stretchyikcvlupperleg0_transform_t[0]-loc_lkneeleg_t[0])/2, -(jnt_stretchyikcvlupperleg0_transform_t[1]-loc_lkneeleg_t[1])/2, -(jnt_stretchyikcvlupperleg0_transform_t[2]-loc_lkneeleg_t[2])/2 #loc_lkneeleg_t[0]+(loc_lupperleg_t[0]-loc_lkneeleg_t[0])/2, loc_lkneeleg_t[1]+(loc_lupperleg_t[1]-loc_lkneeleg_t[1])/2, loc_lkneeleg_t[2]+(loc_lupperleg_t[2]-loc_lkneeleg_t[2])/2
+            jnt_stretchyikcvlupperleg1grp_transform.setTranslation(jnt_stretchyikcvlupperleg1grp_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyiklupperleg3 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg3", jnt_stretchyiklupperleg2)
+
+            jnt_stretchyiklupperleg3_transform = om2.MFnTransform(jnt_stretchyiklupperleg3)
+            jnt_stretchyiklupperleg3_transform_t = jnt_stretchyiklupperleg3_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyiklupperleg3_transform_t[0], jnt_stretchyiklupperleg3_transform_t[1], jnt_stretchyiklupperleg3_transform_t[2] = jnt_stretchyiklupperleg2_transform_t[0], jnt_stretchyiklupperleg2_transform_t[1], jnt_stretchyiklupperleg2_transform_t[2]
+            jnt_stretchyiklupperleg3_transform.setTranslation(jnt_stretchyiklupperleg3_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyiklupperleg4 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg4", jnt_stretchyiklupperleg3)
+            jnt_stretchyikcvlupperleg2 = legjnt_grp.create("joint", "IkCvSplineLeftUpperLeg2", self.lupperlegikcluster2_grp)
+
+            jnt_stretchyiklupperleg4_transform = om2.MFnTransform(jnt_stretchyiklupperleg4)
+            jnt_stretchyiklupperleg4_transform_t = jnt_stretchyiklupperleg4_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyiklupperleg4_transform_t[0], jnt_stretchyiklupperleg4_transform_t[1], jnt_stretchyiklupperleg4_transform_t[2] = jnt_stretchyiklupperleg3_transform_t[0], jnt_stretchyiklupperleg3_transform_t[1], jnt_stretchyiklupperleg3_transform_t[2]
+            jnt_stretchyiklupperleg4_transform.setTranslation(jnt_stretchyiklupperleg4_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvlupperleg2_transform = om2.MFnTransform(self.lupperlegikcluster2_grp)
+            jnt_stretchyikcvlupperleg2_transform_t = jnt_stretchyikcvlupperleg2_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvlupperleg2_transform_t[0], jnt_stretchyikcvlupperleg2_transform_t[1], jnt_stretchyikcvlupperleg2_transform_t[2] = -(jnt_stretchyikcvlupperleg0_transform_t[0]-loc_lkneeleg_t[0]), -(jnt_stretchyikcvlupperleg0_transform_t[1]-loc_lkneeleg_t[1]), -(jnt_stretchyikcvlupperleg0_transform_t[2]-loc_lkneeleg_t[2]) #loc_lkneeleg_t[0], loc_lkneeleg_t[1], loc_lkneeleg_t[2]
+            jnt_stretchyikcvlupperleg2_transform.setTranslation(jnt_stretchyikcvlupperleg2_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikllowerleg0 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg0", grp_stretchyiklleg)
+            jnt_stretchyikcvllowerleg0 = legjnt_grp.create("joint", "IkCvSplineLeftLowerLeg0", self.llowerlegikcluster0_grp)
+
+            jnt_stretchyikllowerleg0_transform = om2.MFnTransform(jnt_stretchyikllowerleg0)
+            jnt_stretchyikllowerleg0_transform.setTranslation(loc_lkneeleg_t-grp_stretchyiklleg_transform.translation(om2.MSpace.kTransform), om2.MSpace.kTransform)
+
+            jnt_stretchyikcvllowerleg0_transform = om2.MFnTransform(self.llowerlegikcluster_grp)
+            jnt_stretchyikcvllowerleg0_transform.setTranslation(loc_lkneeleg_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikllowerleg1 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg1", jnt_stretchyikllowerleg0)
+
+            jnt_stretchyikllowerleg1_transform = om2.MFnTransform(jnt_stretchyikllowerleg1)
+            jnt_stretchyikllowerleg1_transform_t = jnt_stretchyikllowerleg1_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikllowerleg1_transform_t[0], jnt_stretchyikllowerleg1_transform_t[1], jnt_stretchyikllowerleg1_transform_t[2] = loc_lfootball_t[0]/4, loc_lfootball_t[1]/4, loc_lfootball_t[2]/4
+            jnt_stretchyikllowerleg1_transform.setTranslation(jnt_stretchyikllowerleg1_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikllowerleg2 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg2", jnt_stretchyikllowerleg1)
+            jnt_stretchyikvcvllowerleg1 = legjnt_grp.create("joint", "IkCvSplineLeftLowerLeg1", self.llowerlegikcluster1_grp)
+
+            jnt_stretchyikllowerleg2_transform = om2.MFnTransform(jnt_stretchyikllowerleg2)
+            jnt_stretchyikllowerleg2_transform_t = jnt_stretchyikllowerleg2_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikllowerleg2_transform_t[0], jnt_stretchyikllowerleg2_transform_t[1], jnt_stretchyikllowerleg2_transform_t[2] = (loc_lfootball_t[0]/2)-jnt_stretchyikllowerleg1_transform_t[0], (loc_lfootball_t[1]/2)-jnt_stretchyikllowerleg1_transform_t[1], (loc_lfootball_t[2]/2)-jnt_stretchyikllowerleg1_transform_t[2]
+            jnt_stretchyikllowerleg2_transform.setTranslation(jnt_stretchyikllowerleg2_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvllowerleg0_transform_t = jnt_stretchyikcvllowerleg0_transform.translation(om2.MSpace.kTransform)
+
+            jnt_stretchyikcvllowerleg1_transform = om2.MFnTransform(self.llowerlegikcluster1_grp)
+            jnt_stretchyikcvllowerleg1_transform_t = jnt_stretchyikcvllowerleg1_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvllowerleg1_transform_t[0], jnt_stretchyikcvllowerleg1_transform_t[1], jnt_stretchyikcvllowerleg1_transform_t[2] = -(jnt_stretchyikcvllowerleg0_transform_t[0]-loc_lfootballleg_t[0])/2, -(jnt_stretchyikcvllowerleg0_transform_t[1]-loc_lfootballleg_t[1])/2, -(jnt_stretchyikcvllowerleg0_transform_t[2]-loc_lfootballleg_t[2])/2 #loc_lfootballleg_t[0]+((loc_lkneeleg_t[0]-loc_lfootballleg_t[0])/2), loc_lfootballleg_t[1]+((loc_lkneeleg_t[1]-loc_lfootballleg_t[1])/2), loc_lfootballleg_t[2]+((loc_lkneeleg_t[2]-loc_lfootballleg_t[2])/2)
+            jnt_stretchyikcvllowerleg1_transform.setTranslation(jnt_stretchyikcvllowerleg1_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikllowerleg3 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg3", jnt_stretchyikllowerleg2)
+
+            jnt_stretchyikllowerleg3_transform = om2.MFnTransform(jnt_stretchyikllowerleg3)
+            jnt_stretchyikllowerleg3_transform_t = jnt_stretchyikllowerleg3_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikllowerleg3_transform_t[0], jnt_stretchyikllowerleg3_transform_t[1], jnt_stretchyikllowerleg3_transform_t[2] = jnt_stretchyikllowerleg2_transform_t[0], jnt_stretchyikllowerleg2_transform_t[1], jnt_stretchyikllowerleg2_transform_t[2]
+            jnt_stretchyikllowerleg3_transform.setTranslation(jnt_stretchyikllowerleg3_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikllowerleg4 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg4", jnt_stretchyikllowerleg3)
+            jnt_stretchyikvcvllowerleg2 = legjnt_grp.create("joint", "IkCvSplineLeftLowerLeg2", self.llowerlegikcluster2_grp)
+
+            jnt_stretchyikllowerleg4_transform = om2.MFnTransform(jnt_stretchyikllowerleg4)
+            jnt_stretchyikllowerleg4_transform_t = jnt_stretchyikllowerleg4_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikllowerleg4_transform_t[0], jnt_stretchyikllowerleg4_transform_t[1], jnt_stretchyikllowerleg4_transform_t[2] = jnt_stretchyikllowerleg3_transform_t[0], jnt_stretchyikllowerleg3_transform_t[1], jnt_stretchyikllowerleg3_transform_t[2]
+            jnt_stretchyikllowerleg4_transform.setTranslation(jnt_stretchyikllowerleg4_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvllowerleg4_transform = om2.MFnTransform(self.llowerlegikcluster2_grp)
+            jnt_stretchyikcvllowerleg4_transform_t = jnt_stretchyikcvllowerleg4_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvllowerleg4_transform_t[0], jnt_stretchyikcvllowerleg4_transform_t[1], jnt_stretchyikcvllowerleg4_transform_t[2] = -(jnt_stretchyikcvllowerleg0_transform_t[0]-loc_lfootballleg_t[0]), -(jnt_stretchyikcvllowerleg0_transform_t[1]-loc_lfootballleg_t[1]), -(jnt_stretchyikcvllowerleg0_transform_t[2]-loc_lfootballleg_t[2]) #loc_lfootballleg_t[0], loc_lfootballleg_t[1], loc_lfootballleg_t[2]
+            jnt_stretchyikcvllowerleg4_transform.setTranslation(jnt_stretchyikcvllowerleg4_transform_t, om2.MSpace.kTransform)
 
         if side == -1:
             self.rlegik_grp = legjnt_grp.create("transform", "RightLegIk_grp", self.donttouchjnt_grp)
@@ -1421,7 +1848,8 @@ class MainWindow(QtWidgets.QDialog):
             grp_rupperleg = legjnt_grp.create("transform", "RightJointLeg_grp", self.jnt_root_tn)
             jnt_rupperleg = legjnt_grp.create("joint", "RightUpLeg", grp_rupperleg)
 
-            jnt_fkrupperleg = legjnt_grp.create("joint", "FkRightUpLeg", self.jnt_root_tn)
+            grp_fkrupperleg = legjnt_grp.create("transform", "FkRightJointLeg_grp", self.jnt_root_tn)
+            jnt_fkrupperleg = legjnt_grp.create("joint", "FkRightUpLeg", grp_fkrupperleg)
 
             grp_ikrupperleg = legjnt_grp.create("transform", "IkRightJointLeg_grp", self.jnt_root_tn)
             jnt_ikrupperleg = legjnt_grp.create("joint", "IkRightUpLeg", grp_ikrupperleg)
@@ -1490,7 +1918,7 @@ class MainWindow(QtWidgets.QDialog):
             jnt_ikrfootball = legjnt_grp.create("joint", "IkRightFoot", jnt_ikrknee)
             jnt_iknofliprfootball = legjnt_grp.create("joint", "IkNoFlipRightFoot", jnt_iknofliprknee)
             jnt_ikpvrfootball = legjnt_grp.create("joint", "IkPVRightFoot", jnt_ikpvrknee)
-            rreversefoot_hell = legjnt_grp.create("transform", "RightReverseFootHeel")
+            rreversefoot_hell = legjnt_grp.create("transform", "RightReverseFootHeel", self.donttouchjnt_grp)
             rreversefoot_hell_ln = legjnt_grp.create("locator", "RightReverseFootHeelShape", rreversefoot_hell)
 
             leg_loc_ls.add(leg_loc[7])
@@ -1530,11 +1958,11 @@ class MainWindow(QtWidgets.QDialog):
             jnt_rfoot = legjnt_grp.create("joint", "RightToeBase", jnt_rfootball)
             jnt_fkrfoot = legjnt_grp.create("joint", "FkRightToeBase", jnt_fkrfootball)
             jnt_ikrfoot = legjnt_grp.create("joint", "IkRightToeBase", jnt_ikrfootball)
-            rreversefoot_foot = legjnt_grp.create("transform", "RightReverseFootToe")
+            rreversefoot_foot = legjnt_grp.create("transform", "RightReverseFootToe", self.donttouchjnt_grp)
             rreversefoot_foot_ln = legjnt_grp.create("locator", "RightReverseFootToeShape", rreversefoot_foot)
-            rreverseinner_foot = legjnt_grp.create("transform", "RightReverseInnerFoot")
+            rreverseinner_foot = legjnt_grp.create("transform", "RightReverseInnerFoot", self.donttouchjnt_grp)
             rreverseinner_foot_ln = legjnt_grp.create("locator", "RightReverseInnerFootShape", rreverseinner_foot)
-            rreverseouter_foot = legjnt_grp.create("transform", "RightReverseOuterFoot")
+            rreverseouter_foot = legjnt_grp.create("transform", "RightReverseOuterFoot", self.donttouchjnt_grp)
             rreverseouter_foot_ln = legjnt_grp.create("locator", "RightReverseOuterFootShape", rreverseouter_foot)
 
             leg_loc_ls.add(leg_loc[8])
@@ -1572,7 +2000,7 @@ class MainWindow(QtWidgets.QDialog):
             jnt_rtoe = legjnt_grp.create("joint", "RightToeEnd", jnt_rfoot)
             jnt_fkrtoe = legjnt_grp.create("joint", "FkRightToeEnd", jnt_fkrfoot)
             jnt_ikrtoe = legjnt_grp.create("joint", "IkRightToeEnd", jnt_ikrfoot)
-            rreversefoot_toe = legjnt_grp.create("transform", "RightReverseFootToeEnd")
+            rreversefoot_toe = legjnt_grp.create("transform", "RightReverseFootToeEnd", self.donttouchjnt_grp)
             rreversefoot_toe_ln = legjnt_grp.create("locator", "RightReverseFootToeEndShape", rreversefoot_toe)
             rreversefoot_toewiggle = legjnt_grp.create("transform", "RightReverseFootToeWiggle", rreversefoot_toe)
 
@@ -1603,112 +2031,112 @@ class MainWindow(QtWidgets.QDialog):
             rfoottoewiggle_worldtransform = om2.MFnTransform(rfoottoewiggle_path)
             rfoottoewiggle_worldtransform.setRotatePivot(om2.MPoint(loc_rfootleg_t), om2.MSpace.kWorld, False)
 
-            # grp_stretchyikrleg = legjnt_grp.create("transform", "IkStretchyRightJointLeg_grp", self.splineik_grp)
-            #
-            # grp_stretchyikrleg_transform = om2.MFnTransform(grp_stretchyikrleg)
-            # grp_stretchyikrleg_transform.setTransformation(self.loc_root_transform)
-            #
-            # jnt_stretchyikrupperleg0 = legjnt_grp.create("joint", "IkSplineRightUpperLeg0", grp_stretchyikrleg)
-            # jnt_stretchyikcvrupperleg0 = legjnt_grp.create("joint", "IkCvSplineRightUpperLeg0", self.rupperlegikcluster0_grp)
-            #
-            # jnt_stretchyikrupperleg0_transform = om2.MFnTransform(jnt_stretchyikrupperleg0)
-            # jnt_stretchyikrupperleg0_transform.setTransformation(loc_rupperleg_transform)
-            #
-            # jnt_stretchyikcvrupperleg0_transform = om2.MFnTransform(self.rupperlegikcluster_grp)
-            # jnt_stretchyikcvrupperleg0_transform.setTranslation(loc_rupperleg_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikrupperleg1 = legjnt_grp.create("joint", "IkSplineRightUpperLeg1", jnt_stretchyikrupperleg0)
-            #
-            # jnt_stretchyikrupperleg1_transform = om2.MFnTransform(jnt_stretchyikrupperleg1)
-            # jnt_stretchyikrupperleg1_transform_t = jnt_stretchyikrupperleg1_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyikrupperleg1_transform_t[0], jnt_stretchyikrupperleg1_transform_t[1], jnt_stretchyikrupperleg1_transform_t[2] = loc_rknee_transform_t[0]/4, loc_rknee_transform_t[1]/4, loc_rknee_transform_t[2]/4
-            # jnt_stretchyikrupperleg1_transform.setTranslation(jnt_stretchyikrupperleg1_transform_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikrupperleg2 = legjnt_grp.create("joint", "IkSplineRightUpperLeg2", jnt_stretchyikrupperleg1)
-            # jnt_stretchyikcvlupperleg1 = legjnt_grp.create("joint", "IkCvSplineRightUpperLeg1", self.rupperlegikcluster1_grp)
-            #
-            # jnt_stretchyiklupperleg2_transform = om2.MFnTransform(jnt_stretchyikrupperleg2)
-            # jnt_stretchyiklupperleg2_transform_t = jnt_stretchyiklupperleg2_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyiklupperleg2_transform_t[0], jnt_stretchyiklupperleg2_transform_t[1], jnt_stretchyiklupperleg2_transform_t[2] = loc_lknee_transform_t[0]/2, (loc_lknee_transform_t[1]/2)-jnt_stretchyikrupperleg1_transform_t[1], (loc_lknee_transform_t[2]/2)-jnt_stretchyikrupperleg1_transform_t[2]
-            # jnt_stretchyiklupperleg2_transform.setTranslation(jnt_stretchyiklupperleg2_transform_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikcvlupperleg0_transform_t = jnt_stretchyikcvrupperleg0_transform.translation(om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikcvlupperleg1grp_transform = om2.MFnTransform(self.rupperlegikcluster1_grp)
-            # jnt_stretchyikcvlupperleg1grp_transform_t = jnt_stretchyikcvlupperleg1grp_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyikcvlupperleg1grp_transform_t[0], jnt_stretchyikcvlupperleg1grp_transform_t[1], jnt_stretchyikcvlupperleg1grp_transform_t[2] = -(jnt_stretchyikcvlupperleg0_transform_t[0]-loc_rkneeleg_t[0])/2, -(jnt_stretchyikcvlupperleg0_transform_t[1]-loc_rkneeleg_t[1])/2, -(jnt_stretchyikcvlupperleg0_transform_t[2]-loc_rkneeleg_t[2])/2 #loc_lkneeleg_t[0]+(loc_lupperleg_t[0]-loc_lkneeleg_t[0])/2, loc_lkneeleg_t[1]+(loc_lupperleg_t[1]-loc_lkneeleg_t[1])/2, loc_lkneeleg_t[2]+(loc_lupperleg_t[2]-loc_lkneeleg_t[2])/2
-            # jnt_stretchyikcvlupperleg1grp_transform.setTranslation(jnt_stretchyikcvlupperleg1grp_transform_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyiklupperleg3 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg3", jnt_stretchyikrupperleg2)
-            #
-            # jnt_stretchyiklupperleg3_transform = om2.MFnTransform(jnt_stretchyiklupperleg3)
-            # jnt_stretchyiklupperleg3_transform_t = jnt_stretchyiklupperleg3_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyiklupperleg3_transform_t[0], jnt_stretchyiklupperleg3_transform_t[1], jnt_stretchyiklupperleg3_transform_t[2] = jnt_stretchyiklupperleg2_transform_t[0], jnt_stretchyiklupperleg2_transform_t[1], jnt_stretchyiklupperleg2_transform_t[2]
-            # jnt_stretchyiklupperleg3_transform.setTranslation(jnt_stretchyiklupperleg3_transform_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyiklupperleg4 = legjnt_grp.create("joint", "IkSplineLeftUpperLeg4", jnt_stretchyiklupperleg3)
-            # jnt_stretchyikcvlupperleg2 = legjnt_grp.create("joint", "IkCvSplineLeftUpperLeg2", self.rupperlegikcluster2_grp)
-            #
-            # jnt_stretchyiklupperleg4_transform = om2.MFnTransform(jnt_stretchyiklupperleg4)
-            # jnt_stretchyiklupperleg4_transform_t = jnt_stretchyiklupperleg4_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyiklupperleg4_transform_t[0], jnt_stretchyiklupperleg4_transform_t[1], jnt_stretchyiklupperleg4_transform_t[2] = jnt_stretchyiklupperleg3_transform_t[0], jnt_stretchyiklupperleg3_transform_t[1], jnt_stretchyiklupperleg3_transform_t[2]
-            # jnt_stretchyiklupperleg4_transform.setTranslation(jnt_stretchyiklupperleg4_transform_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikcvlupperleg2_transform = om2.MFnTransform(self.rupperlegikcluster2_grp)
-            # jnt_stretchyikcvlupperleg2_transform_t = jnt_stretchyikcvlupperleg2_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyikcvlupperleg2_transform_t[0], jnt_stretchyikcvlupperleg2_transform_t[1], jnt_stretchyikcvlupperleg2_transform_t[2] = -(jnt_stretchyikcvlupperleg0_transform_t[0]-loc_rkneeleg_t[0]), -(jnt_stretchyikcvlupperleg0_transform_t[1]-loc_rkneeleg_t[1]), -(jnt_stretchyikcvlupperleg0_transform_t[2]-loc_rkneeleg_t[2]) #loc_lkneeleg_t[0], loc_lkneeleg_t[1], loc_lkneeleg_t[2]
-            # jnt_stretchyikcvlupperleg2_transform.setTranslation(jnt_stretchyikcvlupperleg2_transform_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikllowerleg0 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg0", grp_stretchyiklleg)
-            # jnt_stretchyikcvllowerleg0 = legjnt_grp.create("joint", "IkCvSplineLeftLowerLeg0", self.rlowerlegikcluster0_grp)
-            #
-            # jnt_stretchyikllowerleg0_transform = om2.MFnTransform(jnt_stretchyikllowerleg0)
-            # jnt_stretchyikllowerleg0_transform.setTranslation(loc_rkneeleg_t-grp_stretchyiklleg_transform.translation(om2.MSpace.kTransform), om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikcvllowerleg0_transform = om2.MFnTransform(self.rlowerlegikcluster_grp)
-            # jnt_stretchyikcvllowerleg0_transform.setTranslation(loc_rkneeleg_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikllowerleg1 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg1", jnt_stretchyikllowerleg0)
-            #
-            # jnt_stretchyikllowerleg1_transform = om2.MFnTransform(jnt_stretchyikllowerleg1)
-            # jnt_stretchyikllowerleg1_transform_t = jnt_stretchyikllowerleg1_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyikllowerleg1_transform_t[0], jnt_stretchyikllowerleg1_transform_t[1], jnt_stretchyikllowerleg1_transform_t[2] = loc_lfootball_t[0]/4, loc_lfootball_t[1]/4, loc_lfootball_t[2]/4
-            # jnt_stretchyikllowerleg1_transform.setTranslation(jnt_stretchyikllowerleg1_transform_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikllowerleg2 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg2", jnt_stretchyikllowerleg1)
-            # jnt_stretchyikvcvllowerleg1 = legjnt_grp.create("joint", "IkCvSplineLeftLowerLeg1", self.rlowerlegikcluster1_grp)
-            #
-            # jnt_stretchyikllowerleg2_transform = om2.MFnTransform(jnt_stretchyikllowerleg2)
-            # jnt_stretchyikllowerleg2_transform_t = jnt_stretchyikllowerleg2_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyikllowerleg2_transform_t[0], jnt_stretchyikllowerleg2_transform_t[1], jnt_stretchyikllowerleg2_transform_t[2] = (loc_lfootball_t[0]/2)-jnt_stretchyikllowerleg1_transform_t[0], (loc_lfootball_t[1]/2)-jnt_stretchyikllowerleg1_transform_t[1], (loc_lfootball_t[2]/2)-jnt_stretchyikllowerleg1_transform_t[2]
-            # jnt_stretchyikllowerleg2_transform.setTranslation(jnt_stretchyikllowerleg2_transform_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikcvllowerleg0_transform_t = jnt_stretchyikcvllowerleg0_transform.translation(om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikcvllowerleg1_transform = om2.MFnTransform(self.rlowerlegikcluster1_grp)
-            # jnt_stretchyikcvllowerleg1_transform_t = jnt_stretchyikcvllowerleg1_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyikcvllowerleg1_transform_t[0], jnt_stretchyikcvllowerleg1_transform_t[1], jnt_stretchyikcvllowerleg1_transform_t[2] = -(jnt_stretchyikcvllowerleg0_transform_t[0]-loc_rfootballleg_t[0])/2, -(jnt_stretchyikcvllowerleg0_transform_t[1]-loc_rfootballleg_t[1])/2, -(jnt_stretchyikcvllowerleg0_transform_t[2]-loc_rfootballleg_t[2])/2 #loc_lfootballleg_t[0]+((loc_lkneeleg_t[0]-loc_lfootballleg_t[0])/2), loc_lfootballleg_t[1]+((loc_lkneeleg_t[1]-loc_lfootballleg_t[1])/2), loc_lfootballleg_t[2]+((loc_lkneeleg_t[2]-loc_lfootballleg_t[2])/2)
-            # jnt_stretchyikcvllowerleg1_transform.setTranslation(jnt_stretchyikcvllowerleg1_transform_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikllowerleg3 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg3", jnt_stretchyikllowerleg2)
-            #
-            # jnt_stretchyikllowerleg3_transform = om2.MFnTransform(jnt_stretchyikllowerleg3)
-            # jnt_stretchyikllowerleg3_transform_t = jnt_stretchyikllowerleg3_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyikllowerleg3_transform_t[0], jnt_stretchyikllowerleg3_transform_t[1], jnt_stretchyikllowerleg3_transform_t[2] = jnt_stretchyikllowerleg2_transform_t[0], jnt_stretchyikllowerleg2_transform_t[1], jnt_stretchyikllowerleg2_transform_t[2]
-            # jnt_stretchyikllowerleg3_transform.setTranslation(jnt_stretchyikllowerleg3_transform_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikllowerleg4 = legjnt_grp.create("joint", "IkSplineLeftLowerLeg4", jnt_stretchyikllowerleg3)
-            # jnt_stretchyikvcvllowerleg2 = legjnt_grp.create("joint", "IkCvSplineLeftLowerLeg2", self.rlowerlegikcluster2_grp)
-            #
-            # jnt_stretchyikllowerleg4_transform = om2.MFnTransform(jnt_stretchyikllowerleg4)
-            # jnt_stretchyikllowerleg4_transform_t = jnt_stretchyikllowerleg4_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyikllowerleg4_transform_t[0], jnt_stretchyikllowerleg4_transform_t[1], jnt_stretchyikllowerleg4_transform_t[2] = jnt_stretchyikllowerleg3_transform_t[0], jnt_stretchyikllowerleg3_transform_t[1], jnt_stretchyikllowerleg3_transform_t[2]
-            # jnt_stretchyikllowerleg4_transform.setTranslation(jnt_stretchyikllowerleg4_transform_t, om2.MSpace.kTransform)
-            #
-            # jnt_stretchyikcvllowerleg4_transform = om2.MFnTransform(self.rlowerlegikcluster2_grp)
-            # jnt_stretchyikcvllowerleg4_transform_t = jnt_stretchyikcvllowerleg4_transform.translation(om2.MSpace.kTransform)
-            # jnt_stretchyikcvllowerleg4_transform_t[0], jnt_stretchyikcvllowerleg4_transform_t[1], jnt_stretchyikcvllowerleg4_transform_t[2] = -(jnt_stretchyikcvllowerleg0_transform_t[0]-loc_rfootballleg_t[0]), -(jnt_stretchyikcvllowerleg0_transform_t[1]-loc_rfootballleg_t[1]), -(jnt_stretchyikcvllowerleg0_transform_t[2]-loc_rfootballleg_t[2]) #loc_lfootballleg_t[0], loc_lfootballleg_t[1], loc_lfootballleg_t[2]
-            # jnt_stretchyikcvllowerleg4_transform.setTranslation(jnt_stretchyikcvllowerleg4_transform_t, om2.MSpace.kTransform)
+            grp_stretchyikrleg = legjnt_grp.create("transform", "IkStretchyRightJointLeg_grp", self.splineik_grp)
+
+            grp_stretchyikrleg_transform = om2.MFnTransform(grp_stretchyikrleg)
+            grp_stretchyikrleg_transform.setTransformation(self.loc_root_transform)
+
+            jnt_stretchyikrupperleg0 = legjnt_grp.create("joint", "IkSplineRightUpperLeg0", grp_stretchyikrleg)
+            jnt_stretchyikcvrupperleg0 = legjnt_grp.create("joint", "IkCvSplineRightUpperLeg0", self.rupperlegikcluster0_grp)
+
+            jnt_stretchyikrupperleg0_transform = om2.MFnTransform(jnt_stretchyikrupperleg0)
+            jnt_stretchyikrupperleg0_transform.setTransformation(loc_rupperleg_transform)
+
+            jnt_stretchyikcvrupperleg0_transform = om2.MFnTransform(self.rupperlegikcluster_grp)
+            jnt_stretchyikcvrupperleg0_transform.setTranslation(loc_rupperleg_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikrupperleg1 = legjnt_grp.create("joint", "IkSplineRightUpperLeg1", jnt_stretchyikrupperleg0)
+
+            jnt_stretchyikrupperleg1_transform = om2.MFnTransform(jnt_stretchyikrupperleg1)
+            jnt_stretchyikrupperleg1_transform_t = jnt_stretchyikrupperleg1_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikrupperleg1_transform_t[0], jnt_stretchyikrupperleg1_transform_t[1], jnt_stretchyikrupperleg1_transform_t[2] = loc_rknee_transform_t[0]/4, loc_rknee_transform_t[1]/4, loc_rknee_transform_t[2]/4
+            jnt_stretchyikrupperleg1_transform.setTranslation(jnt_stretchyikrupperleg1_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikrupperleg2 = legjnt_grp.create("joint", "IkSplineRightUpperLeg2", jnt_stretchyikrupperleg1)
+            jnt_stretchyikcvlupperleg1 = legjnt_grp.create("joint", "IkCvSplineRightUpperLeg1", self.rupperlegikcluster1_grp)
+
+            jnt_stretchyikrupperleg2_transform = om2.MFnTransform(jnt_stretchyikrupperleg2)
+            jnt_stretchyikrupperleg2_transform_t = jnt_stretchyikrupperleg2_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikrupperleg2_transform_t[0], jnt_stretchyikrupperleg2_transform_t[1], jnt_stretchyikrupperleg2_transform_t[2] = (loc_rknee_transform_t[0]/2)-jnt_stretchyikrupperleg1_transform_t[0], (loc_rknee_transform_t[1]/2)-jnt_stretchyikrupperleg1_transform_t[1], (loc_rknee_transform_t[2]/2)-jnt_stretchyikrupperleg1_transform_t[2]
+            jnt_stretchyikrupperleg2_transform.setTranslation(jnt_stretchyikrupperleg2_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvrupperleg0_transform_t = jnt_stretchyikcvrupperleg0_transform.translation(om2.MSpace.kTransform)
+
+            jnt_stretchyikcvrupperleg1grp_transform = om2.MFnTransform(self.rupperlegikcluster1_grp)
+            jnt_stretchyikcvrupperleg1grp_transform_t = jnt_stretchyikcvrupperleg1grp_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvrupperleg1grp_transform_t[0], jnt_stretchyikcvrupperleg1grp_transform_t[1], jnt_stretchyikcvrupperleg1grp_transform_t[2] = -(jnt_stretchyikcvrupperleg0_transform_t[0]-loc_rkneeleg_t[0])/2, -(jnt_stretchyikcvrupperleg0_transform_t[1]-loc_rkneeleg_t[1])/2, -(jnt_stretchyikcvrupperleg0_transform_t[2]-loc_rkneeleg_t[2])/2 #loc_lkneeleg_t[0]+(loc_lupperleg_t[0]-loc_lkneeleg_t[0])/2, loc_lkneeleg_t[1]+(loc_lupperleg_t[1]-loc_lkneeleg_t[1])/2, loc_lkneeleg_t[2]+(loc_lupperleg_t[2]-loc_lkneeleg_t[2])/2
+            jnt_stretchyikcvrupperleg1grp_transform.setTranslation(jnt_stretchyikcvrupperleg1grp_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikrupperleg3 = legjnt_grp.create("joint", "IkSplineRightUpperLeg3", jnt_stretchyikrupperleg2)
+
+            jnt_stretchyikrupperleg3_transform = om2.MFnTransform(jnt_stretchyikrupperleg3)
+            jnt_stretchyikrupperleg3_transform_t = jnt_stretchyikrupperleg3_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikrupperleg3_transform_t[0], jnt_stretchyikrupperleg3_transform_t[1], jnt_stretchyikrupperleg3_transform_t[2] = jnt_stretchyikrupperleg2_transform_t[0], jnt_stretchyikrupperleg2_transform_t[1], jnt_stretchyikrupperleg2_transform_t[2]
+            jnt_stretchyikrupperleg3_transform.setTranslation(jnt_stretchyikrupperleg3_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikrupperleg4 = legjnt_grp.create("joint", "IkSplineRightUpperLeg4", jnt_stretchyikrupperleg3)
+            jnt_stretchyikcvrupperleg2 = legjnt_grp.create("joint", "IkCvSplineRightUpperLeg2", self.rupperlegikcluster2_grp)
+
+            jnt_stretchyikrupperleg4_transform = om2.MFnTransform(jnt_stretchyikrupperleg4)
+            jnt_stretchyikrupperleg4_transform_t = jnt_stretchyikrupperleg4_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikrupperleg4_transform_t[0], jnt_stretchyikrupperleg4_transform_t[1], jnt_stretchyikrupperleg4_transform_t[2] = jnt_stretchyikrupperleg3_transform_t[0], jnt_stretchyikrupperleg3_transform_t[1], jnt_stretchyikrupperleg3_transform_t[2]
+            jnt_stretchyikrupperleg4_transform.setTranslation(jnt_stretchyikrupperleg4_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvrupperleg2_transform = om2.MFnTransform(self.rupperlegikcluster2_grp)
+            jnt_stretchyikcvrupperleg2_transform_t = jnt_stretchyikcvrupperleg2_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvrupperleg2_transform_t[0], jnt_stretchyikcvrupperleg2_transform_t[1], jnt_stretchyikcvrupperleg2_transform_t[2] = -(jnt_stretchyikcvrupperleg0_transform_t[0]-loc_rkneeleg_t[0]), -(jnt_stretchyikcvrupperleg0_transform_t[1]-loc_rkneeleg_t[1]), -(jnt_stretchyikcvrupperleg0_transform_t[2]-loc_rkneeleg_t[2]) #loc_lkneeleg_t[0], loc_lkneeleg_t[1], loc_lkneeleg_t[2]
+            jnt_stretchyikcvrupperleg2_transform.setTranslation(jnt_stretchyikcvrupperleg2_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikrlowerleg0 = legjnt_grp.create("joint", "IkSplineRightLowerLeg0", grp_stretchyikrleg)
+            jnt_stretchyikcvrlowerleg0 = legjnt_grp.create("joint", "IkCvSplineRightLowerLeg0", self.rlowerlegikcluster0_grp)
+
+            jnt_stretchyikrlowerleg0_transform = om2.MFnTransform(jnt_stretchyikrlowerleg0)
+            jnt_stretchyikrlowerleg0_transform.setTranslation(loc_rkneeleg_t-grp_stretchyikrleg_transform.translation(om2.MSpace.kTransform), om2.MSpace.kTransform)
+
+            jnt_stretchyikcvrlowerleg0_transform = om2.MFnTransform(self.rlowerlegikcluster_grp)
+            jnt_stretchyikcvrlowerleg0_transform.setTranslation(loc_rkneeleg_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikrlowerleg1 = legjnt_grp.create("joint", "IkSplineRightLowerLeg1", jnt_stretchyikrlowerleg0)
+
+            jnt_stretchyikrlowerleg1_transform = om2.MFnTransform(jnt_stretchyikrlowerleg1)
+            jnt_stretchyikrlowerleg1_transform_t = jnt_stretchyikrlowerleg1_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikrlowerleg1_transform_t[0], jnt_stretchyikrlowerleg1_transform_t[1], jnt_stretchyikrlowerleg1_transform_t[2] = loc_rfootball_t[0]/4, loc_rfootball_t[1]/4, loc_rfootball_t[2]/4
+            jnt_stretchyikrlowerleg1_transform.setTranslation(jnt_stretchyikrlowerleg1_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikrlowerleg2 = legjnt_grp.create("joint", "IkSplineRightLowerLeg2", jnt_stretchyikrlowerleg1)
+            jnt_stretchyikvcvrlowerleg1 = legjnt_grp.create("joint", "IkCvSplineRightLowerLeg1", self.rlowerlegikcluster1_grp)
+
+            jnt_stretchyikrlowerleg2_transform = om2.MFnTransform(jnt_stretchyikrlowerleg2)
+            jnt_stretchyikrlowerleg2_transform_t = jnt_stretchyikrlowerleg2_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikrlowerleg2_transform_t[0], jnt_stretchyikrlowerleg2_transform_t[1], jnt_stretchyikrlowerleg2_transform_t[2] = (loc_rfootball_t[0]/2)-jnt_stretchyikrlowerleg1_transform_t[0], (loc_rfootball_t[1]/2)-jnt_stretchyikrlowerleg1_transform_t[1], (loc_rfootball_t[2]/2)-jnt_stretchyikrlowerleg1_transform_t[2]
+            jnt_stretchyikrlowerleg2_transform.setTranslation(jnt_stretchyikrlowerleg2_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvrlowerleg0_transform_t = jnt_stretchyikcvrlowerleg0_transform.translation(om2.MSpace.kTransform)
+
+            jnt_stretchyikcvrlowerleg1_transform = om2.MFnTransform(self.rlowerlegikcluster1_grp)
+            jnt_stretchyikcvrlowerleg1_transform_t = jnt_stretchyikcvrlowerleg1_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvrlowerleg1_transform_t[0], jnt_stretchyikcvrlowerleg1_transform_t[1], jnt_stretchyikcvrlowerleg1_transform_t[2] = -(jnt_stretchyikcvrlowerleg0_transform_t[0]-loc_rfootballleg_t[0])/2, -(jnt_stretchyikcvrlowerleg0_transform_t[1]-loc_rfootballleg_t[1])/2, -(jnt_stretchyikcvrlowerleg0_transform_t[2]-loc_rfootballleg_t[2])/2 #loc_lfootballleg_t[0]+((loc_lkneeleg_t[0]-loc_lfootballleg_t[0])/2), loc_lfootballleg_t[1]+((loc_lkneeleg_t[1]-loc_lfootballleg_t[1])/2), loc_lfootballleg_t[2]+((loc_lkneeleg_t[2]-loc_lfootballleg_t[2])/2)
+            jnt_stretchyikcvrlowerleg1_transform.setTranslation(jnt_stretchyikcvrlowerleg1_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikrlowerleg3 = legjnt_grp.create("joint", "IkSplineRightLowerLeg3", jnt_stretchyikrlowerleg2)
+
+            jnt_stretchyikrlowerleg3_transform = om2.MFnTransform(jnt_stretchyikrlowerleg3)
+            jnt_stretchyikrlowerleg3_transform_t = jnt_stretchyikrlowerleg3_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikrlowerleg3_transform_t[0], jnt_stretchyikrlowerleg3_transform_t[1], jnt_stretchyikrlowerleg3_transform_t[2] = jnt_stretchyikrlowerleg2_transform_t[0], jnt_stretchyikrlowerleg2_transform_t[1], jnt_stretchyikrlowerleg2_transform_t[2]
+            jnt_stretchyikrlowerleg3_transform.setTranslation(jnt_stretchyikrlowerleg3_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikrlowerleg4 = legjnt_grp.create("joint", "IkSplineRightLowerLeg4", jnt_stretchyikrlowerleg3)
+            jnt_stretchyikvcvrlowerleg2 = legjnt_grp.create("joint", "IkCvSplineRightLowerLeg2", self.rlowerlegikcluster2_grp)
+
+            jnt_stretchyikrlowerleg4_transform = om2.MFnTransform(jnt_stretchyikrlowerleg4)
+            jnt_stretchyikrlowerleg4_transform_t = jnt_stretchyikrlowerleg4_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikrlowerleg4_transform_t[0], jnt_stretchyikrlowerleg4_transform_t[1], jnt_stretchyikrlowerleg4_transform_t[2] = jnt_stretchyikrlowerleg3_transform_t[0], jnt_stretchyikrlowerleg3_transform_t[1], jnt_stretchyikrlowerleg3_transform_t[2]
+            jnt_stretchyikrlowerleg4_transform.setTranslation(jnt_stretchyikrlowerleg4_transform_t, om2.MSpace.kTransform)
+
+            jnt_stretchyikcvrlowerleg4_transform = om2.MFnTransform(self.rlowerlegikcluster2_grp)
+            jnt_stretchyikcvrlowerleg4_transform_t = jnt_stretchyikcvrlowerleg4_transform.translation(om2.MSpace.kTransform)
+            jnt_stretchyikcvrlowerleg4_transform_t[0], jnt_stretchyikcvrlowerleg4_transform_t[1], jnt_stretchyikcvrlowerleg4_transform_t[2] = -(jnt_stretchyikcvrlowerleg0_transform_t[0]-loc_rfootballleg_t[0]), -(jnt_stretchyikcvrlowerleg0_transform_t[1]-loc_rfootballleg_t[1]), -(jnt_stretchyikcvrlowerleg0_transform_t[2]-loc_rfootballleg_t[2]) #loc_lfootballleg_t[0], loc_lfootballleg_t[1], loc_lfootballleg_t[2]
+            jnt_stretchyikcvrlowerleg4_transform.setTranslation(jnt_stretchyikcvrlowerleg4_transform_t, om2.MSpace.kTransform)
 
     def setJointOrientation(self):
         dg_modifier = om2.MDGModifier()
@@ -1813,12 +2241,18 @@ class MainWindow(QtWidgets.QDialog):
         legjoint_sl_lst.add("IkNoFlipLeftFoot*")
         legjoint_sl_lst.add("IkPVLeftUpLeg*")
         legjoint_sl_lst.add("IkPVLeftFoot*")
+        legjoint_sl_lst.add("IkNoFlipRightUpLeg*")
+        legjoint_sl_lst.add("IkNoFlipRightFoot*")
+        legjoint_sl_lst.add("IkPVRightUpLeg*")
+        legjoint_sl_lst.add("IkPVRightFoot*")
 
-        llegupperikjoint_sl_lst = om2.MSelectionList()
-        llegupperikjoint_sl_lst.add("IkSplineLeftUpperLeg*")
+        legupperikjoint_sl_lst = om2.MSelectionList()
+        legupperikjoint_sl_lst.add("IkSplineLeftUpperLeg*")
+        legupperikjoint_sl_lst.add("IkSplineRightUpperLeg*")
 
-        lleglowerikjoint_sl_lst = om2.MSelectionList()
-        lleglowerikjoint_sl_lst.add("IkSplineLeftLowerLeg*")
+        leglowerikjoint_sl_lst = om2.MSelectionList()
+        leglowerikjoint_sl_lst.add("IkSplineLeftLowerLeg*")
+        leglowerikjoint_sl_lst.add("IkSplineRightLowerLeg*")
 
         legjointknee_sl_lst = om2.MSelectionList()
         legjointknee_sl_lst.add("LeftLeg*")
@@ -1829,12 +2263,13 @@ class MainWindow(QtWidgets.QDialog):
         legjointknee_sl_lst.add("IkRightLeg*")
         legjointknee_sl_lst.add("IkNoFlipLeftLeg*")
         legjointknee_sl_lst.add("IkPVLeftLeg*")
+        legjointknee_sl_lst.add("IkNoFlipRightLeg*")
+        legjointknee_sl_lst.add("IkPVRightLeg*")
 
         endjoint_sl_lst = om2.MSelectionList()
         endjoint_sl_lst.add("*End")
         endjoint_sl_lst.add("RightFinger*4")
         endjoint_sl_lst.add("LeftFinger*4")
-        endjoint_sl_lst.add("IkSplineLeftLowerLeg4")
         endjoint_sl_lst.add(jnt_iklastspine_obj)
 
         spineikjoint_sl_lst = om2.MSelectionList()
@@ -1932,16 +2367,16 @@ class MainWindow(QtWidgets.QDialog):
                     jnt_active_string = legjoint_sl_lst.getSelectionStrings(index)
                     dg_modifier.commandToExecute('joint -e -orientJoint yzx -secondaryAxisOrient yup -zeroScaleOrient {0}'.format(str(jnt_active_string)[3:][:-3]))
 
-            for index in range(llegupperikjoint_sl_lst.length()):
-                jnt_active_obj = llegupperikjoint_sl_lst.getDependNode(index)
+            for index in range(legupperikjoint_sl_lst.length()):
+                jnt_active_obj = legupperikjoint_sl_lst.getDependNode(index)
                 if jnt_active_obj.hasFn(om2.MFn.kJoint):
-                    jnt_active_string = llegupperikjoint_sl_lst.getSelectionStrings(index)
+                    jnt_active_string = legupperikjoint_sl_lst.getSelectionStrings(index)
                     dg_modifier.commandToExecute('joint -e -orientJoint yzx -secondaryAxisOrient yup -zeroScaleOrient {0}'.format(str(jnt_active_string)[3:][:-3]))
 
-            for index in range(lleglowerikjoint_sl_lst.length()):
-                jnt_active_obj = lleglowerikjoint_sl_lst.getDependNode(index)
+            for index in range(leglowerikjoint_sl_lst.length()):
+                jnt_active_obj = leglowerikjoint_sl_lst.getDependNode(index)
                 if jnt_active_obj.hasFn(om2.MFn.kJoint):
-                    jnt_active_string = lleglowerikjoint_sl_lst.getSelectionStrings(index)
+                    jnt_active_string = leglowerikjoint_sl_lst.getSelectionStrings(index)
                     dg_modifier.commandToExecute('joint -e -orientJoint yzx -secondaryAxisOrient ydown -zeroScaleOrient {0}'.format(str(jnt_active_string)[3:][:-3]))
 
             for index in range(legjointknee_sl_lst.length()):
@@ -2039,6 +2474,75 @@ class MainWindow(QtWidgets.QDialog):
             cmds.setAttr("IkSplineLeftLowerLeg4.jointOrientY", 0)
             cmds.setAttr("IkSplineLeftLowerLeg4.jointOrientZ", 0)
 
+            rightupperlegikcluster_r = cmds.xform("RightUpLeg", query=True, rotation=True, worldSpace=True)
+
+            try:
+                cmds.parent("RightUpperLegIkCluster1_grp", world=True)
+                cmds.parent("RightUpperLegIkCluster2_grp", world=True)
+            except:
+                pass
+
+            cmds.setAttr("RightUpperLegIkCluster_grp.rotateX", rightupperlegikcluster_r[0])
+            cmds.setAttr("RightUpperLegIkCluster_grp.rotateY", rightupperlegikcluster_r[1])
+            cmds.setAttr("RightUpperLegIkCluster_grp.rotateZ", rightupperlegikcluster_r[2])
+
+            try:
+                cmds.parent("RightUpperLegIkCluster1_grp", "RightUpperLegIkCluster_grp")
+                cmds.parent("RightUpperLegIkCluster2_grp", "RightUpperLegIkCluster_grp")
+            except:
+                pass
+
+            cmds.setAttr("RightUpperLegIkCluster1_grp.rotateX", 0)
+            cmds.setAttr("RightUpperLegIkCluster1_grp.rotateY", 0)
+            cmds.setAttr("RightUpperLegIkCluster1_grp.rotateZ", 0)
+
+            ikcvsplinerightupperleg2_rx = cmds.getAttr("RightLeg.jointOrientX")
+            ikcvsplinerightupperleg2_ry = cmds.getAttr("RightLeg.jointOrientY")
+            ikcvsplinerightupperleg2_rz = cmds.getAttr("RightLeg.jointOrientZ")
+            cmds.setAttr("RightUpperLegIkCluster2_grp.rotateX", ikcvsplinerightupperleg2_rx)
+            cmds.setAttr("RightUpperLegIkCluster2_grp.rotateY", ikcvsplinerightupperleg2_ry)
+            cmds.setAttr("RightUpperLegIkCluster2_grp.rotateZ", ikcvsplinerightupperleg2_rz)
+            cmds.setAttr("IkSplineRightUpperLeg4.jointOrientX", 0)
+            cmds.setAttr("IkSplineRightUpperLeg4.jointOrientY", 0)
+            cmds.setAttr("IkSplineRightUpperLeg4.jointOrientZ", 0)
+
+            rightlowerlegikcluster_r = cmds.xform("RightLeg", query=True, rotation=True, worldSpace=True)
+
+            try:
+                cmds.parent("RightLowerLegIkCluster1_grp", world=True)
+                cmds.parent("RightLowerLegIkCluster2_grp", world=True)
+            except:
+                pass
+
+            cmds.setAttr("RightLowerLegIkCluster_grp.rotateX", rightlowerlegikcluster_r[0])
+            cmds.setAttr("RightLowerLegIkCluster_grp.rotateY", rightlowerlegikcluster_r[1])
+            cmds.setAttr("RightLowerLegIkCluster_grp.rotateZ", rightlowerlegikcluster_r[2])
+
+            try:
+                cmds.parent("RightLowerLegIkCluster1_grp", "RightLowerLegIkCluster_grp")
+                cmds.parent("RightLowerLegIkCluster2_grp", "RightLowerLegIkCluster_grp")
+            except:
+                pass
+
+            cmds.setAttr("RightLowerLegIkCluster1_grp.rotateX", 0)
+            cmds.setAttr("RightLowerLegIkCluster1_grp.rotateY", 0)
+            cmds.setAttr("RightLowerLegIkCluster1_grp.rotateZ", 0)
+
+            ikcvsplinerightlowerleg2_rx = cmds.getAttr("RightFoot.jointOrientX")
+            ikcvsplinerightlowerleg2_ry = cmds.getAttr("RightFoot.jointOrientY")
+            ikcvsplinerightlowerleg2_rz = cmds.getAttr("RightFoot.jointOrientZ")
+            cmds.setAttr("RightLowerLegIkCluster2_grp.rotateX", ikcvsplinerightlowerleg2_rx)
+            cmds.setAttr("RightLowerLegIkCluster2_grp.rotateY", ikcvsplinerightlowerleg2_ry)
+            cmds.setAttr("RightLowerLegIkCluster2_grp.rotateZ", ikcvsplinerightlowerleg2_rz)
+            cmds.setAttr("IkNoFlipRightFoot.jointOrientX", ikcvsplinerightlowerleg2_rx)
+            cmds.setAttr("IkNoFlipRightFoot.jointOrientY", ikcvsplinerightlowerleg2_ry)
+            cmds.setAttr("IkNoFlipRightFoot.jointOrientZ", ikcvsplinerightlowerleg2_rz)
+            cmds.setAttr("IkPVRightFoot.jointOrientX", ikcvsplinerightlowerleg2_rx)
+            cmds.setAttr("IkPVRightFoot.jointOrientY", ikcvsplinerightlowerleg2_ry)
+            cmds.setAttr("IkPVRightFoot.jointOrientZ", ikcvsplinerightlowerleg2_rz)
+            cmds.setAttr("IkSplineRightLowerLeg4.jointOrientX", 0)
+            cmds.setAttr("IkSplineRightLowerLeg4.jointOrientY", 0)
+            cmds.setAttr("IkSplineRightLowerLeg4.jointOrientZ", 0)
 
         elif self.typeofJointOrient.currentIndex() == 1:
             for index in range(hipjoint_sl_lst.length()):
@@ -2227,8 +2731,6 @@ class MainWindow(QtWidgets.QDialog):
         pvlleg_sl_lst.getDependNode(1, obj_pvfoot)
 
         lleg_pathnode = om1.MDagPath()
-        nofliplupleg_path = lleg_pathnode.getAPathTo(obj_noflipupleg)
-        pvlupleg_path = lleg_pathnode.getAPathTo(obj_pvupleg)
         llegfoot_path = lleg_pathnode.getAPathTo(obj_foot)
         llegtoe_path = lleg_pathnode.getAPathTo(obj_toe)
 
@@ -2268,12 +2770,6 @@ class MainWindow(QtWidgets.QDialog):
             self.llegtoeend_effector = ik_effector.create(obj_toeend)
             llegtoeend_effector_path = lleg_pathnode.getAPathTo(self.llegtoeend_effector)
 
-            # self.noflipllegfoot_effector = ik_effector.create(obj_noflipfoot)
-            # noflipllegfoot_effector_path = lleg_pathnode.getAPathTo(self.noflipllegfoot_effector)
-
-            # self.pvllegfoot_effector = ik_effector.create(obj_pvfoot)
-            # pvllegfoot_effector_path = lleg_pathnode.getAPathTo(self.pvllegfoot_effector)
-
             ik_handlelegtoe = omanim1.MFnIkHandle()
             self.llegtoe_ik = ik_handlelegtoe.create(llegfoot_path, llegtoe_effector_path)
             ik_handlelegtoe.setSolver(rp_solver)
@@ -2282,20 +2778,8 @@ class MainWindow(QtWidgets.QDialog):
             self.llegtoeend_ik = ik_handlelegtoeend.create(llegtoe_path, llegtoeend_effector_path)
             ik_handlelegtoeend.setSolver(rp_solver)
 
-            # ik_handlenoflipleg = omanim1.MFnIkHandle()
-            # self.noflipllegfoot_ik = ik_handlenoflipleg.create(nofliplupleg_path, noflipllegfoot_effector_path)
-            # ik_handlenoflipleg.setSolver(rp_solver)
-
-            # ik_handlepvleg = omanim1.MFnIkHandle()
-            # self.pvllegfoot_ik = ik_handlepvleg.create(pvlupleg_path, pvllegfoot_effector_path)
-            # ik_handlepvleg.setSolver(rp_solver)
-
-            # dg_modifier.renameNode(self.noflipllegfoot_ik, "NoFlipLeftLeg_Ik")
-            # dg_modifier.renameNode(self.pvllegfoot_ik, "PVLeftLeg_Ik")
             dg_modifier.renameNode(self.llegtoe_ik, "LeftLegFoot_Ik")
             dg_modifier.renameNode(self.llegtoeend_ik, "LeftLegToe_Ik")
-            # dg_modifier.renameNode(self.noflipllegfoot_effector, "NoFlipLeftLeg_effector")
-            # dg_modifier.renameNode(self.pvllegfoot_effector, "PVLeftLeg_effector")
             dg_modifier.renameNode(self.llegtoe_effector, "LeftFoot_effector")
             dg_modifier.renameNode(self.llegtoeend_effector, "LeftToe_effector")
             dg_modifier.commandToExecute('ikHandle -name "PVLeftLeg_Ik" -startJoint "IkPVLeftUpLeg" -endEffector "IkPVLeftFoot" -solver "ikRPsolver"')
@@ -2310,8 +2794,6 @@ class MainWindow(QtWidgets.QDialog):
             dg_modifier.commandToExecute('parent NoFlipLeftLeg_Ik LeftReverseFootToe')
             dg_modifier.commandToExecute('parent LeftLegFoot_Ik LeftReverseFootToe')
             dg_modifier.commandToExecute('parent LeftLegToe_Ik LeftReverseFootToeWiggle')
-            # dg_modifier.commandToExecute('parent NoFlipLeftLeg_effector IkNoFlipLeftLeg')
-            # dg_modifier.commandToExecute('parent PVLeftLeg_effector IkPVLeftLeg')
             dg_modifier.commandToExecute('parent LeftFoot_effector IkLeftFoot')
             dg_modifier.commandToExecute('parent LeftToe_effector IkLeftToeBase')
             dg_modifier.doIt()
@@ -2326,35 +2808,34 @@ class MainWindow(QtWidgets.QDialog):
         obj_toeend = om1.MObject()
 
         rleg_sl_lst = om1.MSelectionList()
-        rleg_sl_lst.add("IkRightUpLeg*")
         rleg_sl_lst.add("IkRightFoot")
         rleg_sl_lst.add("IkRightToeBase")
         rleg_sl_lst.add("IkRightToeEnd")
-        rleg_sl_lst.getDependNode(0, obj_upleg)
-        rleg_sl_lst.getDependNode(1, obj_foot)
-        rleg_sl_lst.getDependNode(2, obj_toe)
+        rleg_sl_lst.getDependNode(0, obj_foot)
+        rleg_sl_lst.getDependNode(1, obj_toe)
         rleg_sl_lst.getDependNode(rleg_sl_lst.length()-1, obj_toeend)
 
         rleg_pathnode = om1.MDagPath()
-        rupleg_path = rleg_pathnode.getAPathTo(obj_upleg)
         rlegfoot_path = rleg_pathnode.getAPathTo(obj_foot)
         rlegtoe_path = rleg_pathnode.getAPathTo(obj_toe)
 
         ik_system = omanim1.MIkSystem()
 
         try:
-            if cmds.objExists("RightLeg_Ik") and cmds.objExists("RightLeg_effector"):
+            if cmds.objExists("NoFlipRightLeg_Ik") and cmds.objExists("NoFlipRightLeg_effector"):
 
-                cmds.delete("RightLeg_Ik")
+                cmds.delete("NoFlipRightLeg_Ik")
+                cmds.delete("PVRightLeg_Ik")
                 cmds.delete("RightLegFoot_Ik")
                 cmds.delete("RightLegToe_Ik")
 
         except:
             pass
 
-        if index == 0 :
+        if index == 0:
             try:
-                cmds.delete("RightLeg_effector")
+                cmds.delete("NoFlipRightLeg_effector")
+                cmds.delete("PVRightLeg_effector")
             except:
                 pass
 
@@ -2369,18 +2850,12 @@ class MainWindow(QtWidgets.QDialog):
             rp_solver = ik_system.findSolver("ikRPsolver")
 
             ik_effector = omanim1.MFnIkEffector()
-            self.rleg_effector = ik_effector.create(obj_foot)
-            rleg_effector_path = rleg_pathnode.getAPathTo(self.rleg_effector)
 
             self.rlegtoe_effector = ik_effector.create(obj_toe)
             rlegtoe_effector_path = rleg_pathnode.getAPathTo(self.rlegtoe_effector)
 
             self.rlegtoeend_effector = ik_effector.create(obj_toeend)
             rlegtoeend_effector_path = rleg_pathnode.getAPathTo(self.rlegtoeend_effector)
-
-            ik_handleleg = omanim1.MFnIkHandle()
-            self.rlegfoot_ik = ik_handleleg.create(rupleg_path, rleg_effector_path)
-            ik_handleleg.setSolver(rp_solver)
 
             ik_handlelegtoe = omanim1.MFnIkHandle()
             self.rlegtoe_ik = ik_handlelegtoe.create(rlegfoot_path, rlegtoe_effector_path)
@@ -2390,14 +2865,22 @@ class MainWindow(QtWidgets.QDialog):
             self.rlegtoeend_ik = ik_handlelegtoeend.create(rlegtoe_path, rlegtoeend_effector_path)
             ik_handlelegtoeend.setSolver(rp_solver)
 
-            dg_modifier.renameNode(self.rlegfoot_ik, "RightLeg_Ik")
             dg_modifier.renameNode(self.rlegtoe_ik, "RightLegFoot_Ik")
             dg_modifier.renameNode(self.rlegtoeend_ik, "RightLegToe_Ik")
-            dg_modifier.renameNode(self.rleg_effector, "RightLeg_effector")
             dg_modifier.renameNode(self.rlegtoe_effector, "RightFoot_effector")
             dg_modifier.renameNode(self.rlegtoeend_effector, "RightToe_effector")
-            dg_modifier.commandToExecute('parent RightLeg_Ik DoNotTouch')
-            dg_modifier.commandToExecute('parent RightLeg_effector IkRightLeg')
+            dg_modifier.commandToExecute('ikHandle -name "PVRightLeg_Ik" -startJoint "IkPVRightUpLeg" -endEffector "IkPVRightFoot" -solver "ikRPsolver"')
+            dg_modifier.commandToExecute('rename effector1 PVRightLeg_effector')
+            dg_modifier.commandToExecute('ikHandle -name "NoFlipRightLeg_Ik" -startJoint "IkNoFlipRightUpLeg" -endEffector "IkNoFlipRightFoot" -solver "ikRPsolver"')
+            dg_modifier.commandToExecute('rename effector1 NoFlipRightLeg_effector')
+            dg_modifier.commandToExecute('parent RightReverseFootToe RightReverseFootToeEnd')
+            dg_modifier.commandToExecute('parent RightReverseFootToeEnd RightReverseInnerFoot')
+            dg_modifier.commandToExecute('parent RightReverseInnerFoot RightReverseOuterFoot')
+            dg_modifier.commandToExecute('parent RightReverseOuterFoot RightReverseFootHeel')
+            dg_modifier.commandToExecute('parent PVRightLeg_Ik RightReverseFootToe')
+            dg_modifier.commandToExecute('parent NoFlipRightLeg_Ik RightReverseFootToe')
+            dg_modifier.commandToExecute('parent RightLegFoot_Ik RightReverseFootToe')
+            dg_modifier.commandToExecute('parent RightLegToe_Ik RightReverseFootToeWiggle')
             dg_modifier.commandToExecute('parent RightFoot_effector IkRightFoot')
             dg_modifier.commandToExecute('parent RightToe_effector IkRightToeBase')
             dg_modifier.doIt()
@@ -2955,10 +3438,6 @@ class MainWindow(QtWidgets.QDialog):
 
                larmctrl_transform = om2.MFnTransform(self.larmctrl_tn)
 
-               # larmctrl_transform_r = larmctrl_transform.rotation(om2.MSpace.kTransform)
-               # larmctrl_transform_r[1] = 0
-               # larmctrl_transform.setRotation(larmctrl_transform_r, om2.MSpace.kTransform)
-
                larmctrl_transform_s = larmctrl_transform.findPlug("scale", False)
                if larmctrl_transform_s.isCompound:
                    for i in range(larmctrl_transform_s.numChildren()):
@@ -3006,10 +3485,6 @@ class MainWindow(QtWidgets.QDialog):
                lforearmnull_transform.setRotation(lforearmnull_transform_r, om2.MSpace.kTransform)
 
                lforearmctrl_transform = om2.MFnTransform(self.lforearmctrl_tn)
-
-               # lforearmctrl_transform_r = lforearmctrl_transform.rotation(om2.MSpace.kTransform)
-               # lforearmctrl_transform_r[1] = -1.57079
-               # lforearmctrl_transform.setRotation(lforearmctrl_transform_r, om2.MSpace.kTransform)
 
                lforearmctrl_transform_s = lforearmctrl_transform.findPlug("scale", False)
                if lforearmctrl_transform_s.isCompound:
@@ -5008,8 +5483,16 @@ class MainWindow(QtWidgets.QDialog):
                     self.rlegctrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightLeg_ctrl", self.rlegnull_tn)
                     ctrl_rlegpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rlegctrl_tn)
 
+                    self.pvrlegkneenull_tn = ctrl_tr_n.create("transform", "Biped_PVRightKnee_null", self.masterctrl_tn)
+                    self.pvrlegknectrl_tn = ctrl_tr_n.create("transform", "Biped_PVRightKnee_ctrl", self.pvrlegkneenull_tn)
+                    crv_ctrl_knee_triangle_l = ctrl_cv_n.createWithEditPoints(ctrl_knee_triangle_points, 1, 1, False, True, True, self.pvrlegknectrl_tn)
+                    crv_ctrl_knee_arrow_l = ctrl_cv_n.createWithEditPoints(ctrl_knee_arrow_points, 1, 1, False, True, True, self.pvrlegknectrl_tn)
+
                     rlegnull_transform = om2.MFnTransform(self.rlegnull_tn)
                     rlegnull_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
+
+                    pvrlegkneenull_transform = om2.MFnTransform(self.pvrlegkneenull_tn)
+                    pvrlegkneenull_transform.setTranslation(jnt_rleg_t, om2.MSpace.kTransform)
 
                     jnt_rleg_r = cmds.xform("RightLeg", query=True, rotation=True, worldSpace=True)
 
@@ -5023,9 +5506,19 @@ class MainWindow(QtWidgets.QDialog):
 
                     rlegctrl_transform = om2.MFnTransform(self.rlegctrl_tn)
 
+                    pvrlegknectrl_transform = om2.MFnTransform(self.pvrlegknectrl_tn)
+
                     rlegctrl_transform_r = rlegnull_transform.rotation(om2.MSpace.kTransform)
                     rlegctrl_transform_r[0], rlegctrl_transform_r[1], rlegctrl_transform_r[2] = 0, 1.57079, 0
                     rlegctrl_transform.setRotation(rlegctrl_transform_r, om2.MSpace.kTransform)
+
+                    pvrlegkneenull_transform_t = pvrlegkneenull_transform.translation(om2.MSpace.kTransform)
+                    pvrlegkneenull_transform_t[2] = pvrlegkneenull_transform_t[2]+8
+                    pvrlegkneenull_transform.setTranslation(pvrlegkneenull_transform_t, om2.MSpace.kTransform)
+
+                    pvrlegknectrl_transform_r = pvrlegknectrl_transform.rotation(om2.MSpace.kTransform)
+                    pvrlegknectrl_transform_r[0] = 1.57079
+                    pvrlegknectrl_transform.setRotation(pvrlegknectrl_transform_r, om2.MSpace.kTransform)
 
                     rlegctrl_transform_s = rlegctrl_transform.findPlug("scale", False)
                     if rlegctrl_transform_s.isCompound:
@@ -5042,7 +5535,9 @@ class MainWindow(QtWidgets.QDialog):
 
                     self.ctrl_mod_n.renameNode(ctrl_rlegpositive_comb_cv, "FkRightLeg_shape")
                     self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightLeg_ctrl"')
+                    self.ctrl_mod_n.commandToExecute('color -rgbColor 1 1 0 "Biped_PVRightKnee_ctrl"')
                     self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightLeg_ctrl"')
+                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_PVRightKnee_ctrl"')
                     self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateX"')
                     self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateY"')
                     self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateZ"')
@@ -5067,6 +5562,10 @@ class MainWindow(QtWidgets.QDialog):
 
                     self.rfootoption_tn = ctrl_tr_n.create("transform", "Biped_RightFootOptions_ctrl", rleg_sl_ls.getDependNode(2))
                     ctrl_rfootoption_cv = ctrl_cv_n.createWithEditPoints(ctrl_lhandoption_line, 1, 1, False, True, True, self.rfootoption_tn)
+
+                    self.nofliprlegkneenull_tn = ctrl_tr_n.create("transform", "Biped_NoFlipRightKnee_null", self.riklegfootoffsetnull_tn)
+                    self.nofliprlegkneectrl_tn = ctrl_tr_n.create("transform", "Biped_NoFlipRightKnee_ctrl", self.nofliprlegkneenull_tn)
+                    self.nofliprlegknectrl_tn = ctrl_tr_n.create("locator", "NoFlipRightKnee_shape", self.nofliprlegkneectrl_tn)
 
                     rlegfootnull_transform = om2.MFnTransform(self.rlegfootnull_tn)
                     rlegfootnull_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
@@ -5097,6 +5596,8 @@ class MainWindow(QtWidgets.QDialog):
 
                     riklegfootctrl_transform = om2.MFnTransform(self.riklegfootctrl_tn)
 
+                    nofliprlegkneenull_transform = om2.MFnTransform(self.nofliprlegkneectrl_tn)
+
                     rlegfootctrl_transform_r = rlegfootctrl_transform.rotation(om2.MSpace.kTransform)
                     rlegfootctrl_transform_r[0], rlegfootctrl_transform_r[1], rlegfootctrl_transform_r[2] = -1.57079, 0, -1.57079
                     rlegfootctrl_transform.setRotation(rlegfootctrl_transform_r, om2.MSpace.kTransform)
@@ -5116,6 +5617,10 @@ class MainWindow(QtWidgets.QDialog):
                     rfootoptionctrl_transform_r = rfootoptionctrl_transform.rotation(om2.MSpace.kTransform)
                     rfootoptionctrl_transform_r[0] = -1.57079
                     rfootoptionctrl_transform.setRotation(rfootoptionctrl_transform_r, om2.MSpace.kTransform)
+
+                    nofliprlegkneenull_transform_t = nofliprlegkneenull_transform.translation(om2.MSpace.kTransform)
+                    nofliprlegkneenull_transform_t[0] = 7
+                    nofliprlegkneenull_transform.setTranslation(nofliprlegkneenull_transform_t, om2.MSpace.kTransform)
 
                     rlegfootctrl_transform_s = rlegfootctrl_transform.findPlug("scale", False)
                     if rlegfootctrl_transform_s.isCompound:
@@ -5199,7 +5704,6 @@ class MainWindow(QtWidgets.QDialog):
                     riklegfootctrl_worldtransform = om2.MFnTransform(riklegfootctrl_path)
 
                     riklegfootctrl_worldtransform.setRotatePivot(om2.MPoint(jnt_rleg_t), om2.MSpace.kWorld, False)
-
 
                 elif index == 3:
                     self.rlegtoebasenull_tn = ctrl_tr_n.create("transform", "Biped_FkRightToeBase_null", self.rlegfootctrl_tn)
@@ -5426,14 +5930,14 @@ class MainWindow(QtWidgets.QDialog):
         masterscaledecomposeMatrix_fs = om2.MFnDependencyNode(masterscale_decomposeMatrix)
         splineik_fs = om2.MFnDependencyNode(iksplinegrp_sl_ls.getDependNode(0))
 
-        rootmultMatrixSum_plug = masterscalemultMatrix_fs.findPlug("matrixSum", False)
-        rootdecomposeInpMatrix_plug = masterscaledecomposeMatrix_fs.findPlug("inputMatrix", False)
-        rootdecomposeOtpScale_plug = masterscaledecomposeMatrix_fs.findPlug("outputScale", False)
+        mastermultMatrixSum_plug = masterscalemultMatrix_fs.findPlug("matrixSum", False)
+        masterdecomposeInpMatrix_plug = masterscaledecomposeMatrix_fs.findPlug("inputMatrix", False)
+        masterdecomposeOtpScale_plug = masterscaledecomposeMatrix_fs.findPlug("outputScale", False)
         splineikScale_plug = splineik_fs.findPlug("scale", False)
 
         self.ctrl_mod_n.commandToExecute('connectAttr - force Biped_Master_ctrl.worldMatrix[0] MasterScale_multMatrix.matrixIn[0]')
-        self.ctrl_mod_n.connect(rootmultMatrixSum_plug, rootdecomposeInpMatrix_plug)
-        self.ctrl_mod_n.connect(rootdecomposeOtpScale_plug, splineikScale_plug)
+        self.ctrl_mod_n.connect(mastermultMatrixSum_plug, masterdecomposeInpMatrix_plug)
+        self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, splineikScale_plug)
 
         rootctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
         rootctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
@@ -5444,8 +5948,8 @@ class MainWindow(QtWidgets.QDialog):
         rootdecomposeMatrix_fs = om2.MFnDependencyNode(rootctrl_decomposeMatrix)
         hipjnt_fs = om2.MFnDependencyNode(hip_obj)
 
-        rootmultMatrixSum_plug = rootmultMatrix_fs.findPlug("matrixSum", False)
-        rootdecomposeInpMatrix_plug = rootdecomposeMatrix_fs.findPlug("inputMatrix", False)
+        mastermultMatrixSum_plug = rootmultMatrix_fs.findPlug("matrixSum", False)
+        masterdecomposeInpMatrix_plug = rootdecomposeMatrix_fs.findPlug("inputMatrix", False)
         rootdecomposeOtpTrans_plug = rootdecomposeMatrix_fs.findPlug("outputTranslate", False)
         rootdecomposeOtpRot_plug = rootdecomposeMatrix_fs.findPlug("outputRotate", False)
         hipjntTrans_plug = hipjnt_fs.findPlug("translate", False)
@@ -5453,7 +5957,7 @@ class MainWindow(QtWidgets.QDialog):
 
         self.ctrl_mod_n.commandToExecute('connectAttr - force Biped_Root_ctrl.worldMatrix[0] Hip_multMatrix.matrixIn[0]')
         self.ctrl_mod_n.commandToExecute('connectAttr -force Hip.parentInverseMatrix[0] Hip_multMatrix.matrixIn[1]')
-        self.ctrl_mod_n.connect(rootmultMatrixSum_plug, rootdecomposeInpMatrix_plug)
+        self.ctrl_mod_n.connect(mastermultMatrixSum_plug, masterdecomposeInpMatrix_plug)
         self.ctrl_mod_n.connect(rootdecomposeOtpTrans_plug, hipjntTrans_plug)
         self.ctrl_mod_n.connect(rootdecomposeOtpRot_plug, hipjntRot_plug)
 
@@ -5909,16 +6413,16 @@ class MainWindow(QtWidgets.QDialog):
             if self.typeofLHandIK.currentIndex() == 1 or 2:
                 likhandctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
                 likhandctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                likhandrot_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                rikhandrot_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
                 likhandrot_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
                 self.ctrl_mod_n.renameNode(likhandctrl_multMatrix, "IkLeftHand_multMatrix")
                 self.ctrl_mod_n.renameNode(likhandctrl_decomposeMatrix, "IkLeftHand_decomposeMatrix")
-                self.ctrl_mod_n.renameNode(likhandrot_multMatrix, "IkLeftHandRot_multMatrix")
+                self.ctrl_mod_n.renameNode(rikhandrot_multMatrix, "IkLeftHandRot_multMatrix")
                 self.ctrl_mod_n.renameNode(likhandrot_decomposeMatrix, "IkLeftHandRot_decomposeMatrix")
 
                 likhandmultMatrix_fs = om2.MFnDependencyNode(likhandctrl_multMatrix)
                 likhanddecomposeMatrix_fs = om2.MFnDependencyNode(likhandctrl_decomposeMatrix)
-                likhandrotmultMatrix_fs = om2.MFnDependencyNode(likhandrot_multMatrix)
+                likhandrotmultMatrix_fs = om2.MFnDependencyNode(rikhandrot_multMatrix)
                 likhandrotdecomposeMatrix_fs = om2.MFnDependencyNode(likhandrot_decomposeMatrix)
 
                 likhandmultMatrixSum_plug = likhandmultMatrix_fs.findPlug("matrixSum", False)
@@ -6027,7 +6531,11 @@ class MainWindow(QtWidgets.QDialog):
 
         llegoptions_sl_ls = om2.MSelectionList()
         llegoptions_sl_ls.add("Biped_LeftFootOptions_ctrl")
+        llegoptions_sl_ls.add("FkLeftJointLeg_grp")
+        llegoptions_sl_ls.add("LeftJointLeg_grp")
         llegoptions_obj = llegoptions_sl_ls.getDependNode(0)
+        fklleggrp_obj = llegoptions_sl_ls.getDependNode(1)
+        lleggrp_obj = llegoptions_sl_ls.getDependNode(2)
 
         self.ctrl_mod_n.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkLeftUpLeg_ctrl')
         self.ctrl_mod_n.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkLeftLeg_ctrl')
@@ -6192,94 +6700,110 @@ class MainWindow(QtWidgets.QDialog):
                     self.ctrl_mod_n.connect(fklegjointtransotp_plug, legjointtransinp_plug)
                     self.ctrl_mod_n.connect(fklegjointrototp_plug, legjointrotinp_plug)
 
-            if index < 2:
-                iklleggrp_sl_lst = om2.MSelectionList()
-                iklleggrp_sl_lst.add("LeftUpperLegIkCluster_grp")
-                iklleggrp_sl_lst.add("LeftUpperLegIkCluster2_grp")
-                iklleggrp_sl_lst.add("LeftLowerLegIkCluster_grp")
-                iklleggrp_sl_lst.add("LeftLowerLegIkCluster2_grp")
-                grp_legupperikcluster = iklleggrp_sl_lst.getDependNode(0)
-                grp_legupperikcluster2 = iklleggrp_sl_lst.getDependNode(1)
-                grp_leglowerikcluster = iklleggrp_sl_lst.getDependNode(2)
-                grp_leglowerikcluster2 = iklleggrp_sl_lst.getDependNode(3)
+            if self.autostretch.currentIndex() == 1:
+                if index < 2:
+                    iklleggrp_sl_lst = om2.MSelectionList()
+                    iklleggrp_sl_lst.add("LeftUpperLegIkCluster_grp")
+                    iklleggrp_sl_lst.add("LeftUpperLegIkCluster2_grp")
+                    iklleggrp_sl_lst.add("LeftLowerLegIkCluster_grp")
+                    iklleggrp_sl_lst.add("LeftLowerLegIkCluster2_grp")
+                    grp_legupperikcluster = iklleggrp_sl_lst.getDependNode(0)
+                    grp_legupperikcluster2 = iklleggrp_sl_lst.getDependNode(1)
+                    grp_leglowerikcluster = iklleggrp_sl_lst.getDependNode(2)
+                    grp_leglowerikcluster2 = iklleggrp_sl_lst.getDependNode(3)
 
-                llegjoint_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                legjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                    llegjoint_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                    legjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
 
-                llegmultMatrix_fs = om2.MFnDependencyNode(llegjoint_multMatrix)
-                llegdecomposeMatrix_fs = om2.MFnDependencyNode(legjoint_decomposeMatrix)
-                iklupperleggrp_fs = om2.MFnDependencyNode(grp_legupperikcluster)
-                ikllowerleggrp_fs = om2.MFnDependencyNode(grp_leglowerikcluster)
+                    llegmultMatrix_fs = om2.MFnDependencyNode(llegjoint_multMatrix)
+                    llegdecomposeMatrix_fs = om2.MFnDependencyNode(legjoint_decomposeMatrix)
+                    iklupperleggrp_fs = om2.MFnDependencyNode(grp_legupperikcluster)
+                    ikllowerleggrp_fs = om2.MFnDependencyNode(grp_leglowerikcluster)
 
-                llegmultMatrixSum_plug = llegmultMatrix_fs.findPlug("matrixSum", False)
-                llegdecomposeInpMatrix_plug = llegdecomposeMatrix_fs.findPlug("inputMatrix", False)
-                llegdecomposeOtpTrans_plug = llegdecomposeMatrix_fs.findPlug("outputTranslate", False)
-                llegdecomposeOtpRot_plug = llegdecomposeMatrix_fs.findPlug("outputRotate", False)
-                iklupperleggrpTrans_plug = iklupperleggrp_fs.findPlug("translate", False)
-                iklupperleggrpRot_plug = iklupperleggrp_fs.findPlug("rotate", False)
-                ikllowerleggrpTrans_plug = ikllowerleggrp_fs.findPlug("translate", False)
-                ikllowerleggrpRot_plug = ikllowerleggrp_fs.findPlug("rotate", False)
+                    llegmultMatrixSum_plug = llegmultMatrix_fs.findPlug("matrixSum", False)
+                    llegdecomposeInpMatrix_plug = llegdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                    llegdecomposeOtpTrans_plug = llegdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    llegdecomposeOtpRot_plug = llegdecomposeMatrix_fs.findPlug("outputRotate", False)
+                    iklupperleggrpTrans_plug = iklupperleggrp_fs.findPlug("translate", False)
+                    iklupperleggrpRot_plug = iklupperleggrp_fs.findPlug("rotate", False)
+                    ikllowerleggrpTrans_plug = ikllowerleggrp_fs.findPlug("translate", False)
+                    ikllowerleggrpRot_plug = ikllowerleggrp_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.renameNode(llegjoint_multMatrix, str(bindjnt_string)[2:][:-3]+"_multMatrix")
-                self.ctrl_mod_n.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"_decomposeMatrix")
-                self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(bindjnt_string)[3:][:-3]))
-                self.ctrl_mod_n.connect(llegmultMatrixSum_plug, llegdecomposeInpMatrix_plug)
+                    self.ctrl_mod_n.renameNode(llegjoint_multMatrix, str(bindjnt_string)[2:][:-3]+"_multMatrix")
+                    self.ctrl_mod_n.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"_decomposeMatrix")
+                    self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(bindjnt_string)[3:][:-3]))
+                    self.ctrl_mod_n.connect(llegmultMatrixSum_plug, llegdecomposeInpMatrix_plug)
 
-                fkllegstretch_expression = om1.MFnExpression()
+                    fkllegstretch_expression = om1.MFnExpression()
 
-                if index == 0:
-                    fkllegstretch_expression.create("Biped_FkLeftLeg_ctrl.translateY = Biped_FkLeftUpLeg_ctrl.stretchy")
-                    fkllegstretch_expression.create("Biped_FkLeftLeg_ctrl.translateZ = Biped_FkLeftLeg_ctrl.translateY/10")
+                    if index == 0:
+                        fkllegstretch_expression.create("Biped_FkLeftLeg_ctrl.translateY = Biped_FkLeftUpLeg_ctrl.stretchy")
+                        fkllegstretch_expression.create("Biped_FkLeftLeg_ctrl.translateZ = Biped_FkLeftLeg_ctrl.translateY/10")
 
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force LeftUpperLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.connect(llegdecomposeOtpTrans_plug, iklupperleggrpTrans_plug)
-                    self.ctrl_mod_n.connect(llegdecomposeOtpRot_plug, iklupperleggrpRot_plug)
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftUpperLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.ctrl_mod_n.connect(llegdecomposeOtpTrans_plug, iklupperleggrpTrans_plug)
+                        self.ctrl_mod_n.connect(llegdecomposeOtpRot_plug, iklupperleggrpRot_plug)
 
-                    lupperlegcluster2_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                    lupperlegcluster2_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                        lupperlegcluster2_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                        lupperlegcluster2_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
 
-                    lupperlegcluster2multMatrix_fs = om2.MFnDependencyNode(lupperlegcluster2_multMatrix)
-                    lupperlegcluster2decomposeMatrix_fs = om2.MFnDependencyNode(lupperlegcluster2_decomposeMatrix)
-                    lupperlegcluster2_fs = om2.MFnDependencyNode(grp_legupperikcluster2)
+                        lupperlegcluster2multMatrix_fs = om2.MFnDependencyNode(lupperlegcluster2_multMatrix)
+                        lupperlegcluster2decomposeMatrix_fs = om2.MFnDependencyNode(lupperlegcluster2_decomposeMatrix)
+                        lupperlegcluster2_fs = om2.MFnDependencyNode(grp_legupperikcluster2)
 
-                    lupperlegcluster2multMatrixSum_plug = lupperlegcluster2multMatrix_fs.findPlug("matrixSum", False)
-                    lupperlegcluster2decomposeInpMatrix_plug = lupperlegcluster2decomposeMatrix_fs.findPlug("inputMatrix", False)
-                    lupperlegcluster2decomposeOtpTrans_plug = lupperlegcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
-                    lupperlegcluster2Trans_plug = lupperlegcluster2_fs.findPlug("translate", False)
+                        lupperlegcluster2multMatrixSum_plug = lupperlegcluster2multMatrix_fs.findPlug("matrixSum", False)
+                        lupperlegcluster2decomposeInpMatrix_plug = lupperlegcluster2decomposeMatrix_fs.findPlug("inputMatrix", False)
+                        lupperlegcluster2decomposeOtpTrans_plug = lupperlegcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
+                        lupperlegcluster2Trans_plug = lupperlegcluster2_fs.findPlug("translate", False)
 
-                    self.ctrl_mod_n.renameNode(lupperlegcluster2_multMatrix, "LeftUpperLegCluster2_multMatrix")
-                    self.ctrl_mod_n.renameNode(lupperlegcluster2_decomposeMatrix,"LeftUpperLegCluster2_decomposeMatrix")
-                    self.ctrl_mod_n.connect(lupperlegcluster2multMatrixSum_plug, lupperlegcluster2decomposeInpMatrix_plug)
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force LeftLeg.worldMatrix[0] LeftUpperLegCluster2_multMatrix.matrixIn[0]')
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force LeftUpperLegIkCluster2_grp.parentInverseMatrix[0] LeftUpperLegCluster2_multMatrix.matrixIn[1]')
-                    self.ctrl_mod_n.connect(lupperlegcluster2decomposeOtpTrans_plug, lupperlegcluster2Trans_plug)
+                        self.ctrl_mod_n.renameNode(lupperlegcluster2_multMatrix, "LeftUpperLegCluster2_multMatrix")
+                        self.ctrl_mod_n.renameNode(lupperlegcluster2_decomposeMatrix,"LeftUpperLegCluster2_decomposeMatrix")
+                        self.ctrl_mod_n.connect(lupperlegcluster2multMatrixSum_plug, lupperlegcluster2decomposeInpMatrix_plug)
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftLeg.worldMatrix[0] LeftUpperLegCluster2_multMatrix.matrixIn[0]')
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftUpperLegIkCluster2_grp.parentInverseMatrix[0] LeftUpperLegCluster2_multMatrix.matrixIn[1]')
+                        self.ctrl_mod_n.connect(lupperlegcluster2decomposeOtpTrans_plug, lupperlegcluster2Trans_plug)
 
-                elif index == 1:
-                    fkllegstretch_expression.create("Biped_FkLeftFoot_ctrl.translateY = Biped_FkLeftLeg_ctrl.stretchy")
-                    fkllegstretch_expression.create("Biped_FkLeftFoot_ctrl.translateZ = Biped_FkLeftFoot_ctrl.translateY*(-1.5)")
+                    elif index == 1:
+                        fkllegstretch_expression.create("Biped_FkLeftFoot_ctrl.translateY = Biped_FkLeftLeg_ctrl.stretchy")
+                        fkllegstretch_expression.create("Biped_FkLeftFoot_ctrl.translateZ = Biped_FkLeftFoot_ctrl.translateY*(-1.5)")
 
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force LeftLowerLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.connect(llegdecomposeOtpTrans_plug, ikllowerleggrpTrans_plug)
-                    self.ctrl_mod_n.connect(llegdecomposeOtpRot_plug, ikllowerleggrpRot_plug)
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftLowerLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.ctrl_mod_n.connect(llegdecomposeOtpTrans_plug, ikllowerleggrpTrans_plug)
+                        self.ctrl_mod_n.connect(llegdecomposeOtpRot_plug, ikllowerleggrpRot_plug)
 
-                    llowerlegcluster2_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                    llowerlegcluster2_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                        llowerlegcluster2_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                        llowerlegcluster2_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
 
-                    llowerlegcluster2multMatrix_fs = om2.MFnDependencyNode(llowerlegcluster2_multMatrix)
-                    llowerlegcluster2decomposeMatrix_fs = om2.MFnDependencyNode(llowerlegcluster2_decomposeMatrix)
-                    llowerlegcluster2_fs = om2.MFnDependencyNode(grp_leglowerikcluster2)
+                        llowerlegcluster2multMatrix_fs = om2.MFnDependencyNode(llowerlegcluster2_multMatrix)
+                        llowerlegcluster2decomposeMatrix_fs = om2.MFnDependencyNode(llowerlegcluster2_decomposeMatrix)
+                        llowerlegcluster2_fs = om2.MFnDependencyNode(grp_leglowerikcluster2)
 
-                    llowerlegcluster2multMatrixSum_plug = llowerlegcluster2multMatrix_fs.findPlug("matrixSum", False)
-                    llowerlegcluster2decomposeInpMatrix_plug = llowerlegcluster2decomposeMatrix_fs.findPlug("inputMatrix", False)
-                    llowerlegcluster2decomposeOtpTrans_plug = llowerlegcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
-                    llowerlegcluster2Trans_plug = llowerlegcluster2_fs.findPlug("translate", False)
+                        llowerlegcluster2multMatrixSum_plug = llowerlegcluster2multMatrix_fs.findPlug("matrixSum", False)
+                        llowerlegcluster2decomposeInpMatrix_plug = llowerlegcluster2decomposeMatrix_fs.findPlug("inputMatrix", False)
+                        llowerlegcluster2decomposeOtpTrans_plug = llowerlegcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
+                        llowerlegcluster2Trans_plug = llowerlegcluster2_fs.findPlug("translate", False)
 
-                    self.ctrl_mod_n.renameNode(llowerlegcluster2_multMatrix, "LeftLowerLegCluster2_multMatrix")
-                    self.ctrl_mod_n.renameNode(llowerlegcluster2_decomposeMatrix,"LeftLowerLegCluster2_decomposeMatrix")
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force LeftFoot.worldMatrix[0] LeftLowerLegCluster2_multMatrix.matrixIn[0]')
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force LeftLowerLegIkCluster2_grp.parentInverseMatrix[0] LeftLowerLegCluster2_multMatrix.matrixIn[1]')
-                    self.ctrl_mod_n.connect(llowerlegcluster2multMatrixSum_plug, llowerlegcluster2decomposeInpMatrix_plug)
-                    self.ctrl_mod_n.connect(llowerlegcluster2decomposeOtpTrans_plug, llowerlegcluster2Trans_plug)
+                        self.ctrl_mod_n.renameNode(llowerlegcluster2_multMatrix, "LeftLowerLegCluster2_multMatrix")
+                        self.ctrl_mod_n.renameNode(llowerlegcluster2_decomposeMatrix,"LeftLowerLegCluster2_decomposeMatrix")
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftFoot.worldMatrix[0] LeftLowerLegCluster2_multMatrix.matrixIn[0]')
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftLowerLegIkCluster2_grp.parentInverseMatrix[0] LeftLowerLegCluster2_multMatrix.matrixIn[1]')
+                        self.ctrl_mod_n.connect(llowerlegcluster2multMatrixSum_plug, llowerlegcluster2decomposeInpMatrix_plug)
+                        self.ctrl_mod_n.connect(llowerlegcluster2decomposeOtpTrans_plug, llowerlegcluster2Trans_plug)
+
+            elif cmds.objExists("LeftLegIkCluster_grp") and cmds.objExists("IkStretchyLeftJointLeg_grp"):
+                self.ctrl_mod_n.commandToExecute('delete "LeftLegIkCluster_grp"')
+                self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_FkLeftUpLeg_ctrl.stretchy')
+                self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_FkLeftLeg_ctrl.stretchy')
+                self.ctrl_mod_n.doIt()
+
+        fklleggrp_fs = om2.MFnDependencyNode(fklleggrp_obj)
+        lleggrp_fs = om2.MFnDependencyNode(lleggrp_obj)
+
+        fklleggrpScal_plug = fklleggrp_fs.findPlug("scale", False)
+        lleggrpScal_plug = lleggrp_fs.findPlug("scale", False)
+
+        self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, fklleggrpScal_plug)
+        self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, lleggrpScal_plug)
 
         grp_legupperikcluster1 = om1.MObject()
         grp_legupperikcluster2 = om1.MObject()
@@ -6434,6 +6958,2026 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.commandToExecute('setAttr "IkLeftUpperLegGlobalScale_Average.operation" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Divide2.operation" 2')
                 # ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Sum.operation" 1')
+                # ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Sub.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Divide2.input2X" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Divide2.input2Y" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Divide2.input2Z" 2')
+                # ikspinedg_modifier.connect(liklegstretchsumotp_plug, liklegstretchclust1trans_plug)
+                ikspinedg_modifier.doIt()
+
+                ikspline_solver = ik_system.findSolver("ikSplineSolver")
+                ik_handle.setSolver(ikspline_solver)
+
+                grp_leglowerikcluster1 = om1.MObject()
+                grp_leglowerikcluster2 = om1.MObject()
+
+                if cmds.objExists("IkSplineLeftLowerLeg0"):
+                    ikllowerleg_sl_lst = om1.MSelectionList()
+                    ikllowerleg_sl_lst.add("IkSplineLeftLowerLeg*")
+                    ikllowerleg_sl_lst.getDependNode(0, obj_root)
+                    ikllowerleg_sl_lst.getDependNode(ikllowerleg_sl_lst.length()-1, obj_endspine)
+
+                    ikllowerleggrp_sl_lst = om1.MSelectionList()
+                    ikllowerleggrp_sl_lst.add("LeftLowerLegIkCluster1_grp")
+                    ikllowerleggrp_sl_lst.add("LeftLowerLegIkCluster2_grp")
+                    ikllowerleggrp_sl_lst.getDependNode(0, grp_leglowerikcluster1)
+                    ikllowerleggrp_sl_lst.getDependNode(1, grp_leglowerikcluster2)
+
+                    lleg_pathnode = om1.MDagPath()
+                    rootspine_path = lleg_pathnode.getAPathTo(obj_root)
+
+                    try:
+                        ikspineiksolver_lst.add("ikSplineSolver*")
+                    except:
+                        cmds.createNode("ikSplineSolver")
+
+                    self.iklleg_effector = ik_effector.create(obj_endspine)
+                    iklleg_effector_path = lleg_pathnode.getAPathTo(self.iklleg_effector)
+
+                    self.lleg_ik = ik_handle.create(rootspine_path, iklleg_effector_path)
+
+                    obj_array = om1.MPointArray()
+                    obj_lst_mpoint = []
+                    obj = om1.MObject()
+                    for index in range(ikllowerleg_sl_lst.length()):
+                        ikllowerleg_sl_lst.getDependNode(index, obj)
+                        obj_path = ikspineobj_path_n.getAPathTo(obj)
+                        obj_tn = om1.MFnTransform(obj_path)
+                        obj_t = obj_tn.translation(om1.MSpace.kWorld)
+                        obj_lst_mpoint.append(om1.MPoint(obj_t))
+                        obj_array.append(obj_lst_mpoint[index])
+
+                    self.ikspline_cv_tn = ikspinedag_n.create("transform", "LeftLowerLeg_SplineCv")
+                    ikspline_cv = ikspline_cv_n.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                    cmds.parent("LeftLowerLeg_SplineCv", "DoNotTouch")
+
+                    llegcrv_info = ikspinedg_modifier.createNode("curveInfo")
+                    llegstretchpercent = ikspinedg_modifier.createNode("multiplyDivide")
+                    llegstretchpow = ikspinedg_modifier.createNode("multiplyDivide")
+                    llegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                    llegscalediv = ikspinedg_modifier.createNode("multiplyDivide")
+                    liklegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                    # liklegstretchsub = ikspinedg_modifier.createNode("plusMinusAverage")
+                    # liklegstretchsum = ikspinedg_modifier.createNode("plusMinusAverage")
+
+                    llegcrvinfo_fs = om1.MFnDependencyNode(llegcrv_info)
+                    llegstretchpercent_fs = om1.MFnDependencyNode(llegstretchpercent)
+                    llegstretchpow_fs = om1.MFnDependencyNode(llegstretchpow)
+                    llegstretchdiv_fs = om1.MFnDependencyNode(llegstretchdiv)
+                    llegscalediv_fs = om1.MFnDependencyNode(llegscalediv)
+                    liklegstretchdiv_fs = om1.MFnDependencyNode(liklegstretchdiv)
+                    # liklegstretchsub_fs = om1.MFnDependencyNode(liklegstretchsub)
+                    # liklegstretchsum_fs = om1.MFnDependencyNode(liklegstretchsum)
+                    liklegstretchcluster1_fs = om1.MFnDependencyNode(grp_leglowerikcluster1)
+                    liklegstretchcluster2_fs = om1.MFnDependencyNode(grp_leglowerikcluster2)
+
+                    llegcrvinfoarc_plug = llegcrvinfo_fs.findPlug("arcLength")
+                    llegstretchpercentinp1y_plug = llegstretchpercent_fs.findPlug("input1Y")
+                    llegstretchpercentotp_plug = llegstretchpercent_fs.findPlug("outputY")
+                    llegstretchpowinp1x_plug = llegstretchpow_fs.findPlug("input1X")
+                    llegstretchpowinp1z_plug = llegstretchpow_fs.findPlug("input1Z")
+                    llegstretchpowotpx_plug = llegstretchpow_fs.findPlug("outputX")
+                    llegstretchpowotpz_plug = llegstretchpow_fs.findPlug("outputZ")
+                    llegstretchdivinp2x_plug = llegstretchdiv_fs.findPlug("input2X")
+                    llegstretchdivinp2z_plug = llegstretchdiv_fs.findPlug("input2Z")
+                    llegstretchdivotox_plug = llegstretchdiv_fs.findPlug("outputX")
+                    llegstretchdivotpz_plug = llegstretchdiv_fs.findPlug("outputZ")
+                    llegscaledivinp1y_plug = llegscalediv_fs.findPlug("input1Y")
+                    llegscaledivinp2y_plug = llegscalediv_fs.findPlug("input2Y")
+                    llegscaledivotpy_plug = llegscalediv_fs.findPlug("outputY")
+                    # liklegstretchsubotp_plug = liklegstretchsub_fs.findPlug("output3D")
+                    liklegstretchdivinp1_plug = liklegstretchdiv_fs.findPlug("input1")
+                    liklegstretchdivotp_plug = liklegstretchdiv_fs.findPlug("output")
+                    # liklegstretchsumotp_plug = liklegstretchsum_fs.findPlug("output3D")
+                    liklegstretchclust1trans_plug = liklegstretchcluster1_fs.findPlug("translate")
+                    liklegstretchclust2trans_plug = liklegstretchcluster2_fs.findPlug("translate")
+
+                    objparent = om1.MObject()
+                    objchild = om1.MObject()
+                    for index in range(ikllowerleg_sl_lst.length()):
+                        if index < ikllowerleg_sl_lst.length()-1:
+                            ikllowerleg_sl_lst.getDependNode(index, objparent)
+                            ikllowerleg_sl_lst.getDependNode(index+1, objchild)
+                            llegparentjnt_fs = om1.MFnDependencyNode(objparent)
+                            llegchildjnt_fs = om1.MFnDependencyNode(objchild)
+                            llegjnt_syplug = llegparentjnt_fs.findPlug("scaleY")
+                            llegjnt_sxplug = llegparentjnt_fs.findPlug("scaleX")
+                            llegjnt_szplug = llegparentjnt_fs.findPlug("scaleZ")
+                            llegjnt_sotpplug = llegparentjnt_fs.findPlug("scale")
+                            llegjnt_invsplug = llegchildjnt_fs.findPlug("inverseScale")
+                            ikspinedg_modifier.connect(llegstretchpercentotp_plug, llegjnt_syplug)
+                            ikspinedg_modifier.connect(llegstretchdivotox_plug, llegjnt_sxplug)
+                            ikspinedg_modifier.connect(llegstretchdivotpz_plug, llegjnt_szplug)
+                            ikspinedg_modifier.connect(llegjnt_sotpplug, llegjnt_invsplug)
+
+
+                    ikspinedg_modifier.renameNode(llegcrv_info, "LeftLowerLegSpline_Info")
+                    ikspinedg_modifier.renameNode(llegstretchpercent, "LeftLowerLegStretch_Percent")
+                    ikspinedg_modifier.renameNode(llegstretchpow, "LeftLowerLegStretch_Power")
+                    ikspinedg_modifier.renameNode(llegstretchdiv, "LeftLowerLegStretch_Divide")
+                    ikspinedg_modifier.renameNode(ikspline_cv, "LeftLowerLeg_SplineCvShape")
+                    ikspinedg_modifier.renameNode(self.lleg_ik, "LeftLowerLeg_Ik")
+                    ikspinedg_modifier.renameNode(self.iklleg_effector, "LeftLowerLeg_effector")
+                    ikspinedg_modifier.renameNode(llegscalediv, "IkLeftLowerLegGlobalScale_Average")
+                    ikspinedg_modifier.renameNode(liklegstretchdiv, "LeftLowerLegStretch_Divide2")
+                    # ikspinedg_modifier.renameNode(liklegstretchsub, "LeftLowerLegStretch_Sub")
+                    # ikspinedg_modifier.renameNode(liklegstretchsum, "LeftLowerLegStretch_Sum")
+                    ikspinedg_modifier.commandToExecute('parent "LeftLowerLeg_Ik" "DoNotTouch"')
+                    ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLeg_SplineCvShape.worldSpace[0] LeftLowerLeg_Ik.inCurve')
+                    ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "LeftLowerLegIk_skin" IkCvSplineLeftLowerLeg0 IkCvSplineLeftLowerLeg1 IkCvSplineLeftLowerLeg2 LeftLowerLeg_SplineCv')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLeg_Ik.dTwistControlEnable" 1')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLeg_Ik.dWorldUpType" 4')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLeg_Ik.dForwardAxis" 3')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLeg_Ik.dWorldUpAxis" 4')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLeg_Ik.dWorldUpVectorY" 0')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLeg_Ik.dWorldUpVectorEndY" 0')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLeg_Ik.dWorldUpVectorZ" -1')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLeg_Ik.dWorldUpVectorEndZ" -1')
+                    ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineLeftLowerLeg0.worldMatrix[0] LeftLowerLeg_Ik.dWorldUpMatrix')
+                    ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineLeftLowerLeg2.worldMatrix[0] LeftLowerLeg_Ik.dWorldUpMatrixEnd')
+                    ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLeg_SplineCvShape.worldSpace[0] LeftLowerLegSpline_Info.inputCurve')
+                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster_grp.translate LeftLowerLegStretch_Sub.input3D[0]')
+                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster2_grp.translate LeftLowerLegStretch_Sub.input3D[1]')
+                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster2_grp.translate LeftLowerLegStretch_Sum.input3D[0]')
+                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegStretch_Divide2.output LeftLowerLegStretch_Sum.input3D[1]')
+                    ikspinedg_modifier.connect(llegcrvinfoarc_plug, llegscaledivinp1y_plug)
+                    ikspinedg_modifier.connect(masterctrlsy_plug, llegscaledivinp2y_plug)
+                    ikspinedg_modifier.connect(llegscaledivotpy_plug, llegstretchpercentinp1y_plug)
+                    ikspinedg_modifier.connect(llegstretchpercentotp_plug, llegstretchpowinp1x_plug)
+                    ikspinedg_modifier.connect(llegstretchpercentotp_plug, llegstretchpowinp1z_plug)
+                    ikspinedg_modifier.connect(llegstretchpowotpx_plug, llegstretchdivinp2x_plug)
+                    ikspinedg_modifier.connect(llegstretchpowotpz_plug, llegstretchdivinp2z_plug)
+                    ikspinedg_modifier.connect(liklegstretchclust2trans_plug, liklegstretchdivinp1_plug)
+                    ikspinedg_modifier.connect(liklegstretchdivotp_plug, liklegstretchclust1trans_plug)
+                    ikspinedg_modifier.commandToExecute('float $leftlowerlegstretchinput1Y = `getAttr "LeftLowerLegStretch_Percent.input1Y"`; setAttr "LeftLowerLegStretch_Percent.input2Y" $leftlowerlegstretchinput1Y')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Power.input2X" 0.5')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Power.input2Z" 0.5')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Divide.input1X" 1')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Divide.input1Z" 1')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Percent.operation" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Power.operation" 3')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Divide.operation" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "IkLeftLowerLegGlobalScale_Average.operation" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Divide2.operation" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Divide2.input2X" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Divide2.input2Y" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Divide2.input2Z" 2')
+                    ikspinedg_modifier.doIt()
+
+                    ikspline_solver = ik_system.findSolver("ikSplineSolver")
+                    ik_handle.setSolver(ikspline_solver)
+
+        if cmds.objExists("NoFlipLeftLeg_Ik") and cmds.objExists("PVLeftLeg_Ik"):
+            llegik_sl_ls = om2.MSelectionList()
+            llegik_sl_ls.add("LeftLegIk_grp")
+            llegik_sl_ls.add("Biped_NoFlipLeftKnee_null")
+            llegik_sl_ls.add("Biped_IkLeftFoot_ctrl")
+            llegik_sl_ls.add("IkLeftJointLeg_grp")
+            llegik_sl_ls.add("IkStretchyLeftJointLeg_grp")
+            likleggrpobj_fs = om2.MFnDependencyNode(llegik_sl_ls.getDependNode(0))
+            noflipleftkneenullobj_fs = om2.MFnDependencyNode(llegik_sl_ls.getDependNode(1))
+            iklegctrl_fs = om2.MFnDependencyNode(llegik_sl_ls.getDependNode(2))
+            ikleftjointleggrp_fs = om2.MFnDependencyNode(llegik_sl_ls.getDependNode(3))
+
+            if self.typeofLLegIK.currentIndex() == 1 or 2:
+                liklegctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                liklegctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                self.ctrl_mod_n.renameNode(liklegctrl_multMatrix, "IkLeftLegCtrl_multMatrix")
+                self.ctrl_mod_n.renameNode(liklegctrl_decomposeMatrix, "IkLeftLegCtrl_decomposeMatrix")
+
+                liklegmultMatrix_fs = om2.MFnDependencyNode(liklegctrl_multMatrix)
+                liklegdecomposeMatrix_fs = om2.MFnDependencyNode(liklegctrl_decomposeMatrix)
+
+                liklegmultMatrixSum_plug = liklegmultMatrix_fs.findPlug("matrixSum", False)
+                liklegdecomposeInpMatrix_plug = liklegdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                liklegdecomposeOtpTrans_plug = liklegdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                liklegdecomposeOtpRot_plug = liklegdecomposeMatrix_fs.findPlug("outputRotate", False)
+                likleggrpTrans_plug = likleggrpobj_fs.findPlug("translate", False)
+                likleggrpRot_plug = likleggrpobj_fs.findPlug("rotate", False)
+                noflipleftkneenullTrans_plug = noflipleftkneenullobj_fs.findPlug("translate", False)
+                noflipleftkneenullRot_plug = noflipleftkneenullobj_fs.findPlug("rotate", False)
+                iklegctrlTrans_plug = iklegctrl_fs.findPlug("translate", False)
+                iklegctrlRot_plug = iklegctrl_fs.findPlug("rotate", False)
+                liklegjntScal_plug = likleggrpobj_fs.findPlug("scale", False)
+
+                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_IkLeftFoot_ctrl.worldMatrix[0] IkLeftLegCtrl_multMatrix.matrixIn[0]')
+                self.ctrl_mod_n.commandToExecute('parent LeftReverseFootHeel LeftLegIk_grp')
+                self.ctrl_mod_n.commandToExecute('poleVectorConstraint Biped_NoFlipLeftKnee_ctrl NoFlipLeftLeg_Ik')
+                self.ctrl_mod_n.commandToExecute('poleVectorConstraint Biped_PVLeftKnee_ctrl PVLeftLeg_Ik')
+                self.ctrl_mod_n.commandToExecute('setAttr "NoFlipLeftLeg_Ik.twist" 90')
+                self.ctrl_mod_n.connect(liklegmultMatrixSum_plug, liklegdecomposeInpMatrix_plug)
+                self.ctrl_mod_n.connect(liklegdecomposeOtpTrans_plug, likleggrpTrans_plug)
+                self.ctrl_mod_n.connect(liklegdecomposeOtpRot_plug, likleggrpRot_plug)
+                self.ctrl_mod_n.connect(iklegctrlTrans_plug, noflipleftkneenullTrans_plug)
+                self.ctrl_mod_n.connect(iklegctrlRot_plug, noflipleftkneenullRot_plug)
+                self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, liklegjntScal_plug)
+
+                if self.autostretch.currentIndex() == 1:
+                    liklegdistloc = om2.MFnDagNode()
+
+                    likupperlegdistloc1_tn = liklegdistloc.create("transform", "distloc_L_upleg1", llegik_sl_ls.getDependNode(4))
+                    likupperlegdistloc_ln = liklegdistloc.create("locator", "L_upleg1_Shape", likupperlegdistloc1_tn)
+                    likfootlegdistloc1_tn = liklegdistloc.create("transform", "distloc_L_legfoot1")
+                    likfootlegdistloc_ln = liklegdistloc.create("locator", "L_foot1_Shape", likfootlegdistloc1_tn)
+                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
+                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension1" "IkLeftLegDistance_Info"')
+                    self.ctrl_mod_n.doIt()
+
+                    luplegnull_transform_t = luplegnull_transform.translation(om2.MSpace.kTransform)
+                    likupperlegdistloc_transform = om2.MFnTransform(likupperlegdistloc1_tn)
+                    likupperlegdistloc_transform.setTranslation(luplegnull_transform_t, om2.MSpace.kTransform)
+
+                    IkLeftLegDistance_sl_ls = om2.MSelectionList()
+                    IkLeftLegDistance_sl_ls.add("IkLeftLegDistance_InfoShape")
+
+                    likfootlegDist_fs = om2.MFnDependencyNode(likfootlegdistloc1_tn)
+                    liklegjntDist_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(0))
+
+                    liklegjntDistPoint2_plug = liklegjntDist_fs.findPlug("endPoint", False)
+                    likfootlegDistOtpTrans_plug = likfootlegDist_fs.findPlug("translate", False)
+
+                    self.ctrl_mod_n.commandToExecute('connectAttr -force L_upleg1_Shape.worldPosition[0] IkLeftLegDistance_InfoShape.startPoint')
+                    self.ctrl_mod_n.connect(likfootlegDistOtpTrans_plug, liklegjntDistPoint2_plug)
+                    self.ctrl_mod_n.connect(liklegdecomposeOtpTrans_plug, likfootlegDistOtpTrans_plug)
+                    self.ctrl_mod_n.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalnoflipikleftlegtranslateY -attribute "translateY" -value $noflipikleftlegtranslateY IkNoFlipLeftLeg;')
+                    self.ctrl_mod_n.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalnoflipikleftlegtranslateY*2) -attribute "translateY" -value ($noflipikleftlegtranslateY*2) IkNoFlipLeftLeg;')
+                    self.ctrl_mod_n.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalnoflipikleftlegtranslateY -attribute "translateY" -value $noflipikleftfoottranslateY IkNoFlipLeftFoot;')
+                    self.ctrl_mod_n.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalnoflipikleftlegtranslateY*2) -attribute "translateY" -value ($noflipikleftfoottranslateY*2) IkNoFlipLeftFoot;')
+                    self.ctrl_mod_n.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalpvikleftlegtranslateY -attribute "translateY" -value $pvikleftlegtranslateY IkPVLeftLeg;')
+                    self.ctrl_mod_n.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalpvikleftlegtranslateY*2) -attribute "translateY" -value ($pvikleftlegtranslateY*2) IkPVLeftLeg;')
+                    self.ctrl_mod_n.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalpvikleftlegtranslateY -attribute "translateY" -value $pvikleftfoottranslateY IkPVLeftFoot;')
+                    self.ctrl_mod_n.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalpvikleftlegtranslateY*2) -attribute "translateY" -value ($pvikleftfoottranslateY*2) IkPVLeftFoot;')
+                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkNoFlipLeftLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkPVLeftLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkNoFlipLeftFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkPVLeftFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.ctrl_mod_n.commandToExecute('parent "IkLeftLegDistance_Info" "DoNotTouch"')
+                    self.ctrl_mod_n.commandToExecute('parent "distloc_L_legfoot1" "DoNotTouch"')
+
+                    self.ctrl_mod_n.commandToExecute('addAttr -longName "kneesnap" -niceName "Knee Snap" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_PVLeftKnee_ctrl')
+
+                    likupperlegdistloc2_tn = liklegdistloc.create("transform", "distloc_L_upleg2", llegik_sl_ls.getDependNode(4))
+                    likupperlegdistloc_ln = liklegdistloc.create("locator", "L_upleg2_Shape", likupperlegdistloc2_tn)
+                    likkneedistloc_tn = liklegdistloc.create("transform", "distloc_L_legknee")
+                    likkneedistloc_ln = liklegdistloc.create("locator", "L_legknee_Shape", likkneedistloc_tn)
+                    likfootlegdistloc2_tn = liklegdistloc.create("transform", "distloc_L_legfoot2")
+                    likfootlegdistloc_ln = liklegdistloc.create("locator", "L_legfoot2_Shape", likfootlegdistloc2_tn)
+                    pvleftkneectrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                    likpvuppertransblendnode = self.ctrl_mod_n.createNode("blendColors")
+                    likpvlowertransblendnode = self.ctrl_mod_n.createNode("blendColors")
+                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
+                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
+                    self.ctrl_mod_n.renameNode(pvleftkneectrl_decomposeMatrix, "PVLeftKnee_decomposeMatrix")
+                    self.ctrl_mod_n.renameNode(likpvuppertransblendnode, "PVLeftUpperLegTrans_blend")
+                    self.ctrl_mod_n.renameNode(likpvlowertransblendnode, "PVLeftLowerLegTrans_blend")
+                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension1" "LeftUpperLegDistance_Info"')
+                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension2" "LeftLowerLegDistance_Info"')
+                    self.ctrl_mod_n.doIt()
+
+                    likupperlegdistloc2_transform = om2.MFnTransform(likupperlegdistloc2_tn)
+                    likupperlegdistloc2_transform.setTranslation(luplegnull_transform_t, om2.MSpace.kTransform)
+
+                    IkLeftLegDistance_sl_ls.add("LeftUpperLegDistance_InfoShape")
+                    IkLeftLegDistance_sl_ls.add("LeftLowerLegDistance_InfoShape")
+                    IkLeftLegDistance_sl_ls.add("IkPVLeftLeg_translateY")
+                    IkLeftLegDistance_sl_ls.add("IkPVLeftFoot_translateY")
+                    IkLeftLegDistance_sl_ls.add("Biped_PVLeftKnee_ctrl")
+                    IkLeftLegDistance_sl_ls.add("IkNoFlipLeftLeg_translateY")
+                    IkLeftLegDistance_sl_ls.add("IkNoFlipLeftFoot_translateY")
+
+                    likkneeDist_fs = om2.MFnDependencyNode(likkneedistloc_tn)
+                    likfootlegDist_fs = om2.MFnDependencyNode(likfootlegdistloc2_tn)
+                    likupperlegjntDist_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(1))
+                    liklowerlegjntDist_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(2))
+                    pvleftkneekey_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(3))
+                    pvleftfootkey_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(4))
+                    pvleftkneectrlDecomposeMatrix_fs = om2.MFnDependencyNode(pvleftkneectrl_decomposeMatrix)
+                    likpvuppertransblendnode_fs = om2.MFnDependencyNode(likpvuppertransblendnode)
+                    likpvlowertransblendnode_fs = om2.MFnDependencyNode(likpvlowertransblendnode)
+                    pvleftkneectrl_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(5))
+                    pvlefkneejnt_fs = om2.MFnDependencyNode(pviklleg_sl_ls.getDependNode(1))
+                    pvleftfootjnt_fs = om2.MFnDependencyNode(pviklleg_sl_ls.getDependNode(2))
+
+                    likupperlegjntDistPoint2_plug = likupperlegjntDist_fs.findPlug("endPoint", False)
+                    liklowerlegjntDistPoint1_plug = liklowerlegjntDist_fs.findPlug("startPoint", False)
+                    liklowerlegjntDistPoint2_plug = liklowerlegjntDist_fs.findPlug("endPoint", False)
+                    likkneeDistOtpTrans_plug = likkneeDist_fs.findPlug("translate", False)
+                    likfootlegDistOtpTrans_plug = likfootlegDist_fs.findPlug("translate", False)
+                    pvleftkneectrlDecomposeMatrixOtpTrans_plug = pvleftkneectrlDecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    pvleftkneekeyotp_plug = pvleftkneekey_fs.findPlug("output", False)
+                    pvleftfootkeyotp_plug = pvleftfootkey_fs.findPlug("output", False)
+                    likpvuppertransblendnodeinp1g_plug = likpvuppertransblendnode_fs.findPlug("color1G", False)
+                    likpvuppertransblendnodeinp2g_plug = likpvuppertransblendnode_fs.findPlug("color2G", False)
+                    likpvuppertransblendnodeotp_plug = likpvuppertransblendnode_fs.findPlug("outputG", False)
+                    likpvuppertransblendnodeblender_plug = likpvuppertransblendnode_fs.findPlug("blender", False)
+                    likpvlowertransblendnodeinp1g_plug = likpvlowertransblendnode_fs.findPlug("color1G", False)
+                    likpvlowertransblendnodeinp2g_plug = likpvlowertransblendnode_fs.findPlug("color2G", False)
+                    likpvlowertransblendnodeotp_plug = likpvlowertransblendnode_fs.findPlug("outputG", False)
+                    likpvlowertransblendnodeblender_plug = likpvlowertransblendnode_fs.findPlug("blender", False)
+                    pvleftkneectrl_fs_plug = pvleftkneectrl_fs.findPlug("kneesnap", False)
+                    pvlefkneejntTrans_plug = pvlefkneejnt_fs.findPlug("translateY", False)
+                    pvleftfootjntTrans_plug = pvleftfootjnt_fs.findPlug("translateY", False)
+
+                    self.ctrl_mod_n.commandToExecute('connectAttr -force L_upleg2_Shape.worldPosition[0] LeftUpperLegDistance_InfoShape.startPoint')
+                    self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_PVLeftKnee_ctrl.worldMatrix[0] PVLeftKnee_decomposeMatrix.inputMatrix')
+                    self.ctrl_mod_n.connect(likkneeDistOtpTrans_plug, likupperlegjntDistPoint2_plug)
+                    self.ctrl_mod_n.connect(likkneeDistOtpTrans_plug, liklowerlegjntDistPoint1_plug)
+                    self.ctrl_mod_n.connect(likfootlegDistOtpTrans_plug, liklowerlegjntDistPoint2_plug)
+                    self.ctrl_mod_n.connect(liklegdecomposeOtpTrans_plug, likfootlegDistOtpTrans_plug)
+                    self.ctrl_mod_n.connect(pvleftkneectrlDecomposeMatrixOtpTrans_plug, likkneeDistOtpTrans_plug)
+
+                    self.ctrl_mod_n.disconnect(pvleftkneekeyotp_plug, pvlefkneejntTrans_plug)
+                    self.ctrl_mod_n.disconnect(pvleftfootkeyotp_plug, pvleftfootjntTrans_plug)
+                    self.ctrl_mod_n.connect(pvleftkneekeyotp_plug, likpvuppertransblendnodeinp2g_plug)
+                    self.ctrl_mod_n.connect(pvleftfootkeyotp_plug, likpvlowertransblendnodeinp2g_plug)
+                    self.ctrl_mod_n.connect(pvleftkneectrl_fs_plug, likpvuppertransblendnodeblender_plug)
+                    self.ctrl_mod_n.connect(pvleftkneectrl_fs_plug, likpvlowertransblendnodeblender_plug)
+                    self.ctrl_mod_n.connect(likpvuppertransblendnodeotp_plug, pvlefkneejntTrans_plug)
+                    self.ctrl_mod_n.connect(likpvlowertransblendnodeotp_plug, pvleftfootjntTrans_plug)
+                    self.ctrl_mod_n.commandToExecute('parent "distloc_L_legknee" "DoNotTouch"')
+                    self.ctrl_mod_n.commandToExecute('parent "distloc_L_legfoot2" "DoNotTouch"')
+                    self.ctrl_mod_n.commandToExecute('parent "LeftUpperLegDistance_Info" "DoNotTouch"')
+                    self.ctrl_mod_n.commandToExecute('parent "LeftLowerLegDistance_Info" "DoNotTouch"')
+
+                    self.ctrl_mod_n.commandToExecute('addAttr -longName "thighlength" -niceName "AutoKnee Thigh Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkLeftFoot_ctrl')
+                    self.ctrl_mod_n.commandToExecute('addAttr -longName "calflength" -niceName "AutoKnee Calf Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkLeftFoot_ctrl')
+                    self.ctrl_mod_n.doIt()
+
+                    likautokneeupperlegnode = self.ctrl_mod_n.createNode("multiplyDivide")
+                    likautokneelowerlegnode = self.ctrl_mod_n.createNode("multiplyDivide")
+                    self.ctrl_mod_n.renameNode(likautokneeupperlegnode, "NoFlipLeftLegTrans_multiply")
+                    self.ctrl_mod_n.renameNode(likautokneelowerlegnode, "NoFlipLeftFootTrans_multiply")
+
+                    likautokneeupperleg_fs = om2.MFnDependencyNode(likautokneeupperlegnode)
+                    likautokneelowerleg_fs = om2.MFnDependencyNode(likautokneelowerlegnode)
+                    noflipleftkneekey_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(6))
+                    noflipleftfootkey_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(7))
+                    nofliplefkneejntTrans_fs = om2.MFnDependencyNode(noflipiklleg_sl_ls.getDependNode(1))
+                    noflipleftfootjntTrans_fs = om2.MFnDependencyNode(noflipiklleg_sl_ls.getDependNode(2))
+
+                    ikautokneeupperlegInp1Y_plug = likautokneeupperleg_fs.findPlug("input1Y", False)
+                    ikautokneeupperlegInp2Y_plug = likautokneeupperleg_fs.findPlug("input2Y", False)
+                    ikautokneeupperlegOtp_plug = likautokneeupperleg_fs.findPlug("outputY", False)
+                    ikautokneelowerlegInp1Y_plug = likautokneelowerleg_fs.findPlug("input1Y", False)
+                    ikautokneelowerlegInp2Y_plug = likautokneelowerleg_fs.findPlug("input2Y", False)
+                    ikautokneelowerlegOtp_plug = likautokneelowerleg_fs.findPlug("outputY", False)
+                    noflipleftkneekeyotp_plug = noflipleftkneekey_fs.findPlug("output", False)
+                    noflipleftfootkeyotp_plug = noflipleftfootkey_fs.findPlug("output", False)
+                    nofliplefkneejnttty_plug = nofliplefkneejntTrans_fs.findPlug("translateY", False)
+                    noflipleftfootjntty_plug = noflipleftfootjntTrans_fs.findPlug("translateY", False)
+                    iklegctrlkneeupperleg_plug = iklegctrl_fs.findPlug("thighlength", False)
+                    iklegctrlkneelowerleg_plug = iklegctrl_fs.findPlug("calflength", False)
+
+                    self.ctrl_mod_n.disconnect(noflipleftkneekeyotp_plug, nofliplefkneejnttty_plug)
+                    self.ctrl_mod_n.disconnect(noflipleftfootkeyotp_plug, noflipleftfootjntty_plug)
+                    self.ctrl_mod_n.connect(iklegctrlkneeupperleg_plug, ikautokneeupperlegInp1Y_plug)
+                    self.ctrl_mod_n.connect(noflipleftkneekeyotp_plug, ikautokneeupperlegInp2Y_plug)
+                    self.ctrl_mod_n.connect(iklegctrlkneelowerleg_plug, ikautokneelowerlegInp1Y_plug)
+                    self.ctrl_mod_n.connect(noflipleftfootkeyotp_plug, ikautokneelowerlegInp2Y_plug)
+                    self.ctrl_mod_n.connect(ikautokneeupperlegOtp_plug, nofliplefkneejnttty_plug)
+                    self.ctrl_mod_n.connect(ikautokneelowerlegOtp_plug, noflipleftfootjntty_plug)
+                    self.ctrl_mod_n.commandToExecute('setAttr "NoFlipLeftLegTrans_multiply.operation" 1')
+                    self.ctrl_mod_n.commandToExecute('setAttr "NoFlipLeftFootTrans_multiply.operation" 1')
+
+                    leftlegglobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
+                    noflipleftlegglobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
+                    noflipleftfootlobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
+                    self.ctrl_mod_n.renameNode(leftlegglobalscalenode, "IKLeftLegGlobalScale_Average")
+                    self.ctrl_mod_n.renameNode(noflipleftlegglobalscalenode, "IKNoFlipLeftLegGlobalScale_Average")
+                    self.ctrl_mod_n.renameNode(noflipleftfootlobalscalenode, "IKNoFlipLeftFootGlobalScale_Average")
+
+                    leftlegglobalscale_fs = om2.MFnDependencyNode(leftlegglobalscalenode)
+                    noflipleftlegglobalscale_fs = om2.MFnDependencyNode(noflipleftlegglobalscalenode)
+                    noflipleftfootlobalscale_fs = om2.MFnDependencyNode(noflipleftfootlobalscalenode)
+                    masterlctrl_fs = om2.MFnDependencyNode(obj_masterctrl2)
+
+                    likupperlegjntDist_plug = likupperlegjntDist_fs.findPlug("distance", False)
+                    liklowerlegjntDist_plug = liklowerlegjntDist_fs.findPlug("distance", False)
+                    liklegjntDist_plug = liklegjntDist_fs.findPlug("distance", False)
+                    masterlctrlsy_plug = masterlctrl_fs.findPlug("scaleY", False)
+                    leftlegglobalscaleInp1Y_plug = leftlegglobalscale_fs.findPlug("input1Y", False)
+                    leftlegglobalscaleInp2Y_plug = leftlegglobalscale_fs.findPlug("input2Y", False)
+                    leftlegglobalscaleOtpY_plug = leftlegglobalscale_fs.findPlug("outputY", False)
+                    noflipleftlegglobalscaleInp1Y_plug = noflipleftlegglobalscale_fs.findPlug("input1Y", False)
+                    noflipleftlegglobalscaleInp2Y_plug = noflipleftlegglobalscale_fs.findPlug("input2Y", False)
+                    noflipleftlegglobalscaleOtpY_plug = noflipleftlegglobalscale_fs.findPlug("outputY", False)
+                    noflipleftfootlobalscaleInp1Y_plug = noflipleftfootlobalscale_fs.findPlug("input1Y", False)
+                    noflipleftfootlobalscaleInp2Y_plug = noflipleftfootlobalscale_fs.findPlug("input2Y", False)
+                    noflipleftfootlobalscaleOtpY_plug = noflipleftfootlobalscale_fs.findPlug("outputY", False)
+                    noflipleftkneekeyinp_plug = noflipleftkneekey_fs.findPlug("input", False)
+                    noflipleftfootkeyinp_plug = noflipleftfootkey_fs.findPlug("input", False)
+                    pvleftkneekeyinp_plug = pvleftkneekey_fs.findPlug("input", False)
+                    pvleftfootkeyinp_plug = pvleftfootkey_fs.findPlug("input", False)
+                    ikleftjointleggrps_plug = ikleftjointleggrp_fs.findPlug("scale", False)
+
+                    self.ctrl_mod_n.disconnect(liklegjntDist_plug, noflipleftkneekeyinp_plug)
+                    self.ctrl_mod_n.disconnect(liklegjntDist_plug, noflipleftfootkeyinp_plug)
+                    self.ctrl_mod_n.disconnect(liklegjntDist_plug, pvleftkneekeyinp_plug)
+                    self.ctrl_mod_n.disconnect(liklegjntDist_plug, pvleftfootkeyinp_plug)
+                    self.ctrl_mod_n.connect(liklowerlegjntDist_plug, noflipleftfootlobalscaleInp1Y_plug)
+                    self.ctrl_mod_n.connect(likupperlegjntDist_plug, noflipleftlegglobalscaleInp1Y_plug)
+                    self.ctrl_mod_n.connect(liklowerlegjntDist_plug, noflipleftfootlobalscaleInp1Y_plug)
+                    self.ctrl_mod_n.connect(masterlctrlsy_plug, noflipleftlegglobalscaleInp2Y_plug)
+                    self.ctrl_mod_n.connect(masterlctrlsy_plug, noflipleftfootlobalscaleInp2Y_plug)
+                    self.ctrl_mod_n.connect(noflipleftlegglobalscaleOtpY_plug, likpvuppertransblendnodeinp1g_plug)
+                    self.ctrl_mod_n.connect(noflipleftfootlobalscaleOtpY_plug, likpvlowertransblendnodeinp1g_plug)
+                    self.ctrl_mod_n.connect(liklegjntDist_plug, leftlegglobalscaleInp1Y_plug)
+                    self.ctrl_mod_n.connect(masterlctrlsy_plug, leftlegglobalscaleInp2Y_plug)
+                    self.ctrl_mod_n.connect(leftlegglobalscaleOtpY_plug, noflipleftkneekeyinp_plug)
+                    self.ctrl_mod_n.connect(leftlegglobalscaleOtpY_plug, noflipleftfootkeyinp_plug)
+                    self.ctrl_mod_n.connect(leftlegglobalscaleOtpY_plug, pvleftkneekeyinp_plug)
+                    self.ctrl_mod_n.connect(leftlegglobalscaleOtpY_plug, pvleftfootkeyinp_plug)
+                    self.ctrl_mod_n.commandToExecute('setAttr "IKNoFlipLeftLegGlobalScale_Average.operation" 2')
+                    self.ctrl_mod_n.commandToExecute('setAttr "IKNoFlipLeftFootGlobalScale_Average.operation" 2')
+                    self.ctrl_mod_n.commandToExecute('setAttr "IKLeftLegGlobalScale_Average.operation" 2')
+                    self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, ikleftjointleggrps_plug)
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "footrollswitch" -niceName "Auto/Manual Foot Roll" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftFootOptions_ctrl')
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "autoroll" -niceName "Auto Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "roll" -niceName "Roll" -attributeType double -minValue -90 -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "bendlimitangle" -niceName "Bend Limit Angle" -attributeType double -keyable true -defaultValue 45 Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "toestraightangle" -niceName "Toe Straight Angle" -attributeType double -keyable true -defaultValue 70 Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "manualroll" -niceName "Manual Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "heelroll" -niceName "Heel Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.doIt()
+
+                likheelclampnode = self.ctrl_mod_n.createNode("clamp")
+                self.ctrl_mod_n.renameNode(likheelclampnode, "LeftHeel_rotclamp")
+                likheelblendernode = self.ctrl_mod_n.createNode("blendColors")
+                self.ctrl_mod_n.renameNode(likheelblendernode, "LeftHeel_blend")
+                leg_reverse_sl_ls = om2.MSelectionList()
+                leg_reverse_sl_ls.add("LeftReverseFootHeel")
+                reverse_heel_obj = leg_reverse_sl_ls.getDependNode(0)
+
+                likheelclamp_fs = om2.MFnDependencyNode(likheelclampnode)
+                likheelblender_fs = om2.MFnDependencyNode(likheelblendernode)
+                reverseheel_fs = om2.MFnDependencyNode(reverse_heel_obj)
+
+                llegoptionsfootrollswitch_plug = llegoptions_fs.findPlug("footrollswitch", False)
+                likheelblender_plug = likheelblender_fs.findPlug("blender", False)
+                iklegctrlRoll_plug = iklegctrl_fs.findPlug("roll", False)
+                likheelclampInpR_plug = likheelclamp_fs.findPlug("inputR", False)
+                likheelclampOtpR_plug = likheelclamp_fs.findPlug("outputR", False)
+                likheelblendCol2R_plug = likheelblender_fs.findPlug("color2R", False)
+                iklegctrlHeelRoll_plug = iklegctrl_fs.findPlug("heelroll", False)
+                likheelblendCol1R_plug = likheelblender_fs.findPlug("color1R", False)
+                likheelblendOtpR_plug = likheelblender_fs.findPlug("outputR", False)
+                likheelclampInpX_plug = reverseheel_fs.findPlug("rotateX", False)
+
+                self.ctrl_mod_n.connect(llegoptionsfootrollswitch_plug, likheelblender_plug)
+                self.ctrl_mod_n.connect(iklegctrlRoll_plug, likheelclampInpR_plug)
+                self.ctrl_mod_n.connect(likheelclampOtpR_plug, likheelblendCol2R_plug)
+                self.ctrl_mod_n.connect(iklegctrlHeelRoll_plug, likheelblendCol1R_plug)
+                self.ctrl_mod_n.connect(likheelblendOtpR_plug, likheelclampInpX_plug)
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftHeel_rotclamp.minR" -90')
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "footroll" -niceName "Foot Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.doIt()
+
+                likballclampnode = self.ctrl_mod_n.createNode("clamp")
+                self.ctrl_mod_n.renameNode(likballclampnode, "LeftBall_rotclamp")
+                likballrangenode = self.ctrl_mod_n.createNode("setRange")
+                self.ctrl_mod_n.renameNode(likballrangenode, "LeftBall_range")
+                likballblendernode = self.ctrl_mod_n.createNode("blendColors")
+                self.ctrl_mod_n.renameNode(likballblendernode, "LeftBall_blend")
+                likballminusnode = self.ctrl_mod_n.createNode("plusMinusAverage")
+                self.ctrl_mod_n.renameNode(likballminusnode, "LeftBall_minus")
+                likballmultnode = self.ctrl_mod_n.createNode("multiplyDivide")
+                self.ctrl_mod_n.renameNode(likballmultnode, "LeftBall_percetmult")
+                likballrollmultnode = self.ctrl_mod_n.createNode("multiplyDivide")
+                self.ctrl_mod_n.renameNode(likballrollmultnode, "LeftBall_rollmult")
+                leg_reverse_sl_ls.add("LeftReverseFootToe")
+                reverse_toe_obj = leg_reverse_sl_ls.getDependNode(1)
+
+                likballclamp_fs = om2.MFnDependencyNode(likballclampnode)
+                likballrange_fs = om2.MFnDependencyNode(likballrangenode)
+                likballsub_fs = om2.MFnDependencyNode(likballminusnode)
+                likballmult_fs = om2.MFnDependencyNode(likballmultnode)
+                likballrollmult_fs = om2.MFnDependencyNode(likballrollmultnode)
+                likballblender_fs = om2.MFnDependencyNode(likballblendernode)
+                reversetoe_fs = om2.MFnDependencyNode(reverse_toe_obj)
+
+                likballblender_plug = likballblender_fs.findPlug("blender", False)
+                likballclampInpR_plug = likballclamp_fs.findPlug("inputR", False)
+                likballclampMinR_plug = likballclamp_fs.findPlug("minR", False)
+                iklegctrlBendLimit_plug = iklegctrl_fs.findPlug("bendlimitangle", False)
+                likballclampMaxR_plug = likballclamp_fs.findPlug("maxR", False)
+                likballrangeValueX_plug = likballrange_fs.findPlug("valueX", False)
+                likballrangeOldMinX_plug = likballrange_fs.findPlug("oldMinX", False)
+                likballrangeOldMaxX_plug = likballrange_fs.findPlug("oldMaxX", False)
+                likballrangeOutValueX_plug = likballrange_fs.findPlug("outValueX", False)
+                likballmultInp1X_plug = likballmult_fs.findPlug("input1X", False)
+                likballmultInp2X_plug = likballmult_fs.findPlug("input2X", False)
+                likballmultOtpX_plug = likballmult_fs.findPlug("outputX", False)
+                likballsubOtp1D_plug = likballsub_fs.findPlug("output1D", False)
+                likballrollmultInp1X_plug = likballrollmult_fs.findPlug("input1X", False)
+                likballrollmultInp2X_plug = likballrollmult_fs.findPlug("input2X", False)
+                likballrollmultOtpX_plug = likballrollmult_fs.findPlug("outputX", False)
+                likballblendCol2R_plug = likballblender_fs.findPlug("color2R", False)
+                iklegctrlBallRoll_plug = iklegctrl_fs.findPlug("footroll", False)
+                likballblendCol1R_plug = likballblender_fs.findPlug("color1R", False)
+                likballblendOtpR_plug = likballblender_fs.findPlug("outputR", False)
+                likballclampRotX_plug = reversetoe_fs.findPlug("rotateX", False)
+
+                self.ctrl_mod_n.connect(llegoptionsfootrollswitch_plug, likballblender_plug)
+                self.ctrl_mod_n.connect(iklegctrlRoll_plug, likballclampInpR_plug)
+                self.ctrl_mod_n.connect(iklegctrlBendLimit_plug, likballclampMaxR_plug)
+                self.ctrl_mod_n.connect(likballclampInpR_plug, likballrangeValueX_plug)
+                self.ctrl_mod_n.connect(likballclampMinR_plug, likballrangeOldMinX_plug)
+                self.ctrl_mod_n.connect(likballclampMaxR_plug, likballrangeOldMaxX_plug)
+                self.ctrl_mod_n.connect(likballrangeOutValueX_plug, likballmultInp1X_plug)
+                self.ctrl_mod_n.connect(likballsubOtp1D_plug, likballmultInp2X_plug)
+                self.ctrl_mod_n.connect(likballmultOtpX_plug, likballrollmultInp1X_plug)
+                self.ctrl_mod_n.connect(iklegctrlRoll_plug, likballrollmultInp2X_plug)
+                self.ctrl_mod_n.connect(likballrollmultOtpX_plug, likballblendCol2R_plug)
+                self.ctrl_mod_n.connect(iklegctrlBallRoll_plug, likballblendCol1R_plug)
+                self.ctrl_mod_n.connect(likballblendOtpR_plug, likballclampRotX_plug)
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_range.minX" 0')
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_range.maxX" 1')
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_minus.input1D[0]" 1')
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_minus.operation" 2')
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_percetmult.operation" 1')
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_rollmult.operation" 1')
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "toeroll" -niceName "Toe Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.doIt()
+
+                liktoeclampnode = self.ctrl_mod_n.createNode("clamp")
+                self.ctrl_mod_n.renameNode(liktoeclampnode, "LeftToe_rotclamp")
+                liktoeblendernode = self.ctrl_mod_n.createNode("blendColors")
+                self.ctrl_mod_n.renameNode(liktoeblendernode, "LeftToe_blend")
+                liktoerangernode = self.ctrl_mod_n.createNode("setRange")
+                self.ctrl_mod_n.renameNode(liktoerangernode, "LeftToe_range")
+                liktoemultnode = self.ctrl_mod_n.createNode("multiplyDivide")
+                self.ctrl_mod_n.renameNode(liktoemultnode, "LeftToe_percetmultiply")
+                leg_reverse_sl_ls.add("LeftReverseFootToeEnd")
+                reverse_toeend_obj = leg_reverse_sl_ls.getDependNode(2)
+
+                liktoeclamp_fs = om2.MFnDependencyNode(liktoeclampnode)
+                liktoerange_fs = om2.MFnDependencyNode(liktoerangernode)
+                liktoemult_fs = om2.MFnDependencyNode(liktoemultnode)
+                liktoeblender_fs = om2.MFnDependencyNode(liktoeblendernode)
+                reversetoeend_fs = om2.MFnDependencyNode(reverse_toeend_obj)
+
+                liktoeblender_plug = liktoeblender_fs.findPlug("blender", False)
+                iklegctrlStraightLimit_plug = iklegctrl_fs.findPlug("toestraightangle", False)
+                liktoeclampInpR_plug = liktoeclamp_fs.findPlug("inputR", False)
+                liktoeclampMinR_plug = liktoeclamp_fs.findPlug("minR", False)
+                liktoeclampMaxR_plug = liktoeclamp_fs.findPlug("maxR", False)
+                liktoerangeValueX_plug = liktoerange_fs.findPlug("valueX", False)
+                liktoerangeOldMinX_plug = liktoerange_fs.findPlug("oldMinX", False)
+                liktoerangeOldMaxX_plug = liktoerange_fs.findPlug("oldMaxX", False)
+                liktoerangeoOutValX_plug = liktoerange_fs.findPlug("outValueX", False)
+                liktoemultInp1X_plug = liktoemult_fs.findPlug("input1X", False)
+                liktoemultInp2X_plug = liktoemult_fs.findPlug("input2X", False)
+                liktoemultOtpX_plug = liktoemult_fs.findPlug("outputX", False)
+                liktoeblendCol2R_plug = liktoeblender_fs.findPlug("color2R", False)
+                iklegctrlToeRoll_plug = iklegctrl_fs.findPlug("toeroll", False)
+                liktoeblendCol1R_plug = liktoeblender_fs.findPlug("color1R", False)
+                liktoeblendOtpR_plug = liktoeblender_fs.findPlug("outputR", False)
+                liktoeclampRotX_plug = reversetoeend_fs.findPlug("rotateX", False)
+
+                self.ctrl_mod_n.connect(llegoptionsfootrollswitch_plug, liktoeblender_plug)
+                self.ctrl_mod_n.connect(iklegctrlRoll_plug, liktoeclampInpR_plug)
+                self.ctrl_mod_n.connect(iklegctrlBendLimit_plug, liktoeclampMinR_plug)
+                self.ctrl_mod_n.connect(iklegctrlStraightLimit_plug, liktoeclampMaxR_plug)
+                self.ctrl_mod_n.connect(liktoeclampInpR_plug, liktoerangeValueX_plug)
+                self.ctrl_mod_n.connect(liktoeclampMinR_plug, liktoerangeOldMinX_plug)
+                self.ctrl_mod_n.connect(liktoeclampMaxR_plug, liktoerangeOldMaxX_plug)
+                self.ctrl_mod_n.connect(liktoerangeoOutValX_plug, liktoemultInp1X_plug)
+                self.ctrl_mod_n.connect(liktoeclampInpR_plug, liktoemultInp2X_plug)
+                self.ctrl_mod_n.connect(liktoemultOtpX_plug, liktoeblendCol2R_plug)
+                self.ctrl_mod_n.commandToExecute('connectAttr -force LeftToe_range.outValueX LeftBall_minus.input1D[1]')
+                self.ctrl_mod_n.connect(iklegctrlToeRoll_plug, liktoeblendCol1R_plug)
+                self.ctrl_mod_n.connect(liktoeblendOtpR_plug, liktoeclampRotX_plug)
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftToe_range.minX" 0')
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftToe_range.maxX" 1')
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftToe_percetmultiply.operation" 1')
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "common" -niceName "Common" -attributeType "enum" -en "__________:" -keyable true Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "tilt" -niceName "Tilt" -attributeType double -minValue -180 -maxValue 180 -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.doIt()
+
+                likinnerlegtiltclampnode = self.ctrl_mod_n.createNode("clamp")
+                self.ctrl_mod_n.renameNode(likinnerlegtiltclampnode, "LeftInnerLegTilt_clamp")
+                likouterlegtiltclampnode = self.ctrl_mod_n.createNode("clamp")
+                self.ctrl_mod_n.renameNode(likouterlegtiltclampnode, "LeftOuterLegTilt_clamp")
+                leg_reverse_sl_ls.add("LeftReverseInnerFoot")
+                leg_reverse_sl_ls.add("LeftReverseOuterFoot")
+                reverse_inner_obj = leg_reverse_sl_ls.getDependNode(3)
+                reverse_outer_obj = leg_reverse_sl_ls.getDependNode(4)
+
+                likinnerclamp_fs = om2.MFnDependencyNode(likinnerlegtiltclampnode)
+                likouterclamp_fs = om2.MFnDependencyNode(likouterlegtiltclampnode)
+                reverseinnerfoot_fs = om2.MFnDependencyNode(reverse_inner_obj)
+                reverseouterfoot_fs = om2.MFnDependencyNode(reverse_outer_obj)
+
+                iklegctrlTilt_plug = iklegctrl_fs.findPlug("tilt", False)
+                likinnerclampInpB_plug = likinnerclamp_fs.findPlug("inputB", False)
+                likouterclampInpB_plug = likouterclamp_fs.findPlug("inputB", False)
+                likinnerclampOtpB_plug = likinnerclamp_fs.findPlug("outputB", False)
+                likinnerclampRotZ_plug = reverseinnerfoot_fs.findPlug("rotateZ", False)
+                likouterclampOtpB_plug = likouterclamp_fs.findPlug("outputB", False)
+                likouterclampRotZ_plug = reverseouterfoot_fs.findPlug("rotateZ", False)
+
+                self.ctrl_mod_n.connect(iklegctrlTilt_plug, likinnerclampInpB_plug)
+                self.ctrl_mod_n.connect(iklegctrlTilt_plug, likouterclampInpB_plug)
+                self.ctrl_mod_n.connect(likinnerclampOtpB_plug, likinnerclampRotZ_plug)
+                self.ctrl_mod_n.connect(likouterclampOtpB_plug, likouterclampRotZ_plug)
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftInnerLegTilt_clamp.maxB" 180')
+                self.ctrl_mod_n.commandToExecute('setAttr "LeftOuterLegTilt_clamp.minB" -180')
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "toespin" -niceName "Toe Spin" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "toewiggle" -niceName "Toe Wiggle" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.ctrl_mod_n.doIt()
+
+                leg_reverse_sl_ls.add("LeftReverseFootToeWiggle")
+                reverse_toewiggle_obj = leg_reverse_sl_ls.getDependNode(5)
+
+                reversetoewiggle_fs = om2.MFnDependencyNode(reverse_toewiggle_obj)
+
+                iklegctrlLean_plug = iklegctrl_fs.findPlug("lean", False)
+                likballclampRotZ_plug = reversetoe_fs.findPlug("rotateZ", False)
+                iklegctrlToeSpin_plug = iklegctrl_fs.findPlug("toespin", False)
+                liktoeclampRotY_plug = reversetoeend_fs.findPlug("rotateY", False)
+                iklegctrlToeWiggle_plug = iklegctrl_fs.findPlug("toewiggle", False)
+                reversetoewiggleRotX_plug = reversetoewiggle_fs.findPlug("rotateX", False)
+
+                self.ctrl_mod_n.connect(iklegctrlLean_plug, likballclampRotZ_plug)
+                self.ctrl_mod_n.connect(iklegctrlToeSpin_plug, liktoeclampRotY_plug)
+                self.ctrl_mod_n.connect(iklegctrlToeWiggle_plug, reversetoewiggleRotX_plug)
+        else:
+            self.ctrl_mod_n.commandToExecute('delete "Biped_IkLeftFoot_null"')
+            self.ctrl_mod_n.commandToExecute('delete "IkLeftJointLeg_grp"')
+            self.ctrl_mod_n.commandToExecute('delete "IkStretchyLeftJointLeg_grp"')
+            self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_LeftFootOptions_ctrl.fkik')
+
+        for index in range(fkrarm_sl_ls.length()):
+            jnt_obj = fkrarm_sl_ls.getDependNode(index)
+            jnt_string = fkrarm_sl_ls.getSelectionStrings(index)
+
+            if jnt_obj.hasFn(om2.MFn.kJoint):
+                rarmctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                rarmctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                self.ctrl_mod_n.renameNode(rarmctrl_multMatrix, str(jnt_string)[2:][:-3]+"_multMatrix")
+                self.ctrl_mod_n.renameNode(rarmctrl_decomposeMatrix, str(jnt_string)[2:][:-3]+"_decomposeMatrix")
+
+                rarmmultMatrix_fs = om2.MFnDependencyNode(rarmctrl_multMatrix)
+                rarmdecomposeMatrix_fs = om2.MFnDependencyNode(rarmctrl_decomposeMatrix)
+                rarmjnt_fs = om2.MFnDependencyNode(jnt_obj)
+
+                rarmmultMatrixSum_plug = rarmmultMatrix_fs.findPlug("matrixSum", False)
+                rarmdecomposeInpMatrix_plug = rarmdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                rarmdecomposeOtpTrans_plug = rarmdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                rarmdecomposeOtpRot_plug = rarmdecomposeMatrix_fs.findPlug("outputRotate", False)
+                rarmjntTrans_plug = rarmjnt_fs.findPlug("translate", False)
+                rarmjntRot_plug = rarmjnt_fs.findPlug("rotate", False)
+
+                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
+                self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
+                self.ctrl_mod_n.connect(rarmmultMatrixSum_plug, rarmdecomposeInpMatrix_plug)
+                self.ctrl_mod_n.connect(rarmdecomposeOtpTrans_plug, rarmjntTrans_plug)
+                self.ctrl_mod_n.connect(rarmdecomposeOtpRot_plug, rarmjntRot_plug)
+                if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
+                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
+
+        fkrarm_sl_ls = om2.MSelectionList()
+        fkrarm_sl_ls.add("FkRightArm")
+        fkrarm_sl_ls.add("FkRightForeArm")
+        fkrarm_sl_ls.add("FkRightHand")
+
+        ikrarm_sl_ls = om2.MSelectionList()
+        ikrarm_sl_ls.add("IkRightArm")
+        ikrarm_sl_ls.add("IkRightForeArm")
+        ikrarm_sl_ls.add("IkRightHand")
+
+        rhandoptions_sl_ls = om2.MSelectionList()
+        rhandoptions_sl_ls.add("Biped_RightHandOptions_ctrl")
+        rhandoptions_obj = rhandoptions_sl_ls.getDependNode(0)
+
+        self.ctrl_mod_n.commandToExecute('addAttr -longName "fkik" -niceName "Fk/Ik" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightHandOptions_ctrl')
+        self.ctrl_mod_n.doIt()
+
+        rhandoptions_fs = om2.MFnDependencyNode(rhandoptions_obj)
+        rhandoptionsfkik_plug = rhandoptions_fs.findPlug("fkik", False)
+
+        for index in range(rarm_sl_ls.length()):
+            fkjnt_obj = fkrarm_sl_ls.getDependNode(index)
+
+            ikjnt_obj = ikrarm_sl_ls.getDependNode(index)
+            ikjnt_string = ikrarm_sl_ls.getSelectionStrings(index)
+
+            bindjnt_obj = rarm_sl_ls.getDependNode(index)
+            bindjnt_string = rarm_sl_ls.getSelectionStrings(index)
+
+            if bindjnt_obj.hasFn(om2.MFn.kJoint):
+                if cmds.getAttr("{0}.jointOrientX".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(bindjnt_string)[3:][:-3])) != 0:
+                    jointort_xattr = cmds.getAttr("{0}.jointOrientX".format(str(bindjnt_string)[3:][:-3]))
+                    jointort_yattr = cmds.getAttr("{0}.jointOrientY".format(str(bindjnt_string)[3:][:-3]))
+                    jointort_zattr = cmds.getAttr("{0}.jointOrientZ".format(str(bindjnt_string)[3:][:-3]))
+
+                    cmds.setAttr("{0}.rotateX".format(str(bindjnt_string)[3:][:-3]), jointort_xattr)
+                    cmds.setAttr("{0}.rotateY".format(str(bindjnt_string)[3:][:-3]), jointort_yattr)
+                    cmds.setAttr("{0}.rotateZ".format(str(bindjnt_string)[3:][:-3]), jointort_zattr)
+
+                    cmds.setAttr("{0}.jointOrientX".format(str(bindjnt_string)[3:][:-3]), 0)
+                    cmds.setAttr("{0}.jointOrientY".format(str(bindjnt_string)[3:][:-3]), 0)
+                    cmds.setAttr("{0}.jointOrientZ".format(str(bindjnt_string)[3:][:-3]), 0)
+
+                armjoint_fs = om2.MFnDependencyNode(bindjnt_obj)
+                fkarmjoint_fs = om2.MFnDependencyNode(fkjnt_obj)
+
+                fkarmjointrototp_plug = fkarmjoint_fs.findPlug("rotate", False)
+                armjointrotinp_plug = armjoint_fs.findPlug("rotate", False)
+
+                if cmds.objExists("RightHand_Ik"):
+                    armblendnode = self.ctrl_mod_n.createNode("blendColors")
+                    armjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                    self.ctrl_mod_n.renameNode(armjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
+                    self.ctrl_mod_n.renameNode(armblendnode, str(bindjnt_string)[2:][:-3]+"_blend")
+
+                    armblendnode_fs = om2.MFnDependencyNode(armblendnode)
+                    armdecomposeMatrix_fs = om2.MFnDependencyNode(armjoint_decomposeMatrix)
+                    ikarmjoint_fs = om2.MFnDependencyNode(ikjnt_obj)
+
+                    armdecomposeInpMatrix_plug = armdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                    armdecomposeOtpRot_plug = armdecomposeMatrix_fs.findPlug("outputRotate", False)
+                    armblendnodeinp1_plug = armblendnode_fs.findPlug("color1", False)
+                    armblendnodeinp2_plug = armblendnode_fs.findPlug("color2", False)
+                    armblendnodeotp_plug = armblendnode_fs.findPlug("output", False)
+                    armblendnodeblender_plug = armblendnode_fs.findPlug("blender", False)
+                    ikarmjointrototp_plug = ikarmjoint_fs.findPlug("matrix", False)
+
+                    self.ctrl_mod_n.connect(ikarmjointrototp_plug, armdecomposeInpMatrix_plug)
+                    self.ctrl_mod_n.connect(armdecomposeOtpRot_plug, armblendnodeinp1_plug)
+                    self.ctrl_mod_n.connect(fkarmjointrototp_plug, armblendnodeinp2_plug)
+                    self.ctrl_mod_n.connect(armblendnodeotp_plug, armjointrotinp_plug)
+                    self.ctrl_mod_n.connect(rhandoptionsfkik_plug, armblendnodeblender_plug)
+
+                else:
+                    self.ctrl_mod_n.connect(fkarmjointrototp_plug, armjointrotinp_plug)
+                    self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_RightHandOptions_ctrl.fkik')
+                    self.ctrl_mod_n.commandToExecute('setAttr "IkRightArm.visibility" 0')
+
+        if cmds.objExists("RightHand_Ik"):
+            rhandik_sl_ls = om2.MSelectionList()
+            rhandik_sl_ls.add("RightHand_Ik")
+            rikhandobj_fs = om2.MFnDependencyNode(rhandik_sl_ls.getDependNode(0))
+            rikhand_fs = om2.MFnDependencyNode(ikrarm_sl_ls.getDependNode(2))
+
+            if self.typeofRHandIK.currentIndex() == 1 or 2:
+                rikhandctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                rikhandctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                rikhandrot_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                rikhandrot_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                self.ctrl_mod_n.renameNode(rikhandctrl_multMatrix, "IkRightHand_multMatrix")
+                self.ctrl_mod_n.renameNode(rikhandctrl_decomposeMatrix, "IkRightHand_decomposeMatrix")
+                self.ctrl_mod_n.renameNode(rikhandrot_multMatrix, "IkRightHandRot_multMatrix")
+                self.ctrl_mod_n.renameNode(rikhandrot_decomposeMatrix, "IkRightHandRot_decomposeMatrix")
+
+                rikhandmultMatrix_fs = om2.MFnDependencyNode(rikhandctrl_multMatrix)
+                rikhanddecomposeMatrix_fs = om2.MFnDependencyNode(rikhandctrl_decomposeMatrix)
+                rikhandrotmultMatrix_fs = om2.MFnDependencyNode(rikhandrot_multMatrix)
+                rikhandrotdecomposeMatrix_fs = om2.MFnDependencyNode(rikhandrot_decomposeMatrix)
+
+                rikhandmultMatrixSum_plug = rikhandmultMatrix_fs.findPlug("matrixSum", False)
+                rikhanddecomposeInpMatrix_plug = rikhanddecomposeMatrix_fs.findPlug("inputMatrix", False)
+                rikhanddecomposeOtpTrans_plug = rikhanddecomposeMatrix_fs.findPlug("outputTranslate", False)
+                rikhanddecomposeOtpRot_plug = rikhanddecomposeMatrix_fs.findPlug("outputRotate", False)
+                rikhandrotmultMatrixSum_plug = rikhandrotmultMatrix_fs.findPlug("matrixSum", False)
+                rikhandrotdecomposeInpMatrix_plug = rikhandrotdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                rikhandrotdecomposeOtpRot_plug = rikhandrotdecomposeMatrix_fs.findPlug("outputRotate", False)
+                rikhandjntTrans_plug = rikhandobj_fs.findPlug("translate", False)
+                rikhandjntRot_plug = rikhandobj_fs.findPlug("rotate", False)
+                rikhandRot_plug = rikhand_fs.findPlug("rotate", False)
+
+                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_IkRightHand_ctrl.worldMatrix[0] IkRightHand_multMatrix.matrixIn[0]')
+                self.ctrl_mod_n.commandToExecute('connectAttr -force RightHand_Ik.parentInverseMatrix[0] IkRightHand_multMatrix.matrixIn[1]')
+                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_IkRightHand_ctrl.worldMatrix[0] IkRightHandRot_multMatrix.matrixIn[0]')
+                self.ctrl_mod_n.commandToExecute('connectAttr -force IkRightHand.parentInverseMatrix[0] IkRightHandRot_multMatrix.matrixIn[1]')
+                self.ctrl_mod_n.connect(rikhandmultMatrixSum_plug, rikhanddecomposeInpMatrix_plug)
+                self.ctrl_mod_n.connect(rikhanddecomposeOtpTrans_plug, rikhandjntTrans_plug)
+                self.ctrl_mod_n.connect(rikhanddecomposeOtpRot_plug, rikhandjntRot_plug)
+                self.ctrl_mod_n.connect(rikhandrotmultMatrixSum_plug, rikhandrotdecomposeInpMatrix_plug)
+                self.ctrl_mod_n.connect(rikhandrotdecomposeOtpRot_plug, rikhandRot_plug)
+
+        else:
+            self.ctrl_mod_n.commandToExecute('delete "Biped_IkRightHand_null"')
+            self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_RightHandOptions_ctrl.fkik')
+            self.ctrl_mod_n.commandToExecute('setAttr "IkRightArm.visibility" 0')
+
+        rfinger_sl_ls = om2.MSelectionList()
+        rfinger_sl_ls.add("RightFinger*")
+        for index in range(rfinger_sl_ls.length()):
+            jnt_obj = rfinger_sl_ls.getDependNode(index)
+            jnt_string = rfinger_sl_ls.getSelectionStrings(index)
+
+            if jnt_obj.hasFn(om2.MFn.kJoint):
+                rfingerctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                rfingerctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                self.ctrl_mod_n.renameNode(rfingerctrl_multMatrix, str(jnt_string)[2:][:-3]+"_multMatrix")
+                self.ctrl_mod_n.renameNode(rfingerctrl_decomposeMatrix, str(jnt_string)[2:][:-3]+"_decomposeMatrix")
+
+                rfingermultMatrix_fs = om2.MFnDependencyNode(rfingerctrl_multMatrix)
+                rfingerdecomposeMatrix_fs = om2.MFnDependencyNode(rfingerctrl_decomposeMatrix)
+                rfingerjnt_fs = om2.MFnDependencyNode(jnt_obj)
+
+                rfingermultMatrixSum_plug = rfingermultMatrix_fs.findPlug("matrixSum", False)
+                rfingerdecomposeInpMatrix_plug = rfingerdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                rfingerdecomposeOtpTrans_plug = rfingerdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                rfingerdecomposeOtpRot_plug = rfingerdecomposeMatrix_fs.findPlug("outputRotate", False)
+                rfingerjntTrans_plug = rfingerjnt_fs.findPlug("translate", False)
+                rfingerjntRot_plug = rfingerjnt_fs.findPlug("rotate", False)
+
+                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
+                self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
+                self.ctrl_mod_n.connect(rfingermultMatrixSum_plug, rfingerdecomposeInpMatrix_plug)
+                self.ctrl_mod_n.connect(rfingerdecomposeOtpTrans_plug, rfingerjntTrans_plug)
+                self.ctrl_mod_n.connect(rfingerdecomposeOtpRot_plug, rfingerjntRot_plug)
+                self.ctrl_mod_n.connect(lfingerdecomposeOtpRot_plug, lfingerjntRot_plug)
+                if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
+                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
+
+                if cmds.objExists("Biped_{0}4_ctrl".format(str(jnt_string)[3:][:-4])):
+                    self.ctrl_mod_n.commandToExecute('setAttr "Biped_{0}4_ctrl.visibility" 0'.format(str(jnt_string)[3:][:-4]))
+
+        rfingergrp_sl_ls = om2.MSelectionList()
+        rfingergrp_sl_ls.add("Biped_RightFingers_null")
+        grp_obj = rfingergrp_sl_ls.getDependNode(0)
+
+        rfingergrp_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+        rfingergrp_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+        self.ctrl_mod_n.renameNode(rfingergrp_multMatrix, "RightFingers_multMatrix")
+        self.ctrl_mod_n.renameNode(rfingergrp_decomposeMatrix, "RightFingers_decomposeMatrix")
+
+        rfingergrpmultMatrix_fs = om2.MFnDependencyNode(rfingergrp_multMatrix)
+        rfingergrpdecomposeMatrix_fs = om2.MFnDependencyNode(rfingergrp_decomposeMatrix)
+        rfingergrp_fs = om2.MFnDependencyNode(grp_obj)
+
+        rfingergrpmultMatrixSum_plug = rfingergrpmultMatrix_fs.findPlug("matrixSum", False)
+        rfingergrpdecomposeInpMatrix_plug = rfingergrpdecomposeMatrix_fs.findPlug("inputMatrix", False)
+        rfingergrpdecomposeOtpTrans_plug = rfingergrpdecomposeMatrix_fs.findPlug("outputTranslate", False)
+        rfingergrpdecomposeOtpRot_plug = rfingergrpdecomposeMatrix_fs.findPlug("outputRotate", False)
+        rfingergrpjntTrans_plug = rfingergrp_fs.findPlug("translate", False)
+        rfingergrpjntRot_plug = rfingergrp_fs.findPlug("rotate", False)
+
+        self.ctrl_mod_n.commandToExecute('connectAttr -force RightHand.worldMatrix[0] RightFingers_multMatrix.matrixIn[0]')
+        self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_RightFingers_null.parentInverseMatrix[0] RightFingers_multMatrix.matrixIn[1]')
+        self.ctrl_mod_n.connect(rfingergrpmultMatrixSum_plug, rfingergrpdecomposeInpMatrix_plug)
+        self.ctrl_mod_n.connect(rfingergrpdecomposeOtpTrans_plug, rfingergrpjntTrans_plug)
+        self.ctrl_mod_n.connect(rfingergrpdecomposeOtpRot_plug, rfingergrpjntRot_plug)
+
+        ikrleg_sl_ls = om2.MSelectionList()
+        ikrleg_sl_ls.add("IkRightUpLeg")
+        ikrleg_sl_ls.add("IkRightLeg")
+        ikrleg_sl_ls.add("IkRightFoot")
+        ikrleg_sl_ls.add("IkRightToeBase")
+
+        noflipikrleg_sl_ls = om2.MSelectionList()
+        noflipikrleg_sl_ls.add("IkNoFlipRightUpLeg")
+        noflipikrleg_sl_ls.add("IkNoFlipRightLeg")
+        noflipikrleg_sl_ls.add("IkNoFlipRightFoot")
+
+        pvikrleg_sl_ls = om2.MSelectionList()
+        pvikrleg_sl_ls.add("IkPVRightUpLeg")
+        pvikrleg_sl_ls.add("IkPVRightLeg")
+        pvikrleg_sl_ls.add("IkPVRightFoot")
+
+        rlegoptions_sl_ls = om2.MSelectionList()
+        rlegoptions_sl_ls.add("Biped_RightFootOptions_ctrl")
+        rlegoptions_sl_ls.add("FkRightJointLeg_grp")
+        rlegoptions_sl_ls.add("RightJointLeg_grp")
+        rlegoptions_obj = rlegoptions_sl_ls.getDependNode(0)
+        fkrleggrp_obj = rlegoptions_sl_ls.getDependNode(1)
+        rleggrp_obj = rlegoptions_sl_ls.getDependNode(2)
+
+        self.ctrl_mod_n.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkRightUpLeg_ctrl')
+        self.ctrl_mod_n.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkRightLeg_ctrl')
+        self.ctrl_mod_n.commandToExecute('addAttr -longName "fkik" -niceName "Fk/Ik" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightFootOptions_ctrl')
+        self.ctrl_mod_n.commandToExecute('addAttr -longName "kneeswitch" -niceName "Auto/Manual Knee" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightFootOptions_ctrl')
+        self.ctrl_mod_n.doIt()
+
+        rlegoptions_fs = om2.MFnDependencyNode(rlegoptions_obj)
+        rlegoptionsfkik_plug = rlegoptions_fs.findPlug("fkik", False)
+        rlegoptionskneeswitch_plug = rlegoptions_fs.findPlug("kneeswitch", False)
+
+        for index in range(fkrleg_sl_ls.length()):
+            jnt_obj = fkrleg_sl_ls.getDependNode(index)
+            jnt_string = fkrleg_sl_ls.getSelectionStrings(index)
+
+            ikjnt_obj = ikrleg_sl_ls.getDependNode(index)
+            ikjnt_string = ikrleg_sl_ls.getSelectionStrings(index)
+
+            bindjnt_obj = rleg_sl_ls.getDependNode(index)
+            bindjnt_string = rleg_sl_ls.getSelectionStrings(index)
+
+            if jnt_obj.hasFn(om2.MFn.kJoint):
+                rlegctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                rlegctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                self.ctrl_mod_n.renameNode(rlegctrl_multMatrix, str(jnt_string)[2:][:-3]+"_multMatrix")
+                self.ctrl_mod_n.renameNode(rlegctrl_decomposeMatrix, str(jnt_string)[2:][:-3]+"_decomposeMatrix")
+
+                rlegmultMatrix_fs = om2.MFnDependencyNode(rlegctrl_multMatrix)
+                rlegdecomposeMatrix_fs = om2.MFnDependencyNode(rlegctrl_decomposeMatrix)
+                rlegjnt_fs = om2.MFnDependencyNode(jnt_obj)
+
+                rlegmultMatrixSum_plug = rlegmultMatrix_fs.findPlug("matrixSum", False)
+                rlegdecomposeInpMatrix_plug = rlegdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                rlegdecomposeOtpTrans_plug = rlegdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                rlegdecomposeOtpRot_plug = rlegdecomposeMatrix_fs.findPlug("outputRotate", False)
+                rlegjntTrans_plug = rlegjnt_fs.findPlug("translate", False)
+                rlegjntRot_plug = rlegjnt_fs.findPlug("rotate", False)
+
+                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
+                self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
+                self.ctrl_mod_n.connect(rlegmultMatrixSum_plug, rlegdecomposeInpMatrix_plug)
+                self.ctrl_mod_n.connect(rlegdecomposeOtpTrans_plug, rlegjntTrans_plug)
+                self.ctrl_mod_n.connect(rlegdecomposeOtpRot_plug, rlegjntRot_plug)
+
+                if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
+                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
+
+            if bindjnt_obj.hasFn(om2.MFn.kJoint):
+                if cmds.getAttr("{0}.jointOrientX".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(bindjnt_string)[3:][:-3])) != 0:
+                    jointort_xattr = cmds.getAttr("{0}.jointOrientX".format(str(bindjnt_string)[3:][:-3]))
+                    jointort_yattr = cmds.getAttr("{0}.jointOrientY".format(str(bindjnt_string)[3:][:-3]))
+                    jointort_zattr = cmds.getAttr("{0}.jointOrientZ".format(str(bindjnt_string)[3:][:-3]))
+
+                    cmds.setAttr("{0}.rotateX".format(str(bindjnt_string)[3:][:-3]), jointort_xattr)
+                    cmds.setAttr("{0}.rotateY".format(str(bindjnt_string)[3:][:-3]), jointort_yattr)
+                    cmds.setAttr("{0}.rotateZ".format(str(bindjnt_string)[3:][:-3]), jointort_zattr)
+
+                    cmds.setAttr("{0}.jointOrientX".format(str(bindjnt_string)[3:][:-3]), 0)
+                    cmds.setAttr("{0}.jointOrientY".format(str(bindjnt_string)[3:][:-3]), 0)
+                    cmds.setAttr("{0}.jointOrientZ".format(str(bindjnt_string)[3:][:-3]), 0)
+
+                legjoint_fs = om2.MFnDependencyNode(bindjnt_obj)
+                fklegjoint_fs = om2.MFnDependencyNode(jnt_obj)
+
+                legjointtransinp_plug = legjoint_fs.findPlug("translate", False)
+                legjointrotinp_plug = legjoint_fs.findPlug("rotate", False)
+                fklegjointtransotp_plug = fklegjoint_fs.findPlug("translate", False)
+                fklegjointrototp_plug = fklegjoint_fs.findPlug("rotate", False)
+
+                if cmds.objExists("NoFlipRightLeg_Ik") and cmds.objExists("PVRightLeg_Ik"):
+                    legrotblendnode = self.ctrl_mod_n.createNode("blendColors")
+                    legtransblendnode = self.ctrl_mod_n.createNode("blendColors")
+                    legjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                    self.ctrl_mod_n.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
+                    self.ctrl_mod_n.renameNode(legrotblendnode, str(bindjnt_string)[2:][:-3]+"_blend")
+                    self.ctrl_mod_n.renameNode(legtransblendnode, str(bindjnt_string)[2:][:-3]+"Trans_blend")
+
+                    legrotblendnode_fs = om2.MFnDependencyNode(legrotblendnode)
+                    legtransblendnode_fs = om2.MFnDependencyNode(legtransblendnode)
+                    legdecomposeMatrix_fs = om2.MFnDependencyNode(legjoint_decomposeMatrix)
+                    iklegjoint_fs = om2.MFnDependencyNode(ikjnt_obj)
+
+                    legdecomposeInpMatrix_plug = legdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                    legdecomposeOtpRot_plug = legdecomposeMatrix_fs.findPlug("outputRotate", False)
+                    legdecomposeOtpTrans_plug = legdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    legrotblendnodeinp1_plug = legrotblendnode_fs.findPlug("color1", False)
+                    legrotblendnodeinp2_plug = legrotblendnode_fs.findPlug("color2", False)
+                    legrotblendnodeotp_plug = legrotblendnode_fs.findPlug("output", False)
+                    legrotblendnodeblender_plug = legrotblendnode_fs.findPlug("blender", False)
+                    legtransblendnodeinp1_plug = legtransblendnode_fs.findPlug("color1", False)
+                    legtransblendnodeinp2_plug = legtransblendnode_fs.findPlug("color2", False)
+                    legtransblendnodeotp_plug = legtransblendnode_fs.findPlug("output", False)
+                    legtransblendnodeblender_plug = legtransblendnode_fs.findPlug("blender", False)
+                    iklegjointotp_plug = iklegjoint_fs.findPlug("matrix", False)
+
+                    self.ctrl_mod_n.connect(iklegjointotp_plug, legdecomposeInpMatrix_plug)
+                    self.ctrl_mod_n.connect(legdecomposeOtpRot_plug, legrotblendnodeinp1_plug)
+                    self.ctrl_mod_n.connect(legdecomposeOtpTrans_plug, legtransblendnodeinp1_plug)
+                    self.ctrl_mod_n.connect(fklegjointrototp_plug, legrotblendnodeinp2_plug)
+                    self.ctrl_mod_n.connect(fklegjointtransotp_plug, legtransblendnodeinp2_plug)
+                    self.ctrl_mod_n.connect(legrotblendnodeotp_plug, legjointrotinp_plug)
+                    self.ctrl_mod_n.connect(legtransblendnodeotp_plug, legjointtransinp_plug)
+                    self.ctrl_mod_n.connect(rlegoptionsfkik_plug, legrotblendnodeblender_plug)
+                    self.ctrl_mod_n.connect(rlegoptionsfkik_plug, legtransblendnodeblender_plug)
+
+                    if index < 3:
+                        noflipjnt_obj = noflipikrleg_sl_ls.getDependNode(index)
+                        noflipjnt_string = noflipikrleg_sl_ls.getSelectionStrings(index)
+
+                        pvjnt_obj = pvikrleg_sl_ls.getDependNode(index)
+                        pvjnt_string = pvikrleg_sl_ls.getSelectionStrings(index)
+
+                        legrotblendnode = self.ctrl_mod_n.createNode("blendColors")
+                        legtransblendnode = self.ctrl_mod_n.createNode("blendColors")
+                        nofliplegjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                        pvlegjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                        self.ctrl_mod_n.renameNode(nofliplegjoint_decomposeMatrix, str(noflipjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
+                        self.ctrl_mod_n.renameNode(pvlegjoint_decomposeMatrix, str(pvjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
+                        self.ctrl_mod_n.renameNode(legrotblendnode, str(bindjnt_string)[2:][:-3]+"Rot_kneeblend")
+                        self.ctrl_mod_n.renameNode(legtransblendnode, str(bindjnt_string)[2:][:-3]+"Trans_kneeblend")
+
+                        legrotblendnode_fs = om2.MFnDependencyNode(legrotblendnode)
+                        legtransblendnode_fs = om2.MFnDependencyNode(legtransblendnode)
+                        nofliplegdecomposeMatrix_fs = om2.MFnDependencyNode(nofliplegjoint_decomposeMatrix)
+                        pvlegdecomposeMatrix_fs = om2.MFnDependencyNode(pvlegjoint_decomposeMatrix)
+                        noflipiklegjoint_fs = om2.MFnDependencyNode(noflipjnt_obj)
+                        pviklegjoint_fs = om2.MFnDependencyNode(pvjnt_obj)
+
+                        nofliplegdecomposeInpMatrix_plug = nofliplegdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                        nofliplegdecomposeOtpRot_plug = nofliplegdecomposeMatrix_fs.findPlug("outputRotate", False)
+                        nofliplegdecomposeOtpTrans_plug = nofliplegdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                        pvlegdecomposeInpMatrix_plug = pvlegdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                        pvlegdecomposeOtpRot_plug = pvlegdecomposeMatrix_fs.findPlug("outputRotate", False)
+                        pvlegdecomposeOtpTrans_plug = pvlegdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                        legrotblendnodeinp1_plug = legrotblendnode_fs.findPlug("color1", False)
+                        legrotblendnodeinp2_plug = legrotblendnode_fs.findPlug("color2", False)
+                        legrotblendnodeotp_plug = legrotblendnode_fs.findPlug("output", False)
+                        legrotblendnodeblender_plug = legrotblendnode_fs.findPlug("blender", False)
+                        legtransblendnodeinp1_plug = legtransblendnode_fs.findPlug("color1", False)
+                        legtransblendnodeinp2_plug = legtransblendnode_fs.findPlug("color2", False)
+                        legtransblendnodeotp_plug = legtransblendnode_fs.findPlug("output", False)
+                        legtransblendnodeblender_plug = legtransblendnode_fs.findPlug("blender", False)
+                        noflipiklegjointotp_plug = noflipiklegjoint_fs.findPlug("matrix", False)
+                        pviklegjointotp_plug = pviklegjoint_fs.findPlug("matrix", False)
+                        iklegjointinpTrans_plug = iklegjoint_fs.findPlug("translate", False)
+                        iklegjointinpRot_plug = iklegjoint_fs.findPlug("jointOrient", False)
+
+                        self.ctrl_mod_n.connect(noflipiklegjointotp_plug, nofliplegdecomposeInpMatrix_plug)
+                        self.ctrl_mod_n.connect(pviklegjointotp_plug, pvlegdecomposeInpMatrix_plug)
+                        self.ctrl_mod_n.connect(pvlegdecomposeOtpRot_plug, legrotblendnodeinp1_plug)
+                        self.ctrl_mod_n.connect(pvlegdecomposeOtpTrans_plug, legtransblendnodeinp1_plug)
+                        self.ctrl_mod_n.connect(nofliplegdecomposeOtpRot_plug, legrotblendnodeinp2_plug)
+                        self.ctrl_mod_n.connect(nofliplegdecomposeOtpTrans_plug, legtransblendnodeinp2_plug)
+                        self.ctrl_mod_n.connect(legrotblendnodeotp_plug, iklegjointinpRot_plug)
+                        self.ctrl_mod_n.connect(legtransblendnodeotp_plug, iklegjointinpTrans_plug)
+                        self.ctrl_mod_n.connect(rlegoptionskneeswitch_plug, legrotblendnodeblender_plug)
+                        self.ctrl_mod_n.connect(rlegoptionskneeswitch_plug, legtransblendnodeblender_plug)
+                else:
+                    self.ctrl_mod_n.connect(fklegjointtransotp_plug, legjointtransinp_plug)
+                    self.ctrl_mod_n.connect(fklegjointrototp_plug, legjointrotinp_plug)
+
+            if self.autostretch.currentIndex() == 1:
+                if index < 2:
+                    ikrleggrp_sl_lst = om2.MSelectionList()
+                    ikrleggrp_sl_lst.add("RightUpperLegIkCluster_grp")
+                    ikrleggrp_sl_lst.add("RightUpperLegIkCluster2_grp")
+                    ikrleggrp_sl_lst.add("RightLowerLegIkCluster_grp")
+                    ikrleggrp_sl_lst.add("RightLowerLegIkCluster2_grp")
+                    grp_legupperikcluster = ikrleggrp_sl_lst.getDependNode(0)
+                    grp_legupperikcluster2 = ikrleggrp_sl_lst.getDependNode(1)
+                    grp_leglowerikcluster = ikrleggrp_sl_lst.getDependNode(2)
+                    grp_leglowerikcluster2 = ikrleggrp_sl_lst.getDependNode(3)
+
+                    rlegjoint_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                    legjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+
+                    rlegmultMatrix_fs = om2.MFnDependencyNode(rlegjoint_multMatrix)
+                    rlegdecomposeMatrix_fs = om2.MFnDependencyNode(legjoint_decomposeMatrix)
+                    iklupperleggrp_fs = om2.MFnDependencyNode(grp_legupperikcluster)
+                    ikllowerleggrp_fs = om2.MFnDependencyNode(grp_leglowerikcluster)
+
+                    rlegmultMatrixSum_plug = rlegmultMatrix_fs.findPlug("matrixSum", False)
+                    rlegdecomposeInpMatrix_plug = rlegdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                    rlegdecomposeOtpTrans_plug = rlegdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    rlegdecomposeOtpRot_plug = rlegdecomposeMatrix_fs.findPlug("outputRotate", False)
+                    iklupperleggrpTrans_plug = iklupperleggrp_fs.findPlug("translate", False)
+                    iklupperleggrpRot_plug = iklupperleggrp_fs.findPlug("rotate", False)
+                    ikrlowerleggrpTrans_plug = ikllowerleggrp_fs.findPlug("translate", False)
+                    ikrlowerleggrpRot_plug = ikllowerleggrp_fs.findPlug("rotate", False)
+
+                    self.ctrl_mod_n.renameNode(rlegjoint_multMatrix, str(bindjnt_string)[2:][:-3]+"_multMatrix")
+                    self.ctrl_mod_n.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"_decomposeMatrix")
+                    self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(bindjnt_string)[3:][:-3]))
+                    self.ctrl_mod_n.connect(rlegmultMatrixSum_plug, rlegdecomposeInpMatrix_plug)
+
+                    fkrlegstretch_expression = om1.MFnExpression()
+
+                    if index == 0:
+                        fkrlegstretch_expression.create("Biped_FkRightLeg_ctrl.translateY = Biped_FkRightUpLeg_ctrl.stretchy")
+                        fkrlegstretch_expression.create("Biped_FkRightLeg_ctrl.translateZ = Biped_FkRightLeg_ctrl.translateY/10")
+
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightUpperLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.ctrl_mod_n.connect(rlegdecomposeOtpTrans_plug, iklupperleggrpTrans_plug)
+                        self.ctrl_mod_n.connect(rlegdecomposeOtpRot_plug, iklupperleggrpRot_plug)
+
+                        rupperlegcluster2_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                        rupperlegcluster2_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+
+                        rupperlegcluster2multMatrix_fs = om2.MFnDependencyNode(rupperlegcluster2_multMatrix)
+                        rupperlegcluster2decomposeMatrix_fs = om2.MFnDependencyNode(rupperlegcluster2_decomposeMatrix)
+                        rupperlegcluster2_fs = om2.MFnDependencyNode(grp_legupperikcluster2)
+
+                        rupperlegcluster2multMatrixSum_plug = rupperlegcluster2multMatrix_fs.findPlug("matrixSum", False)
+                        rupperlegcluster2decomposeInpMatrix_plug = rupperlegcluster2decomposeMatrix_fs.findPlug("inputMatrix", False)
+                        rupperlegcluster2decomposeOtpTrans_plug = rupperlegcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
+                        rupperlegcluster2Trans_plug = rupperlegcluster2_fs.findPlug("translate", False)
+
+                        self.ctrl_mod_n.renameNode(rupperlegcluster2_multMatrix, "RightUpperLegCluster2_multMatrix")
+                        self.ctrl_mod_n.renameNode(rupperlegcluster2_decomposeMatrix,"RightUpperLegCluster2_decomposeMatrix")
+                        self.ctrl_mod_n.connect(rupperlegcluster2multMatrixSum_plug, rupperlegcluster2decomposeInpMatrix_plug)
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightLeg.worldMatrix[0] RightUpperLegCluster2_multMatrix.matrixIn[0]')
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightUpperLegIkCluster2_grp.parentInverseMatrix[0] RightUpperLegCluster2_multMatrix.matrixIn[1]')
+                        self.ctrl_mod_n.connect(rupperlegcluster2decomposeOtpTrans_plug, rupperlegcluster2Trans_plug)
+
+                    elif index == 1:
+                        fkrlegstretch_expression.create("Biped_FkRightFoot_ctrl.translateY = Biped_FkRightLeg_ctrl.stretchy")
+                        fkrlegstretch_expression.create("Biped_FkRightFoot_ctrl.translateZ = Biped_FkRightFoot_ctrl.translateY*(-1.5)")
+
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightLowerLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.ctrl_mod_n.connect(rlegdecomposeOtpTrans_plug, ikrlowerleggrpTrans_plug)
+                        self.ctrl_mod_n.connect(rlegdecomposeOtpRot_plug, ikrlowerleggrpRot_plug)
+
+                        rlowerlegcluster2_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                        rlowerlegcluster2_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+
+                        rlowerlegcluster2multMatrix_f = om2.MFnDependencyNode(rlowerlegcluster2_multMatrix)
+                        rlowerlegcluster2decomposeMatrix_fs = om2.MFnDependencyNode(rlowerlegcluster2_decomposeMatrix)
+                        rlowerlegcluster2_fs = om2.MFnDependencyNode(grp_leglowerikcluster2)
+
+                        rlowerlegcluster2multMatrixSum_plug = rlowerlegcluster2multMatrix_f.findPlug("matrixSum", False)
+                        rlowerlegcluster2decomposeInpMatrix_plug = rlowerlegcluster2decomposeMatrix_fs.findPlug("inputMatrix", False)
+                        rlowerlegcluster2decomposeOtpTrans_plug = rlowerlegcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
+                        rlowerlegcluster2Trans_plug = rlowerlegcluster2_fs.findPlug("translate", False)
+
+                        self.ctrl_mod_n.renameNode(rlowerlegcluster2_multMatrix, "RightLowerLegCluster2_multMatrix")
+                        self.ctrl_mod_n.renameNode(rlowerlegcluster2_decomposeMatrix,"RightLowerLegCluster2_decomposeMatrix")
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightFoot.worldMatrix[0] RightLowerLegCluster2_multMatrix.matrixIn[0]')
+                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightLowerLegIkCluster2_grp.parentInverseMatrix[0] RightLowerLegCluster2_multMatrix.matrixIn[1]')
+                        self.ctrl_mod_n.connect(rlowerlegcluster2multMatrixSum_plug, rlowerlegcluster2decomposeInpMatrix_plug)
+                        self.ctrl_mod_n.connect(rlowerlegcluster2decomposeOtpTrans_plug, rlowerlegcluster2Trans_plug)
+
+            elif cmds.objExists("RightLegIkCluster_grp") and cmds.objExists("IkStretchyRightJointLeg_grp"):
+                self.ctrl_mod_n.commandToExecute('delete "RightLegIkCluster_grp"')
+                self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_FkRightUpLeg_ctrl.stretchy')
+                self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_FkRightLeg_ctrl.stretchy')
+                self.ctrl_mod_n.doIt()
+
+        fkrleggrp_fs = om2.MFnDependencyNode(fkrleggrp_obj)
+        rleggrp_fs = om2.MFnDependencyNode(rleggrp_obj)
+
+        fkrleggrpScal_plug = fkrleggrp_fs.findPlug("scale", False)
+        rleggrpScal_plug = rleggrp_fs.findPlug("scale", False)
+
+        self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, fkrleggrpScal_plug)
+        self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, rleggrpScal_plug)
+
+        grp_legupperikcluster1 = om1.MObject()
+        grp_legupperikcluster2 = om1.MObject()
+
+        if self.autostretch.currentIndex() == 1:
+            if cmds.objExists("IkSplineRightUpperLeg0"):
+                ikrupperleg_sl_lst = om1.MSelectionList()
+                ikrupperleg_sl_lst.add("IkSplineRightUpperLeg*")
+                ikrupperleg_sl_lst.getDependNode(0, obj_root)
+                ikrupperleg_sl_lst.getDependNode(ikrupperleg_sl_lst.length()-1, obj_endspine)
+
+                ikrupperleggrp_sl_lst = om1.MSelectionList()
+                ikrupperleggrp_sl_lst.add("RightUpperLegIkCluster1_grp")
+                ikrupperleggrp_sl_lst.add("RightUpperLegIkCluster2_grp")
+                ikrupperleggrp_sl_lst.getDependNode(0, grp_legupperikcluster1)
+                ikrupperleggrp_sl_lst.getDependNode(1, grp_legupperikcluster2)
+
+                rleg_pathnode = om1.MDagPath()
+                rootspine_path = rleg_pathnode.getAPathTo(obj_root)
+
+                try:
+                    ikspineiksolver_lst.add("ikSplineSolver*")
+                except:
+                    cmds.createNode("ikSplineSolver")
+
+                self.ikrleg_effector = ik_effector.create(obj_endspine)
+                ikrleg_effector_path = rleg_pathnode.getAPathTo(self.ikrleg_effector)
+
+                self.rleg_ik = ik_handle.create(rootspine_path, ikrleg_effector_path)
+
+                obj_array = om1.MPointArray()
+                obj_lst_mpoint = []
+                obj = om1.MObject()
+                for index in range(ikrupperleg_sl_lst.length()):
+                    ikrupperleg_sl_lst.getDependNode(index, obj)
+                    obj_path = ikspineobj_path_n.getAPathTo(obj)
+                    obj_tn = om1.MFnTransform(obj_path)
+                    obj_t = obj_tn.translation(om1.MSpace.kWorld)
+                    obj_lst_mpoint.append(om1.MPoint(obj_t))
+                    obj_array.append(obj_lst_mpoint[index])
+
+                self.ikspline_cv_tn = ikspinedag_n.create("transform", "RightUpperLeg_SplineCv")
+                ikspline_cv = ikspline_cv_n.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                cmds.parent("RightUpperLeg_SplineCv", "DoNotTouch")
+
+                rlegcrv_info = ikspinedg_modifier.createNode("curveInfo")
+                rlegstretchpercent = ikspinedg_modifier.createNode("multiplyDivide")
+                rlegstretchpow = ikspinedg_modifier.createNode("multiplyDivide")
+                rlegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                rlegscalediv = ikspinedg_modifier.createNode("multiplyDivide")
+                riklegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                # liklegstretchsub = ikspinedg_modifier.createNode("plusMinusAverage")
+                # liklegstretchsum = ikspinedg_modifier.createNode("plusMinusAverage")
+
+                rlegcrvinfo_fs = om1.MFnDependencyNode(rlegcrv_info)
+                rlegstretchpercent_fs = om1.MFnDependencyNode(rlegstretchpercent)
+                rlegstretchpow_fs = om1.MFnDependencyNode(rlegstretchpow)
+                rlegstretchdiv_fs = om1.MFnDependencyNode(rlegstretchdiv)
+                rlegscalediv_fs = om1.MFnDependencyNode(rlegscalediv)
+                riklegstretchdiv_fs = om1.MFnDependencyNode(riklegstretchdiv)
+                # liklegstretchsub_fs = om1.MFnDependencyNode(liklegstretchsub)
+                # liklegstretchsum_fs = om1.MFnDependencyNode(liklegstretchsum)
+                riklegstretchcluster1_fs = om1.MFnDependencyNode(grp_legupperikcluster1)
+                riklegstretchcluster2_fs = om1.MFnDependencyNode(grp_legupperikcluster2)
+
+                rlegcrvinfoarc_plug = rlegcrvinfo_fs.findPlug("arcLength")
+                rlegstretchpercentinp1y_plug = rlegstretchpercent_fs.findPlug("input1Y")
+                rlegstretchpercentotp_plug = rlegstretchpercent_fs.findPlug("outputY")
+                rlegstretchpowinp1x_plug = rlegstretchpow_fs.findPlug("input1X")
+                rlegstretchpowinp1z_plug = rlegstretchpow_fs.findPlug("input1Z")
+                rlegstretchpowotpx_plug = rlegstretchpow_fs.findPlug("outputX")
+                rlegstretchpowotpz_plug = rlegstretchpow_fs.findPlug("outputZ")
+                rlegstretchdivinp2x_plug = rlegstretchdiv_fs.findPlug("input2X")
+                rlegstretchdivinp2z_plug = rlegstretchdiv_fs.findPlug("input2Z")
+                rlegstretchdivotox_plug = rlegstretchdiv_fs.findPlug("outputX")
+                rlegstretchdivotpz_plug = rlegstretchdiv_fs.findPlug("outputZ")
+                rlegscaledivinp1y_plug = rlegscalediv_fs.findPlug("input1Y")
+                rlegscaledivinp2y_plug = rlegscalediv_fs.findPlug("input2Y")
+                rlegscaledivotpy_plug = rlegscalediv_fs.findPlug("outputY")
+                # liklegstretchsubotp_plug = liklegstretchsub_fs.findPlug("output3D")
+                riklegstretchdivinp1_plug = riklegstretchdiv_fs.findPlug("input1")
+                riklegstretchdivotp_plug = riklegstretchdiv_fs.findPlug("output")
+                # liklegstretchsumotp_plug = liklegstretchsum_fs.findPlug("output3D")
+                riklegstretchclust1trans_plug = riklegstretchcluster1_fs.findPlug("translate")
+                riklegstretchclust2trans_plug = riklegstretchcluster2_fs.findPlug("translate")
+
+                objparent = om1.MObject()
+                objchild = om1.MObject()
+                for index in range(ikrupperleg_sl_lst.length()):
+                    if index < ikrupperleg_sl_lst.length()-1:
+                        ikrupperleg_sl_lst.getDependNode(index, objparent)
+                        ikrupperleg_sl_lst.getDependNode(index+1, objchild)
+                        rlegparentjnt_fs = om1.MFnDependencyNode(objparent)
+                        rlegchildjnt_fs = om1.MFnDependencyNode(objchild)
+                        rlegjnt_syplug = rlegparentjnt_fs.findPlug("scaleY")
+                        rlegjnt_sxplug = rlegparentjnt_fs.findPlug("scaleX")
+                        rlegjnt_szplug = rlegparentjnt_fs.findPlug("scaleZ")
+                        rlegjnt_sotpplug = rlegparentjnt_fs.findPlug("scale")
+                        rlegjnt_invsplug = rlegchildjnt_fs.findPlug("inverseScale")
+                        ikspinedg_modifier.connect(rlegstretchpercentotp_plug, rlegjnt_syplug)
+                        ikspinedg_modifier.connect(rlegstretchdivotox_plug, rlegjnt_sxplug)
+                        ikspinedg_modifier.connect(rlegstretchdivotpz_plug, rlegjnt_szplug)
+                        ikspinedg_modifier.connect(rlegjnt_sotpplug, rlegjnt_invsplug)
+
+
+                ikspinedg_modifier.renameNode(rlegcrv_info, "RightUpperLegSpline_Info")
+                ikspinedg_modifier.renameNode(rlegstretchpercent, "RightUpperLegStretch_Percent")
+                ikspinedg_modifier.renameNode(rlegstretchpow, "RightUpperLegStretch_Power")
+                ikspinedg_modifier.renameNode(rlegstretchdiv, "RightUpperLegStretch_Divide")
+                ikspinedg_modifier.renameNode(ikspline_cv, "RightUpperLeg_SplineCvShape")
+                ikspinedg_modifier.renameNode(self.rleg_ik, "RightUpperLeg_Ik")
+                ikspinedg_modifier.renameNode(self.ikrleg_effector, "RightUpperLeg_effector")
+                ikspinedg_modifier.renameNode(rlegscalediv, "IkRightUpperLegGlobalScale_Average")
+                ikspinedg_modifier.renameNode(riklegstretchdiv, "RightUpperLegStretch_Divide2")
+                # ikspinedg_modifier.renameNode(liklegstretchsub, "LeftUpperLegStretch_Sub")
+                # ikspinedg_modifier.renameNode(liklegstretchsum, "LeftUpperLegStretch_Sum")
+                ikspinedg_modifier.commandToExecute('parent "RightUpperLeg_Ik" "DoNotTouch"')
+                ikspinedg_modifier.commandToExecute('connectAttr -force RightUpperLeg_SplineCvShape.worldSpace[0] RightUpperLeg_Ik.inCurve')
+                ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "RightUpperLegIk_skin" IkCvSplineRightUpperLeg0 IkCvSplineRightUpperLeg1 IkCvSplineRightUpperLeg2 RightUpperLeg_SplineCv')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLeg_Ik.dTwistControlEnable" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLeg_Ik.dWorldUpType" 4')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLeg_Ik.dForwardAxis" 3')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLeg_Ik.dWorldUpAxis" 4')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLeg_Ik.dWorldUpVectorY" 0')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLeg_Ik.dWorldUpVectorEndY" 0')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLeg_Ik.dWorldUpVectorZ" -1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLeg_Ik.dWorldUpVectorEndZ" -1')
+                ikspinedg_modifier.commandToExecute('connectAttr -force IkCvSplineRightUpperLeg0.worldMatrix[0] RightUpperLeg_Ik.dWorldUpMatrix')
+                ikspinedg_modifier.commandToExecute('connectAttr -force IkCvSplineRightUpperLeg2.worldMatrix[0] RightUpperLeg_Ik.dWorldUpMatrixEnd')
+                ikspinedg_modifier.commandToExecute('connectAttr -force RightUpperLeg_SplineCvShape.worldSpace[0] RightUpperLegSpline_Info.inputCurve')
+                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegIkCluster1_grp.translate LeftUpperLegStretch_Sub.input3D[0]')
+                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegIkCluster2_grp.translate LeftUpperLegStretch_Sub.input3D[1]')
+                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegIkCluster2_grp.translate LeftUpperLegStretch_Sum.input3D[0]')
+                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegStretch_Divide2.output LeftUpperLegStretch_Sum.input3D[1]')
+                ikspinedg_modifier.connect(rlegcrvinfoarc_plug, rlegscaledivinp1y_plug)
+                ikspinedg_modifier.connect(masterctrlsy_plug, rlegscaledivinp2y_plug)
+                ikspinedg_modifier.connect(rlegscaledivotpy_plug, rlegstretchpercentinp1y_plug)
+                ikspinedg_modifier.connect(rlegstretchpercentotp_plug, rlegstretchpowinp1x_plug)
+                ikspinedg_modifier.connect(rlegstretchpercentotp_plug, rlegstretchpowinp1z_plug)
+                ikspinedg_modifier.connect(rlegstretchpowotpx_plug, rlegstretchdivinp2x_plug)
+                ikspinedg_modifier.connect(rlegstretchpowotpz_plug, rlegstretchdivinp2z_plug)
+                ikspinedg_modifier.connect(riklegstretchclust2trans_plug, riklegstretchdivinp1_plug)
+                ikspinedg_modifier.connect(riklegstretchdivotp_plug, riklegstretchclust1trans_plug)
+                ikspinedg_modifier.commandToExecute('float $rightupperlegstretchinput1Y = `getAttr "RightUpperLegStretch_Percent.input1Y"`; setAttr "RightUpperLegStretch_Percent.input2Y" $rightupperlegstretchinput1Y')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Power.input2X" 0.5')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Power.input2Z" 0.5')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide.input1X" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide.input1Z" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Percent.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Power.operation" 3')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "IkRightUpperLegGlobalScale_Average.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide2.operation" 2')
+                # ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Sum.operation" 1')
+                # ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Sub.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide2.input2X" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide2.input2Y" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide2.input2Z" 2')
+                # ikspinedg_modifier.connect(liklegstretchsumotp_plug, liklegstretchclust1trans_plug)
+                ikspinedg_modifier.doIt()
+
+                ikspline_solver = ik_system.findSolver("ikSplineSolver")
+                ik_handle.setSolver(ikspline_solver)
+
+                grp_leglowerikcluster1 = om1.MObject()
+                grp_leglowerikcluster2 = om1.MObject()
+
+                if cmds.objExists("IkSplineRightLowerLeg0"):
+                    ikrlowerleg_sl_lst = om1.MSelectionList()
+                    ikrlowerleg_sl_lst.add("IkSplineRightLowerLeg*")
+                    ikrlowerleg_sl_lst.getDependNode(0, obj_root)
+                    ikrlowerleg_sl_lst.getDependNode(ikrlowerleg_sl_lst.length()-1, obj_endspine)
+
+                    ikrlowerleggrp_sl_lst = om1.MSelectionList()
+                    ikrlowerleggrp_sl_lst.add("RightLowerLegIkCluster1_grp")
+                    ikrlowerleggrp_sl_lst.add("RightLowerLegIkCluster2_grp")
+                    ikrlowerleggrp_sl_lst.getDependNode(0, grp_leglowerikcluster1)
+                    ikrlowerleggrp_sl_lst.getDependNode(1, grp_leglowerikcluster2)
+
+                    rleg_pathnode = om1.MDagPath()
+                    rootspine_path = rleg_pathnode.getAPathTo(obj_root)
+
+                    try:
+                        ikspineiksolver_lst.add("ikSplineSolver*")
+                    except:
+                        cmds.createNode("ikSplineSolver")
+
+                    self.ikrleg_effector = ik_effector.create(obj_endspine)
+                    ikrleg_effector_path = rleg_pathnode.getAPathTo(self.ikrleg_effector)
+
+                    self.rleg_ik = ik_handle.create(rootspine_path, ikrleg_effector_path)
+
+                    obj_array = om1.MPointArray()
+                    obj_lst_mpoint = []
+                    obj = om1.MObject()
+                    for index in range(ikrlowerleg_sl_lst.length()):
+                        ikrlowerleg_sl_lst.getDependNode(index, obj)
+                        obj_path = ikspineobj_path_n.getAPathTo(obj)
+                        obj_tn = om1.MFnTransform(obj_path)
+                        obj_t = obj_tn.translation(om1.MSpace.kWorld)
+                        obj_lst_mpoint.append(om1.MPoint(obj_t))
+                        obj_array.append(obj_lst_mpoint[index])
+
+                    self.ikspline_cv_tn = ikspinedag_n.create("transform", "RightLowerLeg_SplineCv")
+                    ikspline_cv = ikspline_cv_n.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                    cmds.parent("RightLowerLeg_SplineCv", "DoNotTouch")
+
+                    rlegcrv_info = ikspinedg_modifier.createNode("curveInfo")
+                    rlegstretchpercent = ikspinedg_modifier.createNode("multiplyDivide")
+                    rlegstretchpow = ikspinedg_modifier.createNode("multiplyDivide")
+                    rlegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                    rlegscalediv = ikspinedg_modifier.createNode("multiplyDivide")
+                    riklegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                    # liklegstretchsub = ikspinedg_modifier.createNode("plusMinusAverage")
+                    # liklegstretchsum = ikspinedg_modifier.createNode("plusMinusAverage")
+
+                    rlegcrvinfo_fs = om1.MFnDependencyNode(rlegcrv_info)
+                    rlegstretchpercent_fs = om1.MFnDependencyNode(rlegstretchpercent)
+                    rlegstretchpow_fs = om1.MFnDependencyNode(rlegstretchpow)
+                    rlegstretchdiv_fs = om1.MFnDependencyNode(rlegstretchdiv)
+                    rlegscalediv_fs = om1.MFnDependencyNode(rlegscalediv)
+                    riklegstretchdiv_fs = om1.MFnDependencyNode(riklegstretchdiv)
+                    # liklegstretchsub_fs = om1.MFnDependencyNode(liklegstretchsub)
+                    # liklegstretchsum_fs = om1.MFnDependencyNode(liklegstretchsum)
+                    riklegstretchcluster1_fs = om1.MFnDependencyNode(grp_leglowerikcluster1)
+                    riklegstretchcluster2_fs = om1.MFnDependencyNode(grp_leglowerikcluster2)
+
+                    rlegcrvinfoarc_plug = rlegcrvinfo_fs.findPlug("arcLength")
+                    rlegstretchpercentinp1y_plug = rlegstretchpercent_fs.findPlug("input1Y")
+                    rlegstretchpercentotp_plug = rlegstretchpercent_fs.findPlug("outputY")
+                    rlegstretchpowinp1x_plug = rlegstretchpow_fs.findPlug("input1X")
+                    rlegstretchpowinp1z_plug = rlegstretchpow_fs.findPlug("input1Z")
+                    rlegstretchpowotpx_plug = rlegstretchpow_fs.findPlug("outputX")
+                    rlegstretchpowotpz_plug = rlegstretchpow_fs.findPlug("outputZ")
+                    rlegstretchdivinp2x_plug = rlegstretchdiv_fs.findPlug("input2X")
+                    rlegstretchdivinp2z_plug = rlegstretchdiv_fs.findPlug("input2Z")
+                    rlegstretchdivotox_plug = rlegstretchdiv_fs.findPlug("outputX")
+                    rlegstretchdivotpz_plug = rlegstretchdiv_fs.findPlug("outputZ")
+                    rlegscaledivinp1y_plug = rlegscalediv_fs.findPlug("input1Y")
+                    rlegscaledivinp2y_plug = rlegscalediv_fs.findPlug("input2Y")
+                    rlegscaledivotpy_plug = rlegscalediv_fs.findPlug("outputY")
+                    # liklegstretchsubotp_plug = liklegstretchsub_fs.findPlug("output3D")
+                    riklegstretchdivinp1_plug = riklegstretchdiv_fs.findPlug("input1")
+                    riklegstretchdivotp_plug = riklegstretchdiv_fs.findPlug("output")
+                    # liklegstretchsumotp_plug = liklegstretchsum_fs.findPlug("output3D")
+                    riklegstretchclust1trans_plug = riklegstretchcluster1_fs.findPlug("translate")
+                    riklegstretchclust2trans_plug = riklegstretchcluster2_fs.findPlug("translate")
+
+                    objparent = om1.MObject()
+                    objchild = om1.MObject()
+                    for index in range(ikrlowerleg_sl_lst.length()):
+                        if index < ikrlowerleg_sl_lst.length()-1:
+                            ikrlowerleg_sl_lst.getDependNode(index, objparent)
+                            ikrlowerleg_sl_lst.getDependNode(index+1, objchild)
+                            rlegparentjnt_fs = om1.MFnDependencyNode(objparent)
+                            rlegchildjnt_fs = om1.MFnDependencyNode(objchild)
+                            rlegjnt_syplug = rlegparentjnt_fs.findPlug("scaleY")
+                            rlegjnt_sxplug = rlegparentjnt_fs.findPlug("scaleX")
+                            rlegjnt_szplug = rlegparentjnt_fs.findPlug("scaleZ")
+                            rlegjnt_sotpplug = rlegparentjnt_fs.findPlug("scale")
+                            rlegjnt_invsplug = rlegchildjnt_fs.findPlug("inverseScale")
+                            ikspinedg_modifier.connect(rlegstretchpercentotp_plug, rlegjnt_syplug)
+                            ikspinedg_modifier.connect(rlegstretchdivotox_plug, rlegjnt_sxplug)
+                            ikspinedg_modifier.connect(rlegstretchdivotpz_plug, rlegjnt_szplug)
+                            ikspinedg_modifier.connect(rlegjnt_sotpplug, rlegjnt_invsplug)
+
+
+                    ikspinedg_modifier.renameNode(rlegcrv_info, "RightLowerLegSpline_Info")
+                    ikspinedg_modifier.renameNode(rlegstretchpercent, "RightLowerLegStretch_Percent")
+                    ikspinedg_modifier.renameNode(rlegstretchpow, "RightLowerLegStretch_Power")
+                    ikspinedg_modifier.renameNode(rlegstretchdiv, "RightLowerLegStretch_Divide")
+                    ikspinedg_modifier.renameNode(ikspline_cv, "RightLowerLeg_SplineCvShape")
+                    ikspinedg_modifier.renameNode(self.rleg_ik, "RightLowerLeg_Ik")
+                    ikspinedg_modifier.renameNode(self.ikrleg_effector, "RightLowerLeg_effector")
+                    ikspinedg_modifier.renameNode(rlegscalediv, "IkRightLowerLegGlobalScale_Average")
+                    ikspinedg_modifier.renameNode(riklegstretchdiv, "RightLowerLegStretch_Divide2")
+                    # ikspinedg_modifier.renameNode(liklegstretchsub, "LeftLowerLegStretch_Sub")
+                    # ikspinedg_modifier.renameNode(liklegstretchsum, "LeftLowerLegStretch_Sum")
+                    ikspinedg_modifier.commandToExecute('parent "RightLowerLeg_Ik" "DoNotTouch"')
+                    ikspinedg_modifier.commandToExecute('connectAttr -f RightLowerLeg_SplineCvShape.worldSpace[0] RightLowerLeg_Ik.inCurve')
+                    ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "RightLowerLegIk_skin" IkCvSplineRightLowerLeg0 IkCvSplineRightLowerLeg1 IkCvSplineRightLowerLeg2 RightLowerLeg_SplineCv')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLeg_Ik.dTwistControlEnable" 1')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLeg_Ik.dWorldUpType" 4')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLeg_Ik.dForwardAxis" 3')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLeg_Ik.dWorldUpAxis" 4')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLeg_Ik.dWorldUpVectorY" 0')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLeg_Ik.dWorldUpVectorEndY" 0')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLeg_Ik.dWorldUpVectorZ" -1')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLeg_Ik.dWorldUpVectorEndZ" -1')
+                    ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineRightLowerLeg0.worldMatrix[0] RightLowerLeg_Ik.dWorldUpMatrix')
+                    ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineRightLowerLeg2.worldMatrix[0] RightLowerLeg_Ik.dWorldUpMatrixEnd')
+                    ikspinedg_modifier.commandToExecute('connectAttr -f RightLowerLeg_SplineCvShape.worldSpace[0] RightLowerLegSpline_Info.inputCurve')
+                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster_grp.translate LeftLowerLegStretch_Sub.input3D[0]')
+                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster2_grp.translate LeftLowerLegStretch_Sub.input3D[1]')
+                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster2_grp.translate LeftLowerLegStretch_Sum.input3D[0]')
+                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegStretch_Divide2.output LeftLowerLegStretch_Sum.input3D[1]')
+                    ikspinedg_modifier.connect(rlegcrvinfoarc_plug, rlegscaledivinp1y_plug)
+                    ikspinedg_modifier.connect(masterctrlsy_plug, rlegscaledivinp2y_plug)
+                    ikspinedg_modifier.connect(rlegscaledivotpy_plug, rlegstretchpercentinp1y_plug)
+                    ikspinedg_modifier.connect(rlegstretchpercentotp_plug, rlegstretchpowinp1x_plug)
+                    ikspinedg_modifier.connect(rlegstretchpercentotp_plug, rlegstretchpowinp1z_plug)
+                    ikspinedg_modifier.connect(rlegstretchpowotpx_plug, rlegstretchdivinp2x_plug)
+                    ikspinedg_modifier.connect(rlegstretchpowotpz_plug, rlegstretchdivinp2z_plug)
+                    ikspinedg_modifier.connect(riklegstretchclust2trans_plug, riklegstretchdivinp1_plug)
+                    ikspinedg_modifier.connect(riklegstretchdivotp_plug, riklegstretchclust1trans_plug)
+                    ikspinedg_modifier.commandToExecute('float $rightlowerlegstretchinput1Y = `getAttr "RightLowerLegStretch_Percent.input1Y"`; setAttr "RightLowerLegStretch_Percent.input2Y" $rightlowerlegstretchinput1Y')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Power.input2X" 0.5')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Power.input2Z" 0.5')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Divide.input1X" 1')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Divide.input1Z" 1')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Percent.operation" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Power.operation" 3')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Divide.operation" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "IkRightLowerLegGlobalScale_Average.operation" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Divide2.operation" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Divide2.input2X" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Divide2.input2Y" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Divide2.input2Z" 2')
+                    ikspinedg_modifier.doIt()
+
+                    ikspline_solver = ik_system.findSolver("ikSplineSolver")
+                    ik_handle.setSolver(ikspline_solver)
+
+        if cmds.objExists("NoFlipRightLeg_Ik") and cmds.objExists("PVRightLeg_Ik"):
+            rlegik_sl_ls = om2.MSelectionList()
+            rlegik_sl_ls.add("RightLegIk_grp")
+            rlegik_sl_ls.add("Biped_NoFlipRightKnee_null")
+            rlegik_sl_ls.add("Biped_IkRightFoot_ctrl")
+            rlegik_sl_ls.add("IkRightJointLeg_grp")
+            rlegik_sl_ls.add("IkStretchyRightJointLeg_grp")
+            rikleggrpobj_fs = om2.MFnDependencyNode(rlegik_sl_ls.getDependNode(0))
+            nofliprightkneenullobj_fs = om2.MFnDependencyNode(rlegik_sl_ls.getDependNode(1))
+            iklegctrl_fs = om2.MFnDependencyNode(rlegik_sl_ls.getDependNode(2))
+            ikrightjointleggrp_fs = om2.MFnDependencyNode(rlegik_sl_ls.getDependNode(3))
+
+            if self.typeofRLegIK.currentIndex() == 1 or 2:
+                riklegctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
+                riklegctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                self.ctrl_mod_n.renameNode(riklegctrl_multMatrix, "IkRightLegCtrl_multMatrix")
+                self.ctrl_mod_n.renameNode(riklegctrl_decomposeMatrix, "IkRightLegCtrl_decomposeMatrix")
+
+                riklegmultMatrix_fs = om2.MFnDependencyNode(riklegctrl_multMatrix)
+                riklegdecomposeMatrix_fs = om2.MFnDependencyNode(riklegctrl_decomposeMatrix)
+
+                riklegmultMatrixSum_plug = riklegmultMatrix_fs.findPlug("matrixSum", False)
+                riklegdecomposeInpMatrix_plug = riklegdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                riklegdecomposeOtpTrans_plug = riklegdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                riklegjntTrans_plug = rikleggrpobj_fs.findPlug("translate", False)
+                riklegdecomposeOtpRot_plug = riklegdecomposeMatrix_fs.findPlug("outputRotate", False)
+                riklegjntRot_plug = rikleggrpobj_fs.findPlug("rotate", False)
+                iklegctrlTrans_plug = iklegctrl_fs.findPlug("translate", False)
+                nofliprightkneenullTrans_plug = nofliprightkneenullobj_fs.findPlug("translate", False)
+                iklegctrlRot_plug = iklegctrl_fs.findPlug("rotate", False)
+                nofliprightkneenullRot_plug = nofliprightkneenullobj_fs.findPlug("rotate", False)
+                riklegjntScal_plug = rikleggrpobj_fs.findPlug("scale", False)
+
+                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_IkRightFoot_ctrl.worldMatrix[0] IkRightLegCtrl_multMatrix.matrixIn[0]')
+                self.ctrl_mod_n.commandToExecute('parent RightReverseFootHeel RightLegIk_grp')
+                self.ctrl_mod_n.commandToExecute('poleVectorConstraint Biped_NoFlipRightKnee_ctrl NoFlipRightLeg_Ik')
+                self.ctrl_mod_n.commandToExecute('poleVectorConstraint Biped_PVRightKnee_ctrl PVRightLeg_Ik')
+                self.ctrl_mod_n.commandToExecute('setAttr "NoFlipRightLeg_Ik.twist" 90')
+                self.ctrl_mod_n.connect(riklegmultMatrixSum_plug, riklegdecomposeInpMatrix_plug)
+                self.ctrl_mod_n.connect(riklegdecomposeOtpTrans_plug, riklegjntTrans_plug)
+                self.ctrl_mod_n.connect(riklegdecomposeOtpRot_plug, riklegjntRot_plug)
+                self.ctrl_mod_n.connect(iklegctrlTrans_plug, nofliprightkneenullTrans_plug)
+                self.ctrl_mod_n.connect(iklegctrlRot_plug, nofliprightkneenullRot_plug)
+                self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, riklegjntScal_plug)
+
+                if self.autostretch.currentIndex() == 1:
+                    riklegdistloc = om2.MFnDagNode()
+
+                    rikupperlegdistloc1_tn = riklegdistloc.create("transform", "distloc_R_upleg1", rlegik_sl_ls.getDependNode(4))
+                    rikupperlegdistloc_ln = riklegdistloc.create("locator", "R_upleg1_Shape", rikupperlegdistloc1_tn)
+                    rikfootlegdistloc1_tn = riklegdistloc.create("transform", "distloc_R_legfoot1")
+                    rikfootlegdistloc_ln = riklegdistloc.create("locator", "R_foot1_Shape", rikfootlegdistloc1_tn)
+                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
+                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension1" "IkRightLegDistance_Info"')
+                    self.ctrl_mod_n.doIt()
+
+                    ruplegnull_transform_t = ruplegnull_transform.translation(om2.MSpace.kTransform)
+                    rikupperlegdistloc_transform = om2.MFnTransform(rikupperlegdistloc1_tn)
+                    rikupperlegdistloc_transform.setTranslation(ruplegnull_transform_t, om2.MSpace.kTransform)
+
+                    IkRightLegDistance_sl_ls = om2.MSelectionList()
+                    IkRightLegDistance_sl_ls.add("IkRightLegDistance_InfoShape")
+
+                    rikfootlegDist_fs = om2.MFnDependencyNode(rikfootlegdistloc1_tn)
+                    riklegjntDist_fs = om2.MFnDependencyNode(IkRightLegDistance_sl_ls.getDependNode(0))
+
+                    riklegjntDistPoint2_plug = riklegjntDist_fs.findPlug("endPoint", False)
+                    rikfootlegDistOtpTrans_plug = rikfootlegDist_fs.findPlug("translate", False)
+
+                    self.ctrl_mod_n.commandToExecute('connectAttr -force R_upleg1_Shape.worldPosition[0] IkRightLegDistance_InfoShape.startPoint')
+                    self.ctrl_mod_n.connect(rikfootlegDistOtpTrans_plug, riklegjntDistPoint2_plug)
+                    self.ctrl_mod_n.connect(riklegdecomposeOtpTrans_plug, rikfootlegDistOtpTrans_plug)
+                    self.ctrl_mod_n.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalnoflipikrightlegtranslateY -attribute "translateY" -value $noflipikrightlegtranslateY IkNoFlipRightLeg;')
+                    self.ctrl_mod_n.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalnoflipikrightlegtranslateY*2) -attribute "translateY" -value ($noflipikrightlegtranslateY*2) IkNoFlipRightLeg;')
+                    self.ctrl_mod_n.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalnoflipikrightlegtranslateY -attribute "translateY" -value $noflipikrightfoottranslateY IkNoFlipRightFoot;')
+                    self.ctrl_mod_n.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalnoflipikrightlegtranslateY*2) -attribute "translateY" -value ($noflipikrightfoottranslateY*2) IkNoFlipRightFoot;')
+                    self.ctrl_mod_n.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalpvikrightlegtranslateY -attribute "translateY" -value $pvikrightlegtranslateY IkPVRightLeg;')
+                    self.ctrl_mod_n.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalpvikrightlegtranslateY*2) -attribute "translateY" -value ($pvikrightlegtranslateY*2) IkPVRightLeg;')
+                    self.ctrl_mod_n.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalpvikrightlegtranslateY -attribute "translateY" -value $pvikrightfoottranslateY IkPVRightFoot;')
+                    self.ctrl_mod_n.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalpvikrightlegtranslateY*2) -attribute "translateY" -value ($pvikrightfoottranslateY*2) IkPVRightFoot;')
+                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkNoFlipRightLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkPVRightLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkNoFlipRightFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkPVRightFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.ctrl_mod_n.commandToExecute('parent "IkRightLegDistance_Info" "DoNotTouch"')
+                    self.ctrl_mod_n.commandToExecute('parent "distloc_R_legfoot1" "DoNotTouch"')
+
+                    self.ctrl_mod_n.commandToExecute('addAttr -longName "kneesnap" -niceName "Knee Snap" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_PVRightKnee_ctrl')
+
+                    rikupperlegdistloc2_tn = riklegdistloc.create("transform", "distloc_R_upleg2", rlegik_sl_ls.getDependNode(4))
+                    rikupperlegdistloc_ln = riklegdistloc.create("locator", "R_upleg2_Shape", rikupperlegdistloc2_tn)
+                    rikkneedistloc_tn = riklegdistloc.create("transform", "distloc_R_legknee")
+                    rikkneedistloc_ln = riklegdistloc.create("locator", "R_legknee_Shape", rikkneedistloc_tn)
+                    rikfootlegdistloc2_tn = riklegdistloc.create("transform", "distloc_R_legfoot2")
+                    rikfootlegdistloc_ln = riklegdistloc.create("locator", "R_legfoot2_Shape", rikfootlegdistloc2_tn)
+                    pvrightkneectrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                    rikpvuppertransblendnode = self.ctrl_mod_n.createNode("blendColors")
+                    rikpvlowertransblendnode = self.ctrl_mod_n.createNode("blendColors")
+                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
+                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
+                    self.ctrl_mod_n.renameNode(pvrightkneectrl_decomposeMatrix, "PVRightKnee_decomposeMatrix")
+                    self.ctrl_mod_n.renameNode(rikpvuppertransblendnode, "PVRightUpperLegTrans_blend")
+                    self.ctrl_mod_n.renameNode(rikpvlowertransblendnode, "PVRightLowerLegTrans_blend")
+                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension1" "RightUpperLegDistance_Info"')
+                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension2" "RightLowerLegDistance_Info"')
+                    self.ctrl_mod_n.doIt()
+
+                    rikupperlegdistloc2_transform = om2.MFnTransform(rikupperlegdistloc2_tn)
+                    rikupperlegdistloc2_transform.setTranslation(ruplegnull_transform_t, om2.MSpace.kTransform)
+
+                    IkRightLegDistance_sl_ls.add("RightUpperLegDistance_InfoShape")
+                    IkRightLegDistance_sl_ls.add("RightLowerLegDistance_InfoShape")
+                    IkRightLegDistance_sl_ls.add("IkPVRightLeg_translateY")
+                    IkRightLegDistance_sl_ls.add("IkPVRightFoot_translateY")
+                    IkRightLegDistance_sl_ls.add("Biped_PVRightKnee_ctrl")
+                    IkRightLegDistance_sl_ls.add("IkNoFlipRightLeg_translateY")
+                    IkRightLegDistance_sl_ls.add("IkNoFlipRightFoot_translateY")
+
+                    rikkneeDist_fs = om2.MFnDependencyNode(rikkneedistloc_tn)
+                    rikfootlegDist_fs = om2.MFnDependencyNode(rikfootlegdistloc2_tn)
+                    rikupperlegjntDist_fs = om2.MFnDependencyNode(IkRightLegDistance_sl_ls.getDependNode(1))
+                    riklowerlegjntDist_fs = om2.MFnDependencyNode(IkRightLegDistance_sl_ls.getDependNode(2))
+                    pvrightkneekey_fs = om2.MFnDependencyNode(IkRightLegDistance_sl_ls.getDependNode(3))
+                    pvrightfootkey_fs = om2.MFnDependencyNode(IkRightLegDistance_sl_ls.getDependNode(4))
+                    pvrightkneectrlDecomposeMatrix_fs = om2.MFnDependencyNode(pvrightkneectrl_decomposeMatrix)
+                    rikpvuppertransblendnode_fs = om2.MFnDependencyNode(rikpvuppertransblendnode)
+                    rikpvlowertransblendnode_fs = om2.MFnDependencyNode(rikpvlowertransblendnode)
+                    pvrightkneectrl_fs = om2.MFnDependencyNode(IkRightLegDistance_sl_ls.getDependNode(5))
+                    pvrightkneejnt_fs = om2.MFnDependencyNode(pvikrleg_sl_ls.getDependNode(1))
+                    pvrightfootjnt_fs = om2.MFnDependencyNode(pvikrleg_sl_ls.getDependNode(2))
+
+                    rikupperlegjntDistPoint2_plug = rikupperlegjntDist_fs.findPlug("endPoint", False)
+                    riklowerlegjntDistPoint1_plug = riklowerlegjntDist_fs.findPlug("startPoint", False)
+                    riklowerlegjntDistPoint2_plug = riklowerlegjntDist_fs.findPlug("endPoint", False)
+                    rikkneeDistOtpTrans_plug = rikkneeDist_fs.findPlug("translate", False)
+                    rikfootlegDistOtpTrans_plug = rikfootlegDist_fs.findPlug("translate", False)
+                    pvrightkneectrlDecomposeMatrixOtpTrans_plug = pvrightkneectrlDecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    pvrightkneekeyotp_plug = pvrightkneekey_fs.findPlug("output", False)
+                    pvrightfootkeyotp_plug = pvrightfootkey_fs.findPlug("output", False)
+                    rikpvuppertransblendnodeinp1g_plug = rikpvuppertransblendnode_fs.findPlug("color1G", False)
+                    rikpvuppertransblendnodeinp2g_plug = rikpvuppertransblendnode_fs.findPlug("color2G", False)
+                    rikpvuppertransblendnodeotp_plug = rikpvuppertransblendnode_fs.findPlug("outputG", False)
+                    rikpvuppertransblendnodeblender_plug = rikpvuppertransblendnode_fs.findPlug("blender", False)
+                    rikpvlowertransblendnodeinp1g_plug = rikpvlowertransblendnode_fs.findPlug("color1G", False)
+                    rikpvlowertransblendnodeinp2g_plug = rikpvlowertransblendnode_fs.findPlug("color2G", False)
+                    rikpvlowertransblendnodeotp_plug = rikpvlowertransblendnode_fs.findPlug("outputG", False)
+                    rikpvlowertransblendnodeblender_plug = rikpvlowertransblendnode_fs.findPlug("blender", False)
+                    pvrightkneectrl_fs_plug = pvrightkneectrl_fs.findPlug("kneesnap", False)
+                    pvrightkneejntTrans_plug = pvrightkneejnt_fs.findPlug("translateY", False)
+                    pvrightfootjntTrans_plug = pvrightfootjnt_fs.findPlug("translateY", False)
+
+                    self.ctrl_mod_n.commandToExecute('connectAttr -force R_upleg2_Shape.worldPosition[0] RightUpperLegDistance_InfoShape.startPoint')
+                    self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_PVRightKnee_ctrl.worldMatrix[0] PVRightKnee_decomposeMatrix.inputMatrix')
+                    self.ctrl_mod_n.connect(rikkneeDistOtpTrans_plug, rikupperlegjntDistPoint2_plug)
+                    self.ctrl_mod_n.connect(rikkneeDistOtpTrans_plug, riklowerlegjntDistPoint1_plug)
+                    self.ctrl_mod_n.connect(rikfootlegDistOtpTrans_plug, riklowerlegjntDistPoint2_plug)
+                    self.ctrl_mod_n.connect(riklegdecomposeOtpTrans_plug, rikfootlegDistOtpTrans_plug)
+                    self.ctrl_mod_n.connect(pvrightkneectrlDecomposeMatrixOtpTrans_plug, rikkneeDistOtpTrans_plug)
+
+                    self.ctrl_mod_n.disconnect(pvrightkneekeyotp_plug, pvrightkneejntTrans_plug)
+                    self.ctrl_mod_n.disconnect(pvrightfootkeyotp_plug, pvrightfootjntTrans_plug)
+                    self.ctrl_mod_n.connect(pvrightkneekeyotp_plug, rikpvuppertransblendnodeinp2g_plug)
+                    self.ctrl_mod_n.connect(pvrightfootkeyotp_plug, rikpvlowertransblendnodeinp2g_plug)
+                    self.ctrl_mod_n.connect(pvrightkneectrl_fs_plug, rikpvuppertransblendnodeblender_plug)
+                    self.ctrl_mod_n.connect(pvrightkneectrl_fs_plug, rikpvlowertransblendnodeblender_plug)
+                    self.ctrl_mod_n.connect(rikpvuppertransblendnodeotp_plug, pvrightkneejntTrans_plug)
+                    self.ctrl_mod_n.connect(rikpvlowertransblendnodeotp_plug, pvrightfootjntTrans_plug)
+                    self.ctrl_mod_n.commandToExecute('parent "distloc_R_legknee" "DoNotTouch"')
+                    self.ctrl_mod_n.commandToExecute('parent "distloc_R_legfoot2" "DoNotTouch"')
+                    self.ctrl_mod_n.commandToExecute('parent "RightUpperLegDistance_Info" "DoNotTouch"')
+                    self.ctrl_mod_n.commandToExecute('parent "RightLowerLegDistance_Info" "DoNotTouch"')
+
+                    self.ctrl_mod_n.commandToExecute('addAttr -longName "thighlength" -niceName "AutoKnee Thigh Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkRightFoot_ctrl')
+                    self.ctrl_mod_n.commandToExecute('addAttr -longName "calflength" -niceName "AutoKnee Calf Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkRightFoot_ctrl')
+                    self.ctrl_mod_n.doIt()
+
+                    rikautokneeupperlegnode = self.ctrl_mod_n.createNode("multiplyDivide")
+                    rikautokneelowerlegnode = self.ctrl_mod_n.createNode("multiplyDivide")
+                    self.ctrl_mod_n.renameNode(rikautokneeupperlegnode, "NoFlipRightLegTrans_multiply")
+                    self.ctrl_mod_n.renameNode(rikautokneelowerlegnode, "NoFlipRightFootTrans_multiply")
+
+                    rikautokneeupperleg_fs = om2.MFnDependencyNode(rikautokneeupperlegnode)
+                    rikautokneelowerleg_fs = om2.MFnDependencyNode(rikautokneelowerlegnode)
+                    nofliprightkneekey_fs = om2.MFnDependencyNode(IkRightLegDistance_sl_ls.getDependNode(6))
+                    nofliprightfootkey_fs = om2.MFnDependencyNode(IkRightLegDistance_sl_ls.getDependNode(7))
+                    nofliprightkneejntTrans_fs = om2.MFnDependencyNode(noflipikrleg_sl_ls.getDependNode(1))
+                    nofliprightfootjntTrans_fs = om2.MFnDependencyNode(noflipikrleg_sl_ls.getDependNode(2))
+
+                    ikautokneeupperlegInp1Y_plug = rikautokneeupperleg_fs.findPlug("input1Y", False)
+                    ikautokneeupperlegInp2Y_plug = rikautokneeupperleg_fs.findPlug("input2Y", False)
+                    ikautokneeupperlegOtp_plug = rikautokneeupperleg_fs.findPlug("outputY", False)
+                    ikautokneelowerlegInp1Y_plug = rikautokneelowerleg_fs.findPlug("input1Y", False)
+                    ikautokneelowerlegInp2Y_plug = rikautokneelowerleg_fs.findPlug("input2Y", False)
+                    ikautokneelowerlegOtp_plug = rikautokneelowerleg_fs.findPlug("outputY", False)
+                    nofliprightkneekeyotp_plug = nofliprightkneekey_fs.findPlug("output", False)
+                    nofliprightfootkeyotp_plug = nofliprightfootkey_fs.findPlug("output", False)
+                    nofliprightkneejnttty_plug = nofliprightkneejntTrans_fs.findPlug("translateY", False)
+                    nofliprightfootjntty_plug = nofliprightfootjntTrans_fs.findPlug("translateY", False)
+                    iklegctrrkneeupperleg_plug = iklegctrl_fs.findPlug("thighlength", False)
+                    iklegctrrkneelowerleg_plug = iklegctrl_fs.findPlug("calflength", False)
+
+                    self.ctrl_mod_n.disconnect(nofliprightkneekeyotp_plug, nofliprightkneejnttty_plug)
+                    self.ctrl_mod_n.disconnect(nofliprightfootkeyotp_plug, nofliprightfootjntty_plug)
+                    self.ctrl_mod_n.connect(iklegctrrkneeupperleg_plug, ikautokneeupperlegInp1Y_plug)
+                    self.ctrl_mod_n.connect(nofliprightkneekeyotp_plug, ikautokneeupperlegInp2Y_plug)
+                    self.ctrl_mod_n.connect(iklegctrrkneelowerleg_plug, ikautokneelowerlegInp1Y_plug)
+                    self.ctrl_mod_n.connect(nofliprightfootkeyotp_plug, ikautokneelowerlegInp2Y_plug)
+                    self.ctrl_mod_n.connect(ikautokneeupperlegOtp_plug, nofliprightkneejnttty_plug)
+                    self.ctrl_mod_n.connect(ikautokneelowerlegOtp_plug, nofliprightfootjntty_plug)
+                    self.ctrl_mod_n.commandToExecute('setAttr "NoFlipRightLegTrans_multiply.operation" 1')
+                    self.ctrl_mod_n.commandToExecute('setAttr "NoFlipRightFootTrans_multiply.operation" 1')
+
+                    rightlegglobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
+                    nofliprightlegglobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
+                    nofliprigthfootlobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
+                    self.ctrl_mod_n.renameNode(rightlegglobalscalenode, "IKRightLegGlobalScale_Average")
+                    self.ctrl_mod_n.renameNode(nofliprightlegglobalscalenode, "IKNoFlipRightLegGlobalScale_Average")
+                    self.ctrl_mod_n.renameNode(nofliprigthfootlobalscalenode, "IKNoFlipRightFootGlobalScale_Average")
+
+                    rightlegglobalscale_fs = om2.MFnDependencyNode(rightlegglobalscalenode)
+                    nofliprightlegglobalscale_fs = om2.MFnDependencyNode(nofliprightlegglobalscalenode)
+                    nofliprightfootlobalscale_fs = om2.MFnDependencyNode(nofliprigthfootlobalscalenode)
+                    masterlctrl_fs = om2.MFnDependencyNode(obj_masterctrl2)
+
+                    rikupperlegjntDist_plug = rikupperlegjntDist_fs.findPlug("distance", False)
+                    riklowerlegjntDist_plug = riklowerlegjntDist_fs.findPlug("distance", False)
+                    riklegjntDist_plug = riklegjntDist_fs.findPlug("distance", False)
+                    masterlctrlsy_plug = masterlctrl_fs.findPlug("scaleY", False)
+                    rightlegglobalscaleInp1Y_plug = rightlegglobalscale_fs.findPlug("input1Y", False)
+                    rightlegglobalscaleInp2Y_plug = rightlegglobalscale_fs.findPlug("input2Y", False)
+                    rigthlegglobalscaleOtpY_plug = rightlegglobalscale_fs.findPlug("outputY", False)
+                    nofliprightlegglobalscaleInp1Y_plug = nofliprightlegglobalscale_fs.findPlug("input1Y", False)
+                    nofliprightlegglobalscaleInp2Y_plug = nofliprightlegglobalscale_fs.findPlug("input2Y", False)
+                    nofliprightlegglobalscaleOtpY_plug = nofliprightlegglobalscale_fs.findPlug("outputY", False)
+                    nofliprightfootlobalscaleInp1Y_plug = nofliprightfootlobalscale_fs.findPlug("input1Y", False)
+                    nofliprightfootlobalscaleInp2Y_plug = nofliprightfootlobalscale_fs.findPlug("input2Y", False)
+                    nofliprightfootlobalscaleOtpY_plug = nofliprightfootlobalscale_fs.findPlug("outputY", False)
+                    nofliprightkneekeyinp_plug = nofliprightkneekey_fs.findPlug("input", False)
+                    nofliprightfootkeyinp_plug = nofliprightfootkey_fs.findPlug("input", False)
+                    pvrightkneekeyinp_plug = pvrightkneekey_fs.findPlug("input", False)
+                    pvrightfootkeyinp_plug = pvrightfootkey_fs.findPlug("input", False)
+                    ikrightjointleggrps_plug = ikrightjointleggrp_fs.findPlug("scale", False)
+
+                    self.ctrl_mod_n.disconnect(riklegjntDist_plug, nofliprightkneekeyinp_plug)
+                    self.ctrl_mod_n.disconnect(riklegjntDist_plug, nofliprightfootkeyinp_plug)
+                    self.ctrl_mod_n.disconnect(riklegjntDist_plug, pvrightkneekeyinp_plug)
+                    self.ctrl_mod_n.disconnect(riklegjntDist_plug, pvrightfootkeyinp_plug)
+                    self.ctrl_mod_n.connect(riklowerlegjntDist_plug, nofliprightfootlobalscaleInp1Y_plug)
+                    self.ctrl_mod_n.connect(rikupperlegjntDist_plug, nofliprightlegglobalscaleInp1Y_plug)
+                    self.ctrl_mod_n.connect(riklowerlegjntDist_plug, nofliprightfootlobalscaleInp1Y_plug)
+                    self.ctrl_mod_n.connect(masterlctrlsy_plug, nofliprightlegglobalscaleInp2Y_plug)
+                    self.ctrl_mod_n.connect(masterlctrlsy_plug, nofliprightfootlobalscaleInp2Y_plug)
+                    self.ctrl_mod_n.connect(nofliprightlegglobalscaleOtpY_plug, rikpvuppertransblendnodeinp1g_plug)
+                    self.ctrl_mod_n.connect(nofliprightfootlobalscaleOtpY_plug, rikpvlowertransblendnodeinp1g_plug)
+                    self.ctrl_mod_n.connect(riklegjntDist_plug, rightlegglobalscaleInp1Y_plug)
+                    self.ctrl_mod_n.connect(masterlctrlsy_plug, rightlegglobalscaleInp2Y_plug)
+                    self.ctrl_mod_n.connect(rigthlegglobalscaleOtpY_plug, nofliprightkneekeyinp_plug)
+                    self.ctrl_mod_n.connect(rigthlegglobalscaleOtpY_plug, nofliprightfootkeyinp_plug)
+                    self.ctrl_mod_n.connect(rigthlegglobalscaleOtpY_plug, pvrightkneekeyinp_plug)
+                    self.ctrl_mod_n.connect(rigthlegglobalscaleOtpY_plug, pvrightfootkeyinp_plug)
+                    self.ctrl_mod_n.commandToExecute('setAttr "IKNoFlipRightLegGlobalScale_Average.operation" 2')
+                    self.ctrl_mod_n.commandToExecute('setAttr "IKNoFlipRightFootGlobalScale_Average.operation" 2')
+                    self.ctrl_mod_n.commandToExecute('setAttr "IKRightLegGlobalScale_Average.operation" 2')
+                    self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, ikrightjointleggrps_plug)
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "footrollswitch" -niceName "Auto/Manual Foot Roll" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightFootOptions_ctrl')
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "autoroll" -niceName "Auto Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "roll" -niceName "Roll" -attributeType double -minValue -90 -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "bendlimitangle" -niceName "Bend Limit Angle" -attributeType double -keyable true -defaultValue 45 Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "toestraightangle" -niceName "Toe Straight Angle" -attributeType double -keyable true -defaultValue 70 Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "manualroll" -niceName "Manual Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "heelroll" -niceName "Heel Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.doIt()
+
+                rikheelclampnode = self.ctrl_mod_n.createNode("clamp")
+                self.ctrl_mod_n.renameNode(rikheelclampnode, "RightHeel_rotclamp")
+                rikheelblendernode = self.ctrl_mod_n.createNode("blendColors")
+                self.ctrl_mod_n.renameNode(rikheelblendernode, "RightHeel_blend")
+                leg_reverse_sl_ls = om2.MSelectionList()
+                leg_reverse_sl_ls.add("RightReverseFootHeel")
+                reverse_heel_obj = leg_reverse_sl_ls.getDependNode(0)
+
+                rikheelclamp_fs = om2.MFnDependencyNode(rikheelclampnode)
+                rikheelblender_fs = om2.MFnDependencyNode(rikheelblendernode)
+                reverseheel_fs = om2.MFnDependencyNode(reverse_heel_obj)
+
+                rlegoptionsfootrollswitch_plug = rlegoptions_fs.findPlug("footrollswitch", False)
+                rikheelblender_plug = rikheelblender_fs.findPlug("blender", False)
+                iklegctrlRoll_plug = iklegctrl_fs.findPlug("roll", False)
+                rikheelclampInpR_plug = rikheelclamp_fs.findPlug("inputR", False)
+                rikheelclampOtpR_plug = rikheelclamp_fs.findPlug("outputR", False)
+                rikheelblendCol2R_plug = rikheelblender_fs.findPlug("color2R", False)
+                iklegctrlHeelRoll_plug = iklegctrl_fs.findPlug("heelroll", False)
+                rikheelblendCol1R_plug = rikheelblender_fs.findPlug("color1R", False)
+                rikheelblendOtpR_plug = rikheelblender_fs.findPlug("outputR", False)
+                rikheelclampInpX_plug = reverseheel_fs.findPlug("rotateX", False)
+
+                self.ctrl_mod_n.connect(rlegoptionsfootrollswitch_plug, rikheelblender_plug)
+                self.ctrl_mod_n.connect(iklegctrlRoll_plug, rikheelclampInpR_plug)
+                self.ctrl_mod_n.connect(rikheelclampOtpR_plug, rikheelblendCol2R_plug)
+                self.ctrl_mod_n.connect(iklegctrlHeelRoll_plug, rikheelblendCol1R_plug)
+                self.ctrl_mod_n.connect(rikheelblendOtpR_plug, rikheelclampInpX_plug)
+                self.ctrl_mod_n.commandToExecute('setAttr "RightHeel_rotclamp.minR" -90')
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "footroll" -niceName "Foot Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.doIt()
+
+                rikballclampnode = self.ctrl_mod_n.createNode("clamp")
+                self.ctrl_mod_n.renameNode(rikballclampnode, "RightBall_rotclamp")
+                rikballrangenode = self.ctrl_mod_n.createNode("setRange")
+                self.ctrl_mod_n.renameNode(rikballrangenode, "RightBall_range")
+                rikballblendernode = self.ctrl_mod_n.createNode("blendColors")
+                self.ctrl_mod_n.renameNode(rikballblendernode, "RightBall_blend")
+                rikballminusnode = self.ctrl_mod_n.createNode("plusMinusAverage")
+                self.ctrl_mod_n.renameNode(rikballminusnode, "RightBall_minus")
+                rikballmultnode = self.ctrl_mod_n.createNode("multiplyDivide")
+                self.ctrl_mod_n.renameNode(rikballmultnode, "RightBall_percetmult")
+                rikballrollmultnode = self.ctrl_mod_n.createNode("multiplyDivide")
+                self.ctrl_mod_n.renameNode(rikballrollmultnode, "RightBall_rollmult")
+                leg_reverse_sl_ls.add("RightReverseFootToe")
+                reverse_toe_obj = leg_reverse_sl_ls.getDependNode(1)
+
+                rikballclamp_fs = om2.MFnDependencyNode(rikballclampnode)
+                rikballrange_fs = om2.MFnDependencyNode(rikballrangenode)
+                rikballsub_fs = om2.MFnDependencyNode(rikballminusnode)
+                rikballmult_fs = om2.MFnDependencyNode(rikballmultnode)
+                rikballrollmult_fs = om2.MFnDependencyNode(rikballrollmultnode)
+                rikballblender_fs = om2.MFnDependencyNode(rikballblendernode)
+                reversetoe_fs = om2.MFnDependencyNode(reverse_toe_obj)
+
+                rikballblender_plug = rikballblender_fs.findPlug("blender", False)
+                rikballclampInpR_plug = rikballclamp_fs.findPlug("inputR", False)
+                rikballclampMinR_plug = rikballclamp_fs.findPlug("minR", False)
+                iklegctrlBendLimit_plug = iklegctrl_fs.findPlug("bendlimitangle", False)
+                rikballclampMaxR_plug = rikballclamp_fs.findPlug("maxR", False)
+                rikballrangeValueX_plug = rikballrange_fs.findPlug("valueX", False)
+                rikballrangeOldMinX_plug = rikballrange_fs.findPlug("oldMinX", False)
+                rikballrangeOldMaxX_plug = rikballrange_fs.findPlug("oldMaxX", False)
+                rikballrangeOutValueX_plug = rikballrange_fs.findPlug("outValueX", False)
+                rikballmultInp1X_plug = rikballmult_fs.findPlug("input1X", False)
+                rikballmultInp2X_plug = rikballmult_fs.findPlug("input2X", False)
+                rikballmultOtpX_plug = rikballmult_fs.findPlug("outputX", False)
+                rikballsubOtp1D_plug = rikballsub_fs.findPlug("output1D", False)
+                rikballrollmultInp1X_plug = rikballrollmult_fs.findPlug("input1X", False)
+                rikballrollmultInp2X_plug = rikballrollmult_fs.findPlug("input2X", False)
+                rikballrollmultOtpX_plug = rikballrollmult_fs.findPlug("outputX", False)
+                rikballblendCol2R_plug = rikballblender_fs.findPlug("color2R", False)
+                iklegctrlBallRoll_plug = iklegctrl_fs.findPlug("footroll", False)
+                rikballblendCol1R_plug = rikballblender_fs.findPlug("color1R", False)
+                rikballblendOtpR_plug = rikballblender_fs.findPlug("outputR", False)
+                rikballclampRotX_plug = reversetoe_fs.findPlug("rotateX", False)
+
+                self.ctrl_mod_n.connect(rlegoptionsfootrollswitch_plug, rikballblender_plug)
+                self.ctrl_mod_n.connect(iklegctrlRoll_plug, rikballclampInpR_plug)
+                self.ctrl_mod_n.connect(iklegctrlBendLimit_plug, rikballclampMaxR_plug)
+                self.ctrl_mod_n.connect(rikballclampInpR_plug, rikballrangeValueX_plug)
+                self.ctrl_mod_n.connect(rikballclampMinR_plug, rikballrangeOldMinX_plug)
+                self.ctrl_mod_n.connect(rikballclampMaxR_plug, rikballrangeOldMaxX_plug)
+                self.ctrl_mod_n.connect(rikballrangeOutValueX_plug, rikballmultInp1X_plug)
+                self.ctrl_mod_n.connect(rikballsubOtp1D_plug, rikballmultInp2X_plug)
+                self.ctrl_mod_n.connect(rikballmultOtpX_plug, rikballrollmultInp1X_plug)
+                self.ctrl_mod_n.connect(iklegctrlRoll_plug, rikballrollmultInp2X_plug)
+                self.ctrl_mod_n.connect(rikballrollmultOtpX_plug, rikballblendCol2R_plug)
+                self.ctrl_mod_n.connect(iklegctrlBallRoll_plug, rikballblendCol1R_plug)
+                self.ctrl_mod_n.connect(rikballblendOtpR_plug, rikballclampRotX_plug)
+                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_range.minX" 0')
+                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_range.maxX" 1')
+                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_minus.input1D[0]" 1')
+                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_minus.operation" 2')
+                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_percetmult.operation" 1')
+                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_rollmult.operation" 1')
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "toeroll" -niceName "Toe Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.doIt()
+
+                riktoeclampnode = self.ctrl_mod_n.createNode("clamp")
+                self.ctrl_mod_n.renameNode(riktoeclampnode, "RightToe_rotclamp")
+                riktoeblendernode = self.ctrl_mod_n.createNode("blendColors")
+                self.ctrl_mod_n.renameNode(riktoeblendernode, "RightToe_blend")
+                riktoerangernode = self.ctrl_mod_n.createNode("setRange")
+                self.ctrl_mod_n.renameNode(riktoerangernode, "RightToe_range")
+                riktoemultnode = self.ctrl_mod_n.createNode("multiplyDivide")
+                self.ctrl_mod_n.renameNode(riktoemultnode, "RightToe_percetmultiply")
+                leg_reverse_sl_ls.add("RightReverseFootToeEnd")
+                reverse_toeend_obj = leg_reverse_sl_ls.getDependNode(2)
+
+                riktoeclamp_fs = om2.MFnDependencyNode(riktoeclampnode)
+                riktoerange_fs = om2.MFnDependencyNode(riktoerangernode)
+                riktoemult_fs = om2.MFnDependencyNode(riktoemultnode)
+                riktoeblender_fs = om2.MFnDependencyNode(riktoeblendernode)
+                reversetoeend_fs = om2.MFnDependencyNode(reverse_toeend_obj)
+
+                riktoeblender_plug = riktoeblender_fs.findPlug("blender", False)
+                iklegctrlStraightLimit_plug = iklegctrl_fs.findPlug("toestraightangle", False)
+                riktoeclampInpR_plug = riktoeclamp_fs.findPlug("inputR", False)
+                riktoeclampMinR_plug = riktoeclamp_fs.findPlug("minR", False)
+                riktoeclampMaxR_plug = riktoeclamp_fs.findPlug("maxR", False)
+                riktoerangeValueX_plug = riktoerange_fs.findPlug("valueX", False)
+                riktoerangeOldMinX_plug = riktoerange_fs.findPlug("oldMinX", False)
+                riktoerangeOldMaxX_plug = riktoerange_fs.findPlug("oldMaxX", False)
+                riktoerangeoOutValX_plug = riktoerange_fs.findPlug("outValueX", False)
+                riktoemultInp1X_plug = riktoemult_fs.findPlug("input1X", False)
+                riktoemultInp2X_plug = riktoemult_fs.findPlug("input2X", False)
+                riktoemultOtpX_plug = riktoemult_fs.findPlug("outputX", False)
+                riktoeblendCol2R_plug = riktoeblender_fs.findPlug("color2R", False)
+                iklegctrlToeRoll_plug = iklegctrl_fs.findPlug("toeroll", False)
+                riktoeblendCol1R_plug = riktoeblender_fs.findPlug("color1R", False)
+                riktoeblendOtpR_plug = riktoeblender_fs.findPlug("outputR", False)
+                riktoeclampRotX_plug = reversetoeend_fs.findPlug("rotateX", False)
+
+                self.ctrl_mod_n.connect(rlegoptionsfootrollswitch_plug, riktoeblender_plug)
+                self.ctrl_mod_n.connect(iklegctrlRoll_plug, riktoeclampInpR_plug)
+                self.ctrl_mod_n.connect(iklegctrlBendLimit_plug, riktoeclampMinR_plug)
+                self.ctrl_mod_n.connect(iklegctrlStraightLimit_plug, riktoeclampMaxR_plug)
+                self.ctrl_mod_n.connect(riktoeclampInpR_plug, riktoerangeValueX_plug)
+                self.ctrl_mod_n.connect(riktoeclampMinR_plug, riktoerangeOldMinX_plug)
+                self.ctrl_mod_n.connect(riktoeclampMaxR_plug, riktoerangeOldMaxX_plug)
+                self.ctrl_mod_n.connect(riktoerangeoOutValX_plug, riktoemultInp1X_plug)
+                self.ctrl_mod_n.connect(riktoeclampInpR_plug, riktoemultInp2X_plug)
+                self.ctrl_mod_n.connect(riktoemultOtpX_plug, riktoeblendCol2R_plug)
+                self.ctrl_mod_n.commandToExecute('connectAttr -force RightToe_range.outValueX RightBall_minus.input1D[1]')
+                self.ctrl_mod_n.connect(iklegctrlToeRoll_plug, riktoeblendCol1R_plug)
+                self.ctrl_mod_n.connect(riktoeblendOtpR_plug, riktoeclampRotX_plug)
+                self.ctrl_mod_n.commandToExecute('setAttr "RightToe_range.minX" 0')
+                self.ctrl_mod_n.commandToExecute('setAttr "RightToe_range.maxX" 1')
+                self.ctrl_mod_n.commandToExecute('setAttr "RightToe_percetmultiply.operation" 1')
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "common" -niceName "Common" -attributeType "enum" -en "__________:" -keyable true Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "tilt" -niceName "Tilt" -attributeType double -minValue -180 -maxValue 180 -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.doIt()
+
+                rikinnerlegtiltclampnode = self.ctrl_mod_n.createNode("clamp")
+                self.ctrl_mod_n.renameNode(rikinnerlegtiltclampnode, "RightInnerLegTilt_clamp")
+                rikouterlegtiltclampnode = self.ctrl_mod_n.createNode("clamp")
+                self.ctrl_mod_n.renameNode(rikouterlegtiltclampnode, "RightOuterLegTilt_clamp")
+                leg_reverse_sl_ls.add("RightReverseInnerFoot")
+                leg_reverse_sl_ls.add("RightReverseOuterFoot")
+                reverse_inner_obj = leg_reverse_sl_ls.getDependNode(3)
+                reverse_outer_obj = leg_reverse_sl_ls.getDependNode(4)
+
+                rikinnerclamp_fs = om2.MFnDependencyNode(rikinnerlegtiltclampnode)
+                rikouterclamp_fs = om2.MFnDependencyNode(rikouterlegtiltclampnode)
+                reverseinnerfoot_fs = om2.MFnDependencyNode(reverse_inner_obj)
+                reverseouterfoot_fs = om2.MFnDependencyNode(reverse_outer_obj)
+
+                iklegctrlTilt_plug = iklegctrl_fs.findPlug("tilt", False)
+                rikinnerclampInpB_plug = rikinnerclamp_fs.findPlug("inputB", False)
+                rikouterclampInpB_plug = rikouterclamp_fs.findPlug("inputB", False)
+                rikinnerclampOtpB_plug = rikinnerclamp_fs.findPlug("outputB", False)
+                rikinnerclampRotZ_plug = reverseinnerfoot_fs.findPlug("rotateZ", False)
+                rikouterclampOtpB_plug = rikouterclamp_fs.findPlug("outputB", False)
+                rikouterclampRotZ_plug = reverseouterfoot_fs.findPlug("rotateZ", False)
+
+                self.ctrl_mod_n.connect(iklegctrlTilt_plug, rikinnerclampInpB_plug)
+                self.ctrl_mod_n.connect(iklegctrlTilt_plug, rikouterclampInpB_plug)
+                self.ctrl_mod_n.connect(rikinnerclampOtpB_plug, rikinnerclampRotZ_plug)
+                self.ctrl_mod_n.connect(rikouterclampOtpB_plug, rikouterclampRotZ_plug)
+                self.ctrl_mod_n.commandToExecute('setAttr "RightInnerLegTilt_clamp.minB" -180')
+                self.ctrl_mod_n.commandToExecute('setAttr "RightOuterLegTilt_clamp.maxB" 180')
+
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "toespin" -niceName "Toe Spin" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.commandToExecute('addAttr -longName "toewiggle" -niceName "Toe Wiggle" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.ctrl_mod_n.doIt()
+
+                leg_reverse_sl_ls.add("RightReverseFootToeWiggle")
+                reverse_toewiggle_obj = leg_reverse_sl_ls.getDependNode(5)
+
+                reversetoewiggle_fs = om2.MFnDependencyNode(reverse_toewiggle_obj)
+
+                iklegctrlLean_plug = iklegctrl_fs.findPlug("lean", False)
+                rikballclampRotZ_plug = reversetoe_fs.findPlug("rotateZ", False)
+                iklegctrlToeSpin_plug = iklegctrl_fs.findPlug("toespin", False)
+                riktoeclampRotY_plug = reversetoeend_fs.findPlug("rotateY", False)
+                iklegctrlToeWiggle_plug = iklegctrl_fs.findPlug("toewiggle", False)
+                reversetoewiggleRotX_plug = reversetoewiggle_fs.findPlug("rotateX", False)
+
+                self.ctrl_mod_n.connect(iklegctrlLean_plug, rikballclampRotZ_plug)
+                self.ctrl_mod_n.connect(iklegctrlToeSpin_plug, riktoeclampRotY_plug)
+                self.ctrl_mod_n.connect(iklegctrlToeWiggle_plug, reversetoewiggleRotX_plug)
+        else:
+            self.ctrl_mod_n.commandToExecute('delete "Biped_IkRightFoot_null"')
+            self.ctrl_mod_n.commandToExecute('delete "IkRightJointLeg_grp"')
+            self.ctrl_mod_n.commandToExecute('delete "IkStretchyRightJointLeg_grp"')
+            self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_RightFootOptions_ctrl.fkik')
+            self.ctrl_mod_n.doIt()
+
+        # jntort_sl_ls = om1.MSelectionList()
+        # jntort_sl_ls.add("Left*")
+        # jntort_sl_ls.add("IkLeft*")
+        # jntort_sl_ls.add("FkLeft*")
+        # jntort_sl_ls.add("Right*")
+        # jntort_sl_ls.add("IkRight*")
+        # jntort_sl_ls.add("FkRight*")
+        # jntort_sl_ls.add("Spine*")
+        # jntort_sl_ls.add("Neck*")
+        # jntort_sl_ls.add("Head*")
+        #
+        # jnt_obj = om1.MObject()
+        #
+        # for index in range(jntort_sl_ls.length()):
+        #     jntort_sl_ls.getDependNode(index, jnt_obj)
+        #     jntort_value = om1.MEulerRotation(om1.MVector(0.0, 0.0, 0.0), 1)
+        #     if jnt_obj.hasFn(om1.MFn.kJoint):
+        #         print(jnt_obj)
+        #         jnt_fn = omanim1.MFnIkJoint(jnt_obj)
+        #         jnt_fn.setOrientation(jntort_value)
+
+        self.ctrl_mod_n.commandToExecute('delete "Draw*"')
+        self.ctrl_mod_n.doIt()
+
+    def deleteRig(self):
+        rig_mod_n = om2.MDGModifier()
+        rig_mod_n.commandToExecute('delete "Biped*"')
+        rig_mod_n.commandToExecute('delete "*Matrix*"')
+        rig_mod_n.commandToExecute('delete "BackBone*"')
+        rig_mod_n.commandToExecute('delete "Neck*"')
+        rig_mod_n.commandToExecute('delete "*Left*"')
+        rig_mod_n.commandToExecute('delete "NoFlip*"')
+        rig_mod_n.commandToExecute('delete "PV*"')
+        rig_mod_n.doIt()
+
+try:
+    display_dailog.close()
+    display_dailog.deleteLater()
+except:
+    pass
+
+display_dailog = MainWindow()
+display_dailog.show()
+ ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Sum.operation" 1')
                 # ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Sub.operation" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Divide2.input2X" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Divide2.input2Y" 2')
