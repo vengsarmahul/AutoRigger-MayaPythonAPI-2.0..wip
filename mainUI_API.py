@@ -42,9 +42,13 @@ class MainWindow(QtWidgets.QDialog):
         self.IK_System = omanim1.MIkSystem()
         self.IK_Effector = omanim1.MFnIkEffector()
         self.IK_Handle = omanim1.MFnIkHandle()
+        self.MDag_path = om1.MDagPath()
+        self.MNurbs1_cv = om1.MFnNurbsCurve()
+        self.IKSolver1_lst = om1.MSelectionList()
 
         self.MDG2_mod = om2.MDGModifier()
-        self.IKSolver_lst = om1.MSelectionList()
+        self.MDag2_node = om2.MFnDagNode()
+        self.MNurbs2_cv = om2.MFnNurbsCurve()
 
     def createWidgets(self):
         self.createLocatorBut = QtWidgets.QPushButton('Create Locator')
@@ -57,7 +61,6 @@ class MainWindow(QtWidgets.QDialog):
         self.boundingBoxBut = QtWidgets.QPushButton('Create Override Bounding Box')
         self.rigCharBut = QtWidgets.QPushButton('Rig Character')
         self.delRigBut = QtWidgets.QPushButton('Delete Rig')
-
 
         self.createSpineText = QtWidgets.QLineEdit()
         self.countFingers = QtWidgets.QLineEdit()
@@ -85,6 +88,9 @@ class MainWindow(QtWidgets.QDialog):
         self.autostretch = QtWidgets.QComboBox()
         self.autostretch.addItems(["No", "Yes"])
 
+        self.hipjnt = QtWidgets.QComboBox()
+        self.hipjnt.addItems(["No", "Yes"])
+
     def createLayout(self):
         form_layout_1 = QtWidgets.QFormLayout()
         form_layout_1.addRow("Enter No. Of Spine:", self.createSpineText)
@@ -107,6 +113,9 @@ class MainWindow(QtWidgets.QDialog):
         form_layout_7 = QtWidgets.QFormLayout()
         form_layout_7.addRow("Include Auto-Stretchy", self.autostretch)
 
+        form_layout_8 = QtWidgets.QFormLayout()
+        form_layout_8.addRow("Include Hip-Controller", self.hipjnt)
+
         horizonLayout = QtWidgets.QHBoxLayout()
         horizonLayout.addWidget(self.createLocatorBut)
         horizonLayout.addWidget(self.deleteLocatorBut)
@@ -126,6 +135,10 @@ class MainWindow(QtWidgets.QDialog):
         ik_HorizonLayout.addLayout(form_layout_5)
         ik_HorizonLayout.addLayout(form_layout_6)
 
+        opt_HorizonLayout = QtWidgets.QHBoxLayout()
+        opt_HorizonLayout.addLayout(form_layout_7)
+        opt_HorizonLayout.addLayout(form_layout_8)
+
         rig_HorizonLayout = QtWidgets.QHBoxLayout()
         rig_HorizonLayout.addWidget(self.rigCharBut)
         rig_HorizonLayout.addWidget(self.delRigBut)
@@ -143,7 +156,7 @@ class MainWindow(QtWidgets.QDialog):
         mainLayoutV.addLayout(jntOrient_HorizonLayout)
         mainLayoutV.addLayout(ik_HorizonLayout)
         mainLayoutV.addWidget(self.boundingBoxBut)
-        mainLayoutV.addLayout(form_layout_7)
+        mainLayoutV.addLayout(opt_HorizonLayout)
         mainLayoutV.addLayout(rig_HorizonLayout)
 
     def createUIConnection(self):
@@ -596,7 +609,7 @@ class MainWindow(QtWidgets.QDialog):
             self.jnt_grp = spinejnt_grp.create("transform", "Biped_jnt_grp")
             self.donttouchjnt_grp = spinejnt_grp.create("transform", "DoNotTouch", self.jnt_grp)
             self.splineik_grp = spinejnt_grp.create("transform", "SplineIk_grp", self.jnt_grp)
-            self.jnt_root_tn = spinejnt_grp.create("joint", "Hip", self.jnt_grp)
+            self.jnt_root_tn = spinejnt_grp.create("joint", "Root", self.jnt_grp)
             self.jnt_ikroot_tn = spinejnt_grp.create("joint", "IkHip", self.splineik_grp)
             self.jnt_ikrootcv_tn = spinejnt_grp.create("joint", "IkCvHip", self.donttouchjnt_grp)
 
@@ -681,6 +694,24 @@ class MainWindow(QtWidgets.QDialog):
         self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.scaleZ"')
         self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "DoNotTouch.visibility" 0')
         self.MDG2_mod.commandToExecute('select -hierarchy "DoNotTouch"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "IkHip"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "IkNeck0"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "FkLeftArm"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "IkLeftArm"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "IkNoFlipLeftArm"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "IkPVLeftArm"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "LeftArmIk_grp"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyLeftJointArm_grp.translateX"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyLeftJointArm_grp.translateY"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyLeftJointArm_grp.translateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyLeftJointArm_grp.rotateX"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyLeftJointArm_grp.rotateY"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyLeftJointArm_grp.rotateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyLeftJointArm_grp.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyLeftJointArm_grp.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyLeftJointArm_grp.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyLeftJointArm_grp.visibility" 0')
+        self.MDG2_mod.commandToExecute('select -hierarchy "IkStretchyLeftJointArm_grp"; hide -clearSelection;')
         self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.translateX"')
         self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.translateY"')
         self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkLeftJointLeg_grp.translateZ"')
@@ -725,6 +756,22 @@ class MainWindow(QtWidgets.QDialog):
         self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.scaleZ"')
         self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "IkStretchyLeftJointLeg_grp.visibility" 0')
         self.MDG2_mod.commandToExecute('select -hierarchy "IkStretchyLeftJointLeg_grp"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "FkRightArm"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "IkRightArm"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "IkNoFlipRightArm"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "IkPVRightArm"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('select -hierarchy "RightArmIk_grp"; hide -clearSelection;')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyRightJointArm_grp.translateX"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyRightJointArm_grp.translateY"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyRightJointArm_grp.translateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyRightJointArm_grp.rotateX"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyRightJointArm_grp.rotateY"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyRightJointArm_grp.rotateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyRightJointArm_grp.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyRightJointArm_grp.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyRightJointArm_grp.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "IkStretchyRightJointArm_grp.visibility" 0')
+        self.MDG2_mod.commandToExecute('select -hierarchy "IkStretchyRightJointArm_grp"; hide -clearSelection;')
         self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.translateX"')
         self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.translateY"')
         self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "FkRightJointLeg_grp.translateZ"')
@@ -893,6 +940,7 @@ class MainWindow(QtWidgets.QDialog):
         hand_loc_ls = om2.MSelectionList()
 
         if side == 1:
+            self.larmik_grp = armjnt_grp.create("transform", "LeftArmIk_grp", self.donttouchjnt_grp)
             self.larmikcluster_grp = armjnt_grp.create("transform", "LeftArmIkCluster_grp", self.splineik_grp)
             self.lupperarmikcluster_grp = armjnt_grp.create("transform", "LeftUpperArmIkCluster_grp", self.larmikcluster_grp)
             self.lupperarmikcluster0_grp = armjnt_grp.create("transform", "LeftUpperArmIkCluster0_grp", self.lupperarmikcluster_grp)
@@ -1108,6 +1156,7 @@ class MainWindow(QtWidgets.QDialog):
             jnt_stretchyikcvllowerarm4_transform.setTranslation(jnt_stretchyikcvllowerarm4_transform_t, om2.MSpace.kTransform)
 
         if side == -1:
+            self.rarmik_grp = armjnt_grp.create("transform", "RightArmIk_grp", self.donttouchjnt_grp)
             self.rarmikcluster_grp = armjnt_grp.create("transform", "RightArmIkCluster_grp", self.splineik_grp)
             self.rupperarmikcluster_grp = armjnt_grp.create("transform", "RightUpperArmIkCluster_grp", self.rarmikcluster_grp)
             self.rupperarmikcluster0_grp = armjnt_grp.create("transform", "RightUpperArmIkCluster0_grp", self.rupperarmikcluster_grp)
@@ -2144,7 +2193,7 @@ class MainWindow(QtWidgets.QDialog):
         dg_transform = om2.MFnTransform()
 
         hipjoint_sl_lst = om2.MSelectionList()
-        hipjoint_sl_lst.add("Hip")
+        hipjoint_sl_lst.add("Root")
 
         spinejoint_sl_lst = om2.MSelectionList()
         spinejoint_sl_lst.add("Spine*")
@@ -2407,8 +2456,8 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_active_string = rhandjoint_sl_lst.getSelectionStrings(index)
                 fkjnt_active_string = fkrhandjoint_sl_lst.getSelectionStrings(index)
                 ikjnt_active_string = ikrhandjoint_sl_lst.getSelectionStrings(index)
-                iknoflipjnt_active_string = iknofliplhandjoint_sl_lst.getSelectionStrings(index)
-                ikpvjnt_active_string = ikpvlhandjoint_sl_lst.getSelectionStrings(index)
+                iknoflipjnt_active_string = iknofliprhandjoint_sl_lst.getSelectionStrings(index)
+                ikpvjnt_active_string = ikpvrhandjoint_sl_lst.getSelectionStrings(index)
                 dg_modifier.commandToExecute('joint -e -orientJoint yzx -secondaryAxisOrient ydown -zeroScaleOrient {0}'.format(str(jnt_active_string)[3:][:-3]))
                 dg_modifier.commandToExecute('joint -e -orientJoint yzx -secondaryAxisOrient ydown -zeroScaleOrient {0}'.format(str(fkjnt_active_string)[3:][:-3]))
                 dg_modifier.commandToExecute('joint -e -orientJoint yzx -secondaryAxisOrient ydown -zeroScaleOrient {0}'.format(str(ikjnt_active_string)[3:][:-3]))
@@ -2472,6 +2521,24 @@ class MainWindow(QtWidgets.QDialog):
             dg_modifier.commandToExecute('delete "iknofliprnull"')
             dg_modifier.commandToExecute('delete "ikpvrnull"')
             dg_modifier.doIt()
+
+            leftshoulder_r = cmds.xform("LeftShoulder", query=True, rotation=True, worldSpace=True)
+
+            try:
+                cmds.parent("IkSplineLeftUpperArm0", world=True)
+                cmds.parent("IkSplineLeftLowerArm0", world=True)
+            except:
+                pass
+
+            cmds.setAttr("IkStretchyLeftJointArm_grp.rotateX", leftshoulder_r[0])
+            cmds.setAttr("IkStretchyLeftJointArm_grp.rotateY", leftshoulder_r[1])
+            cmds.setAttr("IkStretchyLeftJointArm_grp.rotateZ", leftshoulder_r[2])
+
+            try:
+                cmds.parent("IkSplineLeftUpperArm0", "IkStretchyLeftJointArm_grp")
+                cmds.parent("IkSplineLeftLowerArm0", "IkStretchyLeftJointArm_grp")
+            except:
+                pass
 
             leftarm_r = cmds.xform("LeftArm", query=True, rotation=True, worldSpace=True)
 
@@ -2612,6 +2679,24 @@ class MainWindow(QtWidgets.QDialog):
             cmds.setAttr("IkSplineLeftLowerLeg4.jointOrientX", 0)
             cmds.setAttr("IkSplineLeftLowerLeg4.jointOrientY", 0)
             cmds.setAttr("IkSplineLeftLowerLeg4.jointOrientZ", 0)
+
+            rightshoulder_r = cmds.xform("RightShoulder", query=True, rotation=True, worldSpace=True)
+
+            try:
+                cmds.parent("IkSplineRightUpperArm0", world=True)
+                cmds.parent("IkSplineRightLowerArm0", world=True)
+            except:
+                pass
+
+            cmds.setAttr("IkStretchyRightJointArm_grp.rotateX", rightshoulder_r[0])
+            cmds.setAttr("IkStretchyRightJointArm_grp.rotateY", rightshoulder_r[1])
+            cmds.setAttr("IkStretchyRightJointArm_grp.rotateZ", rightshoulder_r[2])
+
+            try:
+                cmds.parent("IkSplineRightUpperArm0", "IkStretchyRightJointArm_grp")
+                cmds.parent("IkSplineRightLowerArm0", "IkStretchyRightJointArm_grp")
+            except:
+                pass
 
             rightarm_r = cmds.xform("RightArm", query=True, rotation=True, worldSpace=True)
 
@@ -2813,7 +2898,7 @@ class MainWindow(QtWidgets.QDialog):
         elif index == 1 :
 
             try:
-                self.IKSolver_lst.add("ikRPsolver*")
+                self.IKSolver1_lst.add("ikRPsolver*")
             except:
                 cmds.createNode("ikRPsolver")
 
@@ -2848,7 +2933,7 @@ class MainWindow(QtWidgets.QDialog):
         elif index == 1 :
 
             try:
-                self.IKSolver_lst.add("ikRPsolver*")
+                self.IKSolver1_lst.add("ikRPsolver*")
             except:
                 cmds.createNode("ikRPsolver")
 
@@ -2921,7 +3006,7 @@ class MainWindow(QtWidgets.QDialog):
 
         elif index == 1:
             try:
-                self.IKSolver_lst.add("ikRPsolver*")
+                self.IKSolver1_lst.add("ikRPsolver*")
             except:
                 cmds.createNode("ikRPsolver")
 
@@ -3006,7 +3091,7 @@ class MainWindow(QtWidgets.QDialog):
 
         elif index == 1:
             try:
-                self.IKSolver_lst.add("ikRPsolver*")
+                self.IKSolver1_lst.add("ikRPsolver*")
             except:
                 cmds.createNode("ikRPsolver")
 
@@ -3068,9 +3153,9 @@ class MainWindow(QtWidgets.QDialog):
             box_mod_n.doIt()
 
     def rigChar(self):
-        ctrl_cv_n = om2.MFnNurbsCurve()
-        self.ctrl_mod_n = om2.MDGModifier()
-        ctrl_tr_n = om2.MFnDagNode()
+        self.MNurbs2_cv = om2.MFnNurbsCurve()
+        self.MDG2_mod = om2.MDGModifier()
+        self.MDag2_node = om2.MFnDagNode()
 
         obj_sl_lst = om2.MSelectionList()
         obj_sl_lst.add("boundingBox")
@@ -3082,13 +3167,13 @@ class MainWindow(QtWidgets.QDialog):
         ctrl_master_circle_points = [om2.MPoint(0.75, 0.0, 0.25), om2.MPoint(0.0, 0.0, 1.0), om2.MPoint(-1.0, 0.0), om2.MPoint(0.0, 0.0, -1.0), om2.MPoint(0.75, 0.0, -0.25)]
         ctrl_master_arrow_points = [om2.MPoint(0.75, 0.0, -0.25), om2.MPoint(1.50, 0.0, -0.50), om2.MPoint(1.50, 0.0, -0.65), om2.MPoint(2.0, 0.0, 0.0), om2.MPoint(1.50, 0.0, 0.65), om2.MPoint(1.50, 0.0, 0.50), om2.MPoint(0.75, 0.0, 0.25)]
 
-        self.globalctrl_tn =  ctrl_tr_n.create("transform", "Biped_ctrl_grp")
-        self.draw_global_tn = ctrl_tr_n.create("transform", "Draw_global_ctrl")
-        crv_ctrl_master_circle = ctrl_cv_n.createWithEditPoints(ctrl_master_circle_points, 3, 1, False, True, True, self.draw_global_tn)
-        crv_ctrl_master_arrow = ctrl_cv_n.createWithEditPoints(ctrl_master_arrow_points, 1, 1, False, True, True, self.draw_global_tn)
+        self.globalctrl_tn =  self.MDag2_node.create("transform", "Biped_ctrl_grp")
+        self.draw_global_tn = self.MDag2_node.create("transform", "Draw_global_ctrl")
+        crv_ctrl_master_circle = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 3, 1, False, True, True, self.draw_global_tn)
+        crv_ctrl_master_arrow = self.MNurbs2_cv.createWithEditPoints(ctrl_master_arrow_points, 1, 1, False, True, True, self.draw_global_tn)
 
-        self.masterctrl_tn = ctrl_tr_n.create("transform", "Biped_Master_ctrl", self.globalctrl_tn)
-        ctrl_global_comb_cv = ctrl_cv_n.create([crv_ctrl_master_circle, crv_ctrl_master_arrow], self.masterctrl_tn)
+        self.masterctrl_tn = self.MDag2_node.create("transform", "Biped_Master_ctrl", self.globalctrl_tn)
+        ctrl_global_comb_cv = self.MNurbs2_cv.create([crv_ctrl_master_circle, crv_ctrl_master_arrow], self.masterctrl_tn)
 
         masctrl_transform = om2.MFnTransform(self.masterctrl_tn)
         masctrl_transform_s = masctrl_transform.findPlug("scale", False)
@@ -3102,40 +3187,43 @@ class MainWindow(QtWidgets.QDialog):
         masctrl_transform_r[1] = -1.57079
         masctrl_transform.setRotation(masctrl_transform_r, om2.MSpace.kTransform)
 
-        self.ctrl_mod_n.commandToExecute('delete "Draw_global_ctrl"')
-        self.ctrl_mod_n.renameNode(ctrl_global_comb_cv, "Master_shape")
-        self.ctrl_mod_n.commandToExecute('color -rgbColor 0.5 1 0 "Biped_Master_ctrl"')
-        self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Master_ctrl"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.translateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.translateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.translateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.rotateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.rotateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.rotateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.scaleX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.scaleY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.scaleZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.visibility"')
-        self.ctrl_mod_n.doIt()
+        self.MDG2_mod.commandToExecute('delete "Draw_global_ctrl"')
+        self.MDG2_mod.renameNode(ctrl_global_comb_cv, "Master_shape")
+        self.MDG2_mod.commandToExecute('color -rgbColor 0.5 1 0 "Biped_Master_ctrl"')
+        self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Master_ctrl"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.translateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.translateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.translateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.rotateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.rotateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.rotateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_ctrl_grp.visibility"')
+        self.MDG2_mod.commandToExecute('addAttr -longName "globalscale" -niceName "Global Scale" -attributeType double -keyable true -defaultValue 1 Biped_Master_ctrl')
+        self.MDG2_mod.commandToExecute('connectAttr -force Biped_Master_ctrl.globalscale Biped_Master_ctrl.scaleX')
+        self.MDG2_mod.commandToExecute('connectAttr -force Biped_Master_ctrl.globalscale Biped_Master_ctrl.scaleY')
+        self.MDG2_mod.commandToExecute('connectAttr -force Biped_Master_ctrl.globalscale Biped_Master_ctrl.scaleZ')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Master_ctrl.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Master_ctrl.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Master_ctrl.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_Master_ctrl.visibility"')
+        self.MDG2_mod.doIt()
 
         ctrl_root_points = [om2.MPoint(0.75, 0.2, 0.0), om2.MPoint(0.75, 0.0, 0.50), om2.MPoint(0.0, 1, 1), om2.MPoint(-0.75, 0.0, 0.50), om2.MPoint(-0.75, 0.2, 0.0), om2.MPoint(-0.75, 0.0, -0.50), om2.MPoint(0.0, 1, -1), om2.MPoint(0.75, 0.0, -0.50), om2.MPoint(0.75, 0.2, 0.0)]
 
-        self.rootnull_tn = ctrl_tr_n.create("transform", "Biped_Root_null", self.masterctrl_tn)
-        self.rootctrl_tn = ctrl_tr_n.create("transform", "Biped_Root_ctrl", self.rootnull_tn)
-        crv_ctrl_root = ctrl_cv_n.createWithEditPoints(ctrl_root_points, 3, 1, False, True, True, self.rootctrl_tn)
+        self.rootnull_tn = self.MDag2_node.create("transform", "Biped_Root_null", self.masterctrl_tn)
+        self.rootctrl_tn = self.MDag2_node.create("transform", "Biped_Root_ctrl", self.rootnull_tn)
+        crv_ctrl_root = self.MNurbs2_cv.createWithEditPoints(ctrl_root_points, 3, 1, False, True, True, self.rootctrl_tn)
 
         ctrl_hip_line_points = [om2.MPoint(0.75, 0.00, -0.75), om2.MPoint(0.75, 0.00, 0.75), om2.MPoint(0.75, 0.00, 0.00), om2.MPoint(-0.75, 0.00), om2.MPoint(-0.75, 0.00, 0.75), om2.MPoint(-0.75, 0.00, -0.75)]
         ctrl_hip_arcback_points = [om2.MPoint(0.75, 0.00, -0.75), om2.MPoint(1, 0.5, 0.00), om2.MPoint(0.75, 0.00, 0.75)]
         ctrl_hip_linefront_points = [om2.MPoint(-0.75, 0.00, -0.75), om2.MPoint(-1, 0.5, 0.00), om2.MPoint(-0.75, 0.00, 0.75)]
 
-        self.hipctrl_tn = ctrl_tr_n.create("transform", "Biped_Hip_ctrl", self.rootctrl_tn)
-        crv_ctrl_hip_line = ctrl_cv_n.createWithEditPoints(ctrl_hip_line_points, 1, 1, False, True, True, self.hipctrl_tn)
-        crv_ctrl_hip_arcback = ctrl_cv_n.createWithEditPoints(ctrl_hip_arcback_points, 3, 1, False, True, True, self.hipctrl_tn)
-        crv_ctrl_hip_linefront = ctrl_cv_n.createWithEditPoints(ctrl_hip_linefront_points, 3, 1, False, True, True, self.hipctrl_tn)
-
-        obj_sl_lst.add("Hip")
-        hip_obj = obj_sl_lst.getDependNode(1)
-        jnt_root_transform = om2.MFnTransform(hip_obj)
+        obj_sl_lst.add("Root")
+        root_obj = obj_sl_lst.getDependNode(1)
+        jnt_root_transform = om2.MFnTransform(root_obj)
         jnt_root_trans = jnt_root_transform.transformation()
 
         rootnull_transform = om2.MFnTransform(self.rootnull_tn)
@@ -3154,34 +3242,63 @@ class MainWindow(QtWidgets.QDialog):
         rootctrl_transform_r[0], rootctrl_transform_r[1] = 3.1415, -1.57079
         rootctrl_transform.setRotation(rootctrl_transform_r, om2.MSpace.kTransform)
 
-        hipctrl_transform = om2.MFnTransform(self.hipctrl_tn)
-        hipctrl_transform_r = hipctrl_transform.rotation(om2.MSpace.kTransform)
-        hipctrl_transform_r[1] = -1.57079
-        hipctrl_transform.setRotation(hipctrl_transform_r, om2.MSpace.kTransform)
+        self.MDG2_mod.renameNode(crv_ctrl_root, "Root_shape")
+        self.MDG2_mod.commandToExecute('color -rgbColor 1 0 0 "Biped_Root_ctrl"')
+        self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Root_ctrl"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.translateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.translateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.translateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.rotateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.rotateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.rotateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.visibility"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_ctrl.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_ctrl.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_ctrl.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_Root_ctrl.visibility"')
+        self.MDG2_mod.doIt()
 
-        hipctrl_transform_s = hipctrl_transform.scale()
-        hipctrl_transform_s[2] = 0.7
-        hipctrl_transform.setScale(hipctrl_transform_s)
+        if self.hipjnt.currentIndex() == 1:
+            jnt_hip = self.MDag2_node.create("joint", "Hip", root_obj)
 
-        self.ctrl_mod_n.renameNode(crv_ctrl_root, "Root_shape")
-        self.ctrl_mod_n.renameNode(crv_ctrl_hip_line, "HipLine_shape")
-        self.ctrl_mod_n.renameNode(crv_ctrl_hip_arcback, "HipArcRight_shape")
-        self.ctrl_mod_n.renameNode(crv_ctrl_hip_linefront, "HipArcLeft_shape")
-        self.ctrl_mod_n.commandToExecute('color -rgbColor 1 0 0 "Biped_Root_ctrl"')
-        self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_Hip_ctrl"')
-        self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Root_ctrl"')
-        self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Hip_ctrl"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.translateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.translateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.translateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.rotateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.rotateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.rotateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.scaleX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.scaleY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.scaleZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Root_null.visibility"')
-        self.ctrl_mod_n.doIt()
+            self.hipctrl_tn = self.MDag2_node.create("transform", "Biped_Hip_ctrl", self.rootctrl_tn)
+            crv_ctrl_hip_line = self.MNurbs2_cv.createWithEditPoints(ctrl_hip_line_points, 1, 1, False, True, True, self.hipctrl_tn)
+            crv_ctrl_hip_arcback = self.MNurbs2_cv.createWithEditPoints(ctrl_hip_arcback_points, 3, 1, False, True, True, self.hipctrl_tn)
+            crv_ctrl_hip_linefront = self.MNurbs2_cv.createWithEditPoints(ctrl_hip_linefront_points, 3, 1, False, True, True, self.hipctrl_tn)
+
+            hipctrl_transform = om2.MFnTransform(self.hipctrl_tn)
+            hipctrl_transform_r = hipctrl_transform.rotation(om2.MSpace.kTransform)
+            hipctrl_transform_r[0] = 3.1415
+            hipctrl_transform.setRotation(hipctrl_transform_r, om2.MSpace.kTransform)
+
+            hipctrl_transform_s = hipctrl_transform.findPlug("scale", False)
+            if hipctrl_transform_s.isCompound:
+                for i in range(hipctrl_transform_s.numChildren()):
+                    child_plug = hipctrl_transform_s.child(i)
+                    attr_value = child_plug.setDouble(box_transform_s[0]/2)
+
+            self.MDG2_mod.renameNode(crv_ctrl_hip_line, "HipLine_shape")
+            self.MDG2_mod.renameNode(crv_ctrl_hip_arcback, "HipArcRight_shape")
+            self.MDG2_mod.renameNode(crv_ctrl_hip_linefront, "HipArcLeft_shape")
+            self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_Hip_ctrl"')
+            self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Hip_ctrl"')
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Hip_ctrl.translateX"')
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Hip_ctrl.translateY"')
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Hip_ctrl.translateZ"')
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Hip_ctrl.scaleX"')
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Hip_ctrl.scaleY"')
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Hip_ctrl.scaleZ"')
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Hip_ctrl.visibility"')
+            self.MDG2_mod.commandToExecute('parent LeftJointLeg_grp Hip')
+            self.MDG2_mod.commandToExecute('parent FkLeftJointLeg_grp Hip')
+            self.MDG2_mod.commandToExecute('parent IkLeftJointLeg_grp Hip')
+            self.MDG2_mod.commandToExecute('parent RightJointLeg_grp Hip')
+            self.MDG2_mod.commandToExecute('parent FkRightJointLeg_grp Hip')
+            self.MDG2_mod.commandToExecute('parent IkRightJointLeg_grp Hip')
+            self.MDG2_mod.doIt()
 
         spine_sl_lst = om2.MSelectionList()
         spine_sl_lst.add("Spine*")
@@ -3192,31 +3309,31 @@ class MainWindow(QtWidgets.QDialog):
         ctrl_spine_curve_fr_points = [om2.MPoint(0.50, 0.00, -0.25), om2.MPoint(0.50, -0.06, -0.10), om2.MPoint(0.50, -0.15, 0.00)]
         ctrl_spine_curve_b_points = [om2.MPoint(-0.50, 0.00, 0.25), om2.MPoint(-0.50, -0.06, 0.10), om2.MPoint(-0.50, -0.15, 0.00), om2.MPoint(-0.50, -0.06, -0.10),  om2.MPoint(-0.50, 0.00, -0.25)]
 
-        self.draw_spine_tn = ctrl_tr_n.create("transform", "Draw_Spine_ctrl")
-        crv_ctrl_spine_line_l = ctrl_cv_n.createWithEditPoints(ctrl_spine_line_l_points, 1, 1, False, True, True, self.draw_spine_tn)
-        crv_ctrl_spine_line_r = ctrl_cv_n.createWithEditPoints(ctrl_spine_line_r_points, 1, 1, False, True, True, self.draw_spine_tn)
-        crv_ctrl_spine_curve_fl = ctrl_cv_n.createWithEditPoints(ctrl_spine_curve_fl_points, 3, 1, False, True, True, self.draw_spine_tn)
-        crv_ctrl_spine_curve_fr = ctrl_cv_n.createWithEditPoints(ctrl_spine_curve_fr_points, 3, 1, False, True, True, self.draw_spine_tn)
-        crv_ctrl_spine_curve_b = ctrl_cv_n.createWithEditPoints(ctrl_spine_curve_b_points, 3, 1, False, True, True, self.draw_spine_tn)
+        self.draw_spine_tn = self.MDag2_node.create("transform", "Draw_Spine_ctrl")
+        crv_ctrl_spine_line_l = self.MNurbs2_cv.createWithEditPoints(ctrl_spine_line_l_points, 1, 1, False, True, True, self.draw_spine_tn)
+        crv_ctrl_spine_line_r = self.MNurbs2_cv.createWithEditPoints(ctrl_spine_line_r_points, 1, 1, False, True, True, self.draw_spine_tn)
+        crv_ctrl_spine_curve_fl = self.MNurbs2_cv.createWithEditPoints(ctrl_spine_curve_fl_points, 3, 1, False, True, True, self.draw_spine_tn)
+        crv_ctrl_spine_curve_fr = self.MNurbs2_cv.createWithEditPoints(ctrl_spine_curve_fr_points, 3, 1, False, True, True, self.draw_spine_tn)
+        crv_ctrl_spine_curve_b = self.MNurbs2_cv.createWithEditPoints(ctrl_spine_curve_b_points, 3, 1, False, True, True, self.draw_spine_tn)
 
         ctrl_stretchyspine_circle_points = [om2.MPoint(0.70, 0.00, 0.00), om2.MPoint(0.00, -0.20, 0.70), om2.MPoint(-0.70, 0.00, 0.00), om2.MPoint(0.00, -0.20, -0.70), om2.MPoint(0.70, 0.00, 0.00)]
 
         for index in range(spine_sl_lst.length()):
             if index == 0:
-                self.spinenull_tn = ctrl_tr_n.create("transform", "Biped_Spine"+str(index)+"_null", self.rootctrl_tn)
-                self.spinectrl_tn = ctrl_tr_n.create("transform", "Biped_Spine"+str(index)+"_ctrl", self.spinenull_tn)
-                ctrl_spine_comb_cv = ctrl_cv_n.create([crv_ctrl_spine_curve_fl, crv_ctrl_spine_line_l, crv_ctrl_spine_curve_b, crv_ctrl_spine_line_r, crv_ctrl_spine_curve_fr], self.spinectrl_tn)
+                self.spinenull_tn = self.MDag2_node.create("transform", "Biped_Spine"+str(index)+"_null", self.rootctrl_tn)
+                self.spinectrl_tn = self.MDag2_node.create("transform", "Biped_Spine"+str(index)+"_ctrl", self.spinenull_tn)
+                ctrl_spine_comb_cv = self.MNurbs2_cv.create([crv_ctrl_spine_curve_fl, crv_ctrl_spine_line_l, crv_ctrl_spine_curve_b, crv_ctrl_spine_line_r, crv_ctrl_spine_curve_fr], self.spinectrl_tn)
 
             else:
-                self.spinenull_tn = ctrl_tr_n.create("transform", "Biped_Spine"+str(index)+"_null")
-                self.spinectrl_tn = ctrl_tr_n.create("transform", "Biped_Spine"+str(index)+"_ctrl", self.spinenull_tn)
-                ctrl_spine_comb_cv = ctrl_cv_n.create([crv_ctrl_spine_curve_fl, crv_ctrl_spine_line_l, crv_ctrl_spine_curve_b, crv_ctrl_spine_line_r, crv_ctrl_spine_curve_fr], self.spinectrl_tn)
+                self.spinenull_tn = self.MDag2_node.create("transform", "Biped_Spine"+str(index)+"_null")
+                self.spinectrl_tn = self.MDag2_node.create("transform", "Biped_Spine"+str(index)+"_ctrl", self.spinenull_tn)
+                ctrl_spine_comb_cv = self.MNurbs2_cv.create([crv_ctrl_spine_curve_fl, crv_ctrl_spine_line_l, crv_ctrl_spine_curve_b, crv_ctrl_spine_line_r, crv_ctrl_spine_curve_fr], self.spinectrl_tn)
 
             if index == spine_sl_lst.length()-1:
-                self.stretchyspine_tn = ctrl_tr_n.create("transform", "Biped_StretchySpine_ctrl", self.spinectrl_tn)
-                crv_ctrl_stretchyspine = ctrl_cv_n.createWithEditPoints(ctrl_stretchyspine_circle_points, 3, 1, False, True, True, self.stretchyspine_tn)
+                self.stretchyspine_tn = self.MDag2_node.create("transform", "Biped_StretchySpine_ctrl", self.spinectrl_tn)
+                crv_ctrl_stretchyspine = self.MNurbs2_cv.createWithEditPoints(ctrl_stretchyspine_circle_points, 3, 1, False, True, True, self.stretchyspine_tn)
 
-                self.ctrl_mod_n.renameNode(crv_ctrl_stretchyspine, "StretchySpine_shape")
+                self.MDG2_mod.renameNode(crv_ctrl_stretchyspine, "StretchySpine_shape")
 
             jnt_spine_obj = spine_sl_lst.getDependNode(index)
             spine_path_n = om2.MDagPath()
@@ -3238,8 +3355,8 @@ class MainWindow(QtWidgets.QDialog):
             spinectrl_transform_align = spinectrl_transform.rotation(om2.MSpace.kTransform)
             spinectrl_transform_align[1] = -1.57079
             spinectrl_transform.setRotation(spinectrl_transform_align, om2.MSpace.kTransform)
-            self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Spine{0}_ctrl"'.format(index))
-            self.ctrl_mod_n.doIt()
+            self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Spine{0}_ctrl"'.format(index))
+            self.MDG2_mod.doIt()
 
             jnt_spine_r = cmds.xform("Spine{0}".format(index), query=True, rotation=True, worldSpace=True)
 
@@ -3294,23 +3411,27 @@ class MainWindow(QtWidgets.QDialog):
 
                 spinenull_transform.setTransformation(om2.MTransformationMatrix(spinenull_childtransform_localmatrix))
 
-            self.ctrl_mod_n.renameNode(ctrl_spine_comb_cv, "Spine"+str(index)+"_shape")
-            self.ctrl_mod_n.commandToExecute('color -rgbColor 1 1 0 "Biped_Spine{0}_ctrl"'.format(index))
-            self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Spine{0}_ctrl"'.format(index))
-            self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.translateX"'.format(index))
-            self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.translateY"'.format(index))
-            self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.translateZ"'.format(index))
-            self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.rotateX"'.format(index))
-            self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.rotateY"'.format(index))
-            self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.rotateZ"'.format(index))
-            self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.scaleX"'.format(index))
-            self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.scaleY"'.format(index))
-            self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.scaleZ"'.format(index))
-            self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.visibility"'.format(index))
+            self.MDG2_mod.renameNode(ctrl_spine_comb_cv, "Spine" + str(index) + "_shape")
+            self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0 "Biped_Spine{0}_ctrl"'.format(index))
+            self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Spine{0}_ctrl"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.translateX"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.translateY"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.translateZ"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.rotateX"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.rotateY"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.rotateZ"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.scaleX"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.scaleY"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.scaleZ"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_null.visibility"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_ctrl.scaleX"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_ctrl.scaleY"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Spine{0}_ctrl.scaleZ"'.format(index))
+            self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_Spine{0}_ctrl.visibility"'.format(index))
 
-        self.ctrl_mod_n.commandToExecute('color -rgbColor 1 0 0 "Biped_StretchySpine_ctrl"')
-        self.ctrl_mod_n.commandToExecute('delete "Draw_Spine_ctrl"')
-        self.ctrl_mod_n.doIt()
+        self.MDG2_mod.commandToExecute('color -rgbColor 1 0 0 "Biped_StretchySpine_ctrl"')
+        self.MDG2_mod.commandToExecute('delete "Draw_Spine_ctrl"')
+        self.MDG2_mod.doIt()
 
         head_sl_ls = om2.MSelectionList()
         head_sl_ls.add("Neck")
@@ -3321,18 +3442,18 @@ class MainWindow(QtWidgets.QDialog):
         ctrl_neck_star_up_points = [om2.MPoint(0.60, 0.05, 0.02), om2.MPoint(0.70, 0.15, 0.20), om2.MPoint(0.70, 0.09, 0.20), om2.MPoint(0.70, 0.06, 0.13), om2.MPoint(0.60, 0.00, 0.00), om2.MPoint(0.70, 0.05, -0.13), om2.MPoint(0.70, 0.09, -0.20), om2.MPoint(0.70, 0.15, -0.20), om2.MPoint(0.60, 0.05, -0.02)]
         ctrl_neck_line_down_points = [om2.MPoint(0.60, 0.05, -0.02), om2.MPoint(0.00, 0.05, -0.02)]
 
-        self.draw_neck_tn = ctrl_tr_n.create("transform", "Draw_neck_ctrl")
-        crv_ctrl_neck_line_up = ctrl_cv_n.createWithEditPoints(ctrl_neck_line_up_points, 1, 1, False, True, True, self.draw_neck_tn)
-        crv_ctrl_neck_star = ctrl_cv_n.createWithEditPoints(ctrl_neck_star_up_points, 1, 1, False, True, True, self.draw_neck_tn)
-        crv_ctrl_neck_line_down = ctrl_cv_n.createWithEditPoints(ctrl_neck_line_down_points, 1, 1, False, True, True, self.draw_neck_tn)
+        self.draw_neck_tn = self.MDag2_node.create("transform", "Draw_neck_ctrl")
+        crv_ctrl_neck_line_up = self.MNurbs2_cv.createWithEditPoints(ctrl_neck_line_up_points, 1, 1, False, True, True, self.draw_neck_tn)
+        crv_ctrl_neck_star = self.MNurbs2_cv.createWithEditPoints(ctrl_neck_star_up_points, 1, 1, False, True, True, self.draw_neck_tn)
+        crv_ctrl_neck_line_down = self.MNurbs2_cv.createWithEditPoints(ctrl_neck_line_down_points, 1, 1, False, True, True, self.draw_neck_tn)
 
         if self.autostretch.currentIndex() == 1:
-            self.necknull_tn = ctrl_tr_n.create("transform", "Biped_Neck_null", self.stretchyspine_tn)
+            self.necknull_tn = self.MDag2_node.create("transform", "Biped_Neck_null", self.stretchyspine_tn)
         else:
-            self.necknull_tn = ctrl_tr_n.create("transform", "Biped_Neck_null", self.spinectrl_tn)
+            self.necknull_tn = self.MDag2_node.create("transform", "Biped_Neck_null", self.spinectrl_tn)
 
-        self.neckctrl_tn = ctrl_tr_n.create("transform", "Biped_Neck_ctrl", self.necknull_tn)
-        ctrl_neck_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.neckctrl_tn)
+        self.neckctrl_tn = self.MDag2_node.create("transform", "Biped_Neck_ctrl", self.necknull_tn)
+        ctrl_neck_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.neckctrl_tn)
 
         jnt_neck_obj = head_sl_ls.getDependNode(0)
         neck_path_n = om2.MDagPath()
@@ -3373,38 +3494,43 @@ class MainWindow(QtWidgets.QDialog):
 
         necknull_transform.setTransformation(om2.MTransformationMatrix(necknull_transform_localmatrix))
 
-        self.ctrl_mod_n.renameNode(ctrl_neck_comb_cv, "Neck_shape")
-        self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_Neck_ctrl"')
-        self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Neck_ctrl"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.translateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.translateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.translateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.rotateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.rotateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.rotateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.scaleX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.scaleY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.scaleZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.visibility"')
-        self.ctrl_mod_n.doIt()
+        self.MDG2_mod.renameNode(ctrl_neck_comb_cv, "Neck_shape")
+        self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_Neck_ctrl"')
+        self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Neck_ctrl"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.translateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.translateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.translateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.rotateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.rotateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.rotateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_null.visibility"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_ctrl.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_ctrl.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Neck_ctrl.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_Neck_ctrl.visibility"')
+        self.MDG2_mod.doIt()
 
         ctrl_head_arcl_points = [om2.MPoint(-0.70, -0.1), om2.MPoint(-0.65, -0.03, 0.04), om2.MPoint(-0.50, 0.00, 0.1)]
         ctrl_head_sq_points = [om2.MPoint(-0.50, 0.00, 0.1), om2.MPoint(-0.30, 0.00, 0.25),  om2.MPoint(0.10, 0.00, 0.25),  om2.MPoint(0.20, 0.00, 0.05), om2.MPoint(0.20, 0.00, -0.05), om2.MPoint(0.10, 0.00, -0.25), om2.MPoint(-0.30, 0.00, -0.25), om2.MPoint(-0.50, 0.00, -0.1)]
         ctrl_head_arcr_points = [om2.MPoint(-0.50, 0.00, -0.1), om2.MPoint(-0.65, -0.03, -0.04), om2.MPoint(-0.70, -0.1)]
 
-        self.draw_head_tn = ctrl_tr_n.create("transform", "Draw_head_ctrl")
-        crv_ctrl_head_line_l = ctrl_cv_n.createWithEditPoints(ctrl_head_sq_points, 1, 1, False, True, True, self.draw_head_tn)
-        crv_ctrl_arc_l = ctrl_cv_n.createWithEditPoints(ctrl_head_arcl_points, 3, 1, False, True, True, self.draw_head_tn)
-        crv_ctrl_arc_r = ctrl_cv_n.createWithEditPoints(ctrl_head_arcr_points, 3, 1, False, True, True, self.draw_head_tn)
+        self.draw_head_tn = self.MDag2_node.create("transform", "Draw_head_ctrl")
+        crv_ctrl_head_line_l = self.MNurbs2_cv.createWithEditPoints(ctrl_head_sq_points, 1, 1, False, True, True, self.draw_head_tn)
+        crv_ctrl_arc_l = self.MNurbs2_cv.createWithEditPoints(ctrl_head_arcl_points, 3, 1, False, True, True, self.draw_head_tn)
+        crv_ctrl_arc_r = self.MNurbs2_cv.createWithEditPoints(ctrl_head_arcr_points, 3, 1, False, True, True, self.draw_head_tn)
 
-        self.headnull_tn = ctrl_tr_n.create("transform", "Biped_Head_null", self.neckctrl_tn)
-        self.headctrl_tn = ctrl_tr_n.create("transform", "Biped_Head_ctrl", self.headnull_tn)
-        ctrl_head_comb_cv = ctrl_cv_n.create([crv_ctrl_head_line_l, crv_ctrl_arc_l, crv_ctrl_arc_r], self.headctrl_tn)
+        self.headnull_tn = self.MDag2_node.create("transform", "Biped_Head_null", self.neckctrl_tn)
+        self.headrot_tn = self.MDag2_node.create("transform", "Biped_HeadRot_null", self.headnull_tn)
+        self.headctrl_tn = self.MDag2_node.create("transform", "Biped_Head_ctrl", self.headrot_tn)
+        ctrl_head_comb_cv = self.MNurbs2_cv.create([crv_ctrl_head_line_l, crv_ctrl_arc_l, crv_ctrl_arc_r], self.headctrl_tn)
 
         ctrl_stretchyspine_circle_points = [om2.MPoint(0.30, 0.00, 0.00), om2.MPoint(0.00, 0.20, 0.30), om2.MPoint(-0.30, 0.00, 0.00), om2.MPoint(0.00, 0.20, -0.30), om2.MPoint(0.30, 0.00, 0.00)]
 
-        self.stretchyheadctrl_tn = ctrl_tr_n.create("transform", "Biped_StretchyNeck_ctrl", self.headctrl_tn)
-        crv_ctrl_stretchyhead = ctrl_cv_n.createWithEditPoints(ctrl_stretchyspine_circle_points, 3, 1, False, True, True, self.stretchyheadctrl_tn)
+        self.stretchyheadctrl_tn = self.MDag2_node.create("transform", "Biped_StretchyNeck_ctrl", self.headctrl_tn)
+        crv_ctrl_stretchyhead = self.MNurbs2_cv.createWithEditPoints(ctrl_stretchyspine_circle_points, 3, 1, False, True, True, self.stretchyheadctrl_tn)
 
         jnt_head_obj = head_sl_ls.getDependNode(1)
         head_path_n = om2.MDagPath()
@@ -3417,7 +3543,7 @@ class MainWindow(QtWidgets.QDialog):
         jnt_headtop_t = jnt_headtop_transform.translation(om2.MSpace.kTransform)
 
         headtopnull_transform = om2.MFnTransform(self.headnull_tn)
-        headtopnull_transform.setRotatePivotTranslation(jnt_head_t, om2.MSpace.kTransform)
+        headtopnull_transform.setTranslation(jnt_head_t, om2.MSpace.kTransform)
 
         headtopctrl_transform = om2.MFnTransform(self.headctrl_tn)
 
@@ -3464,23 +3590,27 @@ class MainWindow(QtWidgets.QDialog):
 
         stretchyheadctrl_worldtransform.setRotatePivot(om2.MPoint(jnt_head_t), om2.MSpace.kWorld, False)
 
-        self.ctrl_mod_n.commandToExecute('delete "Draw_head_ctrl"')
-        self.ctrl_mod_n.renameNode(ctrl_head_comb_cv, "Head_shape")
-        self.ctrl_mod_n.renameNode(crv_ctrl_stretchyhead, "StretchyNeck_shape")
-        self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_Head_ctrl"')
-        self.ctrl_mod_n.commandToExecute('color -rgbColor 1 0 0 "Biped_StretchyNeck_ctrl"')
-        self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Head_ctrl"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.translateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.translateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.translateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.rotateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.rotateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.rotateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.scaleX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.scaleY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.scaleZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.visibility"')
-        self.ctrl_mod_n.doIt()
+        self.MDG2_mod.commandToExecute('delete "Draw_head_ctrl"')
+        self.MDG2_mod.renameNode(ctrl_head_comb_cv, "Head_shape")
+        self.MDG2_mod.renameNode(crv_ctrl_stretchyhead, "StretchyNeck_shape")
+        self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_Head_ctrl"')
+        self.MDG2_mod.commandToExecute('color -rgbColor 1 0 0 "Biped_StretchyNeck_ctrl"')
+        self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_Head_ctrl"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.translateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.translateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.translateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.rotateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.rotateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.rotateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_null.visibility"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_ctrl.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_ctrl.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_Head_ctrl.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_Head_ctrl.visibility"')
+        self.MDG2_mod.doIt()
 
         larm_sl_ls = om2.MSelectionList()
         larm_sl_ls.add("LeftArm")
@@ -3497,18 +3627,18 @@ class MainWindow(QtWidgets.QDialog):
         ctrl_shoulder_line = [om2.MPoint(0.90, 0.35, 0.25), om2.MPoint(0.30, 0.50, 0.25), om2.MPoint(0.25, 0.55, 0.20), om2.MPoint(0.25, 0.55, -0.20), om2.MPoint(0.30, 0.50, -0.25), om2.MPoint(0.90, 0.35, -0.25)]
         ctrl_shoulder_arc_r = [om2.MPoint(0.90, 0.35, -0.25), om2.MPoint(1.10, 0.28, -0.10), om2.MPoint(1.20, 0.15)]
 
-        self.draw_shoulder_tn = ctrl_tr_n.create("transform", "Draw_shoulder_ctrl")
-        crv_ctrl_shoulder_arc_l = ctrl_cv_n.createWithEditPoints(ctrl_shoulder_arc_l, 3, 1, False, True, True, self.draw_shoulder_tn)
-        crv_ctrl_shoulder_line = ctrl_cv_n.createWithEditPoints(ctrl_shoulder_line, 1, 1, False, True, True, self.draw_shoulder_tn)
-        crv_ctrl_shoulder_arc_r = ctrl_cv_n.createWithEditPoints(ctrl_shoulder_arc_r, 3, 1, False, True, True, self.draw_shoulder_tn)
+        self.draw_shoulder_tn = self.MDag2_node.create("transform", "Draw_shoulder_ctrl")
+        crv_ctrl_shoulder_arc_l = self.MNurbs2_cv.createWithEditPoints(ctrl_shoulder_arc_l, 3, 1, False, True, True, self.draw_shoulder_tn)
+        crv_ctrl_shoulder_line = self.MNurbs2_cv.createWithEditPoints(ctrl_shoulder_line, 1, 1, False, True, True, self.draw_shoulder_tn)
+        crv_ctrl_shoulder_arc_r = self.MNurbs2_cv.createWithEditPoints(ctrl_shoulder_arc_r, 3, 1, False, True, True, self.draw_shoulder_tn)
 
         if self.autostretch.currentIndex() == 1:
-            self.lshouldernull_tn = ctrl_tr_n.create("transform", "Biped_LeftShoulder_null", self.stretchyspine_tn)
+            self.lshouldernull_tn = self.MDag2_node.create("transform", "Biped_LeftShoulder_null", self.stretchyspine_tn)
         else:
-            self.lshouldernull_tn = ctrl_tr_n.create("transform", "Biped_LeftShoulder_null", self.spinectrl_tn)
+            self.lshouldernull_tn = self.MDag2_node.create("transform", "Biped_LeftShoulder_null", self.spinectrl_tn)
 
-        self.lshoulderctrl_tn = ctrl_tr_n.create("transform", "Biped_LeftShoulder_ctrl", self.lshouldernull_tn)
-        ctrl_shoulder_comb_cv = ctrl_cv_n.create([crv_ctrl_shoulder_arc_l, crv_ctrl_shoulder_line, crv_ctrl_shoulder_arc_r], self.lshoulderctrl_tn)
+        self.lshoulderctrl_tn = self.MDag2_node.create("transform", "Biped_LeftShoulder_ctrl", self.lshouldernull_tn)
+        ctrl_shoulder_comb_cv = self.MNurbs2_cv.create([crv_ctrl_shoulder_arc_l, crv_ctrl_shoulder_line, crv_ctrl_shoulder_arc_r], self.lshoulderctrl_tn)
 
         jnt_lshoulder_obj = fklarm_sl_ls.getDependNode(0)
         lshoulder_path_n = om2.MDagPath()
@@ -3554,21 +3684,25 @@ class MainWindow(QtWidgets.QDialog):
 
         lshoulderctrl_worldtransform.setRotatePivot(om2.MPoint(jnt_lshoulder_t), om2.MSpace.kWorld, False)
 
-        self.ctrl_mod_n.commandToExecute('delete "Draw_shoulder_ctrl"')
-        self.ctrl_mod_n.renameNode(ctrl_shoulder_comb_cv, "LeftShoulder_shape")
-        self.ctrl_mod_n.commandToExecute('color -rgbColor 1 0 0 "Biped_LeftShoulder_ctrl"')
-        self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftShoulder_ctrl"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.translateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.translateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.translateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.rotateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.rotateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.rotateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.scaleX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.scaleY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.scaleZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.visibility"')
-        self.ctrl_mod_n.doIt()
+        self.MDG2_mod.commandToExecute('delete "Draw_shoulder_ctrl"')
+        self.MDG2_mod.renameNode(ctrl_shoulder_comb_cv, "LeftShoulder_shape")
+        self.MDG2_mod.commandToExecute('color -rgbColor 1 0 0 "Biped_LeftShoulder_ctrl"')
+        self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftShoulder_ctrl"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.translateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.translateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.translateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.rotateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.rotateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.rotateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_null.visibility"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_ctrl.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_ctrl.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftShoulder_ctrl.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_LeftShoulder_ctrl.visibility"')
+        self.MDG2_mod.doIt()
 
         for index in range(fklarm_sl_ls.length()):
            jnt_lhand_obj = fklarm_sl_ls.getDependNode(index)
@@ -3578,12 +3712,12 @@ class MainWindow(QtWidgets.QDialog):
            jnt_lhand_t = jnt_lhand_transform.translation(om2.MSpace.kWorld)
 
            if index == 1:
-               self.larmnull_tn = ctrl_tr_n.create("transform", "Biped_FkLeftArm_null", self.lshoulderctrl_tn)
-               self.larmctrl_tn = ctrl_tr_n.create("transform", "Biped_FkLeftArm_ctrl", self.larmnull_tn )
-               ctrl_larm_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.larmctrl_tn)
+               self.larmnull_tn = self.MDag2_node.create("transform", "Biped_FkLeftArm_null", self.lshoulderctrl_tn)
+               self.larmctrl_tn = self.MDag2_node.create("transform", "Biped_FkLeftArm_ctrl", self.larmnull_tn )
+               ctrl_larm_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.larmctrl_tn)
 
                larmnull_transform = om2.MFnTransform(self.larmnull_tn)
-               larmnull_transform.setRotatePivotTranslation(jnt_lhand_t, om2.MSpace.kTransform)
+               larmnull_transform.setTranslation(jnt_lhand_t, om2.MSpace.kTransform)
 
                jnt_larm_r = cmds.xform("LeftArm", query=True, rotation=True, worldSpace=True)
 
@@ -3610,28 +3744,46 @@ class MainWindow(QtWidgets.QDialog):
 
                larmnull_transform.setTransformation(om2.MTransformationMatrix(larmnull_transform_localmatrix))
 
-               self.ctrl_mod_n.renameNode(ctrl_larm_comb_cv, "FkLeftArm_shape")
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftArm_ctrl"')
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftArm_ctrl"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.visibility"')
-               self.ctrl_mod_n.doIt()
+               self.MDG2_mod.renameNode(ctrl_larm_comb_cv, "FkLeftArm_shape")
+               self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftArm_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftArm_ctrl"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_null.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_ctrl.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_ctrl.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_ctrl.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftArm_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftArm_ctrl.visibility"')
+               self.MDG2_mod.doIt()
 
            elif index == 2:
-               self.lforearmnull_tn = ctrl_tr_n.create("transform", "Biped_FkLeftForeArm_null", self.larmctrl_tn)
-               self.lforearmctrl_tn = ctrl_tr_n.create("transform", "Biped_FkLeftForeArm_ctrl", self.lforearmnull_tn )
-               ctrl_lforearm_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lforearmctrl_tn)
+               self.lforearmnull_tn = self.MDag2_node.create("transform", "Biped_FkLeftForeArm_null", self.larmctrl_tn)
+               self.lforearmctrl_tn = self.MDag2_node.create("transform", "Biped_FkLeftForeArm_ctrl", self.lforearmnull_tn )
+               ctrl_lforearm_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lforearmctrl_tn)
+
+               ctrl_elbow_triangle_points = [om2.MPoint(1.0, 0.0), om2.MPoint(0.0, 0.0, 1.0), om2.MPoint(-1.0, 0.0), om2.MPoint(0.0, 0.0, -1.0), om2.MPoint(1.0, 0.0)]
+               ctrl_elbow_arrow_points = [om2.MPoint(0.0, 0.0), om2.MPoint(0.0, 1.0), om2.MPoint(0.0, 0.8, 0.1), om2.MPoint(0.0, 1.0), om2.MPoint(-0.1, 0.8), om2.MPoint(0.0, 1.0), om2.MPoint(0.0, 0.8, -0.1), om2.MPoint(0.0, 1.0), om2.MPoint(0.1, 0.8)]
+
+               self.pvlelbownull_tn = self.MDag2_node.create("transform", "Biped_PVLeftElbow_null", self.masterctrl_tn)
+               self.pvlelbowctrl_tn = self.MDag2_node.create("transform", "Biped_PVLeftElbow_ctrl", self.pvlelbownull_tn)
+               crv_ctrl_elbow_triangle_l = self.MNurbs2_cv.createWithEditPoints(ctrl_elbow_triangle_points, 1, 1, False, True, True, self.pvlelbowctrl_tn)
+               crv_ctrl_elbow_arrow_l = self.MNurbs2_cv.createWithEditPoints(ctrl_elbow_arrow_points, 1, 1, False, True, True, self.pvlelbowctrl_tn)
 
                lforearmnull_transform = om2.MFnTransform(self.lforearmnull_tn)
-               lforearmnull_transform.setRotatePivotTranslation(jnt_lhand_t, om2.MSpace.kTransform)
+               lforearmnull_transform.setTranslation(jnt_lhand_t, om2.MSpace.kTransform)
+
+               pvlelbownull_transform = om2.MFnTransform(self.pvlelbownull_tn)
+               pvlelbownull_transform.setTranslation(jnt_lhand_t, om2.MSpace.kTransform)
 
                jnt_lforearm_r = cmds.xform("LeftForeArm", query=True, rotation=True, worldSpace=True)
 
@@ -3645,11 +3797,21 @@ class MainWindow(QtWidgets.QDialog):
 
                lforearmctrl_transform = om2.MFnTransform(self.lforearmctrl_tn)
 
+               pvlelbowctrl_transform = om2.MFnTransform(self.pvlelbowctrl_tn)
+
                lforearmctrl_transform_s = lforearmctrl_transform.findPlug("scale", False)
                if lforearmctrl_transform_s.isCompound:
                    for i in range(lforearmctrl_transform_s.numChildren()):
                        child_plug = lforearmctrl_transform_s.child(i)
                        attr_value = child_plug.setDouble(box_transform_s[0]/2)
+
+               pvlelbownull_transform_t = pvlelbownull_transform.translation(om2.MSpace.kTransform)
+               pvlelbownull_transform_t[2] = -(pvlelbownull_transform_t[2]+8)
+               pvlelbownull_transform.setTranslation(pvlelbownull_transform_t, om2.MSpace.kTransform)
+
+               pvlelbowctrl_transform_r = pvlelbowctrl_transform.rotation(om2.MSpace.kTransform)
+               pvlelbowctrl_transform_r[0] = -1.57079
+               pvlelbowctrl_transform.setRotation(pvlelbowctrl_transform_r, om2.MSpace.kTransform)
 
                lforearmnull_transform_trans = lforearmnull_transform.transformation()
                lforearmnull_transform_worldmatrix = lforearmnull_transform_trans.asMatrix()
@@ -3658,44 +3820,73 @@ class MainWindow(QtWidgets.QDialog):
 
                lforearmnull_transform.setTransformation(om2.MTransformationMatrix(lforearmnull_transform_localmatrix))
 
-               self.ctrl_mod_n.renameNode(ctrl_lforearm_comb_cv, "FkLeftForeArm_shape")
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftForeArm_ctrl"')
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftForeArm_ctrl"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.visibility"')
-               self.ctrl_mod_n.doIt()
+               self.MDG2_mod.renameNode(ctrl_lforearm_comb_cv, "FkLeftForeArm_shape")
+               self.MDG2_mod.renameNode(crv_ctrl_elbow_triangle_l, "PVLeftElbow_shape1")
+               self.MDG2_mod.renameNode(crv_ctrl_elbow_arrow_l, "PVLeftElbow_shape2")
+               self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftForeArm_ctrl"')
+               self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0 "Biped_PVLeftElbow_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftForeArm_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_PVLeftElbow_ctrl"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_null.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftForeArm_ctrl.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftForeArm_ctrl.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftForeArm_ctrl.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftForeArm_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftForeArm_ctrl.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_null.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_ctrl.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_ctrl.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_ctrl.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVLeftElbow_ctrl.visibility"')
+               self.MDG2_mod.doIt()
 
            elif index == 3:
                ctrl_lhand_line_up_points = [om2.MPoint(0.00, 0.05, 0.02), om2.MPoint(-0.60, 0.05, 0.02)]
                ctrl_lhand_star_up_points = [om2.MPoint(-0.60, 0.05, 0.02), om2.MPoint(-0.70, 0.15, 0.20), om2.MPoint(-0.70, 0.09, 0.20), om2.MPoint(-0.70, 0.06, 0.13), om2.MPoint(-0.60, 0.00, 0.00), om2.MPoint(-0.70, 0.05, -0.13), om2.MPoint(-0.70, 0.09, -0.20), om2.MPoint(-0.70, 0.15, -0.20), om2.MPoint(-0.60, 0.05, -0.02)]
                ctrl_lhand_line_down_points = [om2.MPoint(-0.60, 0.05, -0.02), om2.MPoint(-0.00, 0.05, -0.02)]
 
-               self.draw_lhand_tn = ctrl_tr_n.create("transform", "Draw_lefthand_ctrl")
-               crv_ctrl_lhand_line_up = ctrl_cv_n.createWithEditPoints(ctrl_lhand_line_up_points, 1, 1, False, True, True, self.draw_lhand_tn)
-               crv_ctrl_lhand_star = ctrl_cv_n.createWithEditPoints(ctrl_lhand_star_up_points, 1, 1, False, True, True, self.draw_lhand_tn)
-               crv_ctrl_lhand_line_down = ctrl_cv_n.createWithEditPoints(ctrl_lhand_line_down_points, 1, 1, False, True, True, self.draw_lhand_tn)
+               self.draw_lhand_tn = self.MDag2_node.create("transform", "Draw_lefthand_ctrl")
+               crv_ctrl_lhand_line_up = self.MNurbs2_cv.createWithEditPoints(ctrl_lhand_line_up_points, 1, 1, False, True, True, self.draw_lhand_tn)
+               crv_ctrl_lhand_star = self.MNurbs2_cv.createWithEditPoints(ctrl_lhand_star_up_points, 1, 1, False, True, True, self.draw_lhand_tn)
+               crv_ctrl_lhand_line_down = self.MNurbs2_cv.createWithEditPoints(ctrl_lhand_line_down_points, 1, 1, False, True, True, self.draw_lhand_tn)
 
-               self.lhandnull_tn = ctrl_tr_n.create("transform", "Biped_FkLeftHand_null", self.lforearmctrl_tn)
-               self.lhandctrl_tn = ctrl_tr_n.create("transform", "Biped_FkLeftHand_ctrl", self.lhandnull_tn )
-               ctrl_lhandpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandctrl_tn)
-               ctrl_lhandnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandctrl_tn)
+               self.lhandnull_tn = self.MDag2_node.create("transform", "Biped_FkLeftHand_null", self.lforearmctrl_tn)
+               self.lhandctrl_tn = self.MDag2_node.create("transform", "Biped_FkLeftHand_ctrl", self.lhandnull_tn )
+               ctrl_lhandpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandctrl_tn)
+               ctrl_lhandnegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandctrl_tn)
 
                ctrl_lhandoption_line = [om2.MPoint(1.00, 0.00), om2.MPoint(0.00, 0.00, 1.50), om2.MPoint(-1.00, 0.00, 0.00), om2.MPoint(1.00, 0.00)]
 
-               self.lfingernull_tn = ctrl_tr_n.create("transform", "Biped_LeftFingers_null", self.masterctrl_tn)
-               self.lhandoption_tn = ctrl_tr_n.create("transform", "Biped_LeftHandOptions_ctrl", larm_sl_ls.getDependNode(2))
-               ctrl_lhandoption_cv = ctrl_cv_n.createWithEditPoints(ctrl_lhandoption_line, 1, 1, False, True, True, self.lhandoption_tn)
+               self.lfingernull_tn = self.MDag2_node.create("transform", "Biped_LeftFingers_null", self.masterctrl_tn)
+
+               self.lhandoption_tn = self.MDag2_node.create("transform", "Biped_LeftHandOptions_ctrl", larm_sl_ls.getDependNode(2))
+               ctrl_lhandoption_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_lhandoption_line, 1, 1, False, True, True, self.lhandoption_tn)
 
                lhandnull_transform = om2.MFnTransform(self.lhandnull_tn)
-               lhandnull_transform.setRotatePivotTranslation(jnt_lhand_t, om2.MSpace.kTransform)
+               lhandnull_transform.setTranslation(jnt_lhand_t, om2.MSpace.kTransform)
 
                lhandoptionctrl_transform = om2.MFnTransform(self.lhandoption_tn)
                lhandoptionctrl_transform.setRotatePivotTranslation(jnt_lhand_t, om2.MSpace.kTransform)
@@ -3724,7 +3915,7 @@ class MainWindow(QtWidgets.QDialog):
                lhandctrl_transform.setRotation(lhandctrl_transform_r, om2.MSpace.kTransform)
 
                lhandoptionctrl_transform_t = lhandoptionctrl_transform.translation(om2.MSpace.kTransform)
-               lhandoptionctrl_transform_t[2] = jnt_lhand_t[2]-3
+               lhandoptionctrl_transform_t[2] = jnt_lhand_t[2]-5
                lhandoptionctrl_transform.setTranslation(lhandoptionctrl_transform_t, om2.MSpace.kTransform)
 
                lhandoptionctrl_transform_r = lhandoptionctrl_transform.rotation(om2.MSpace.kTransform)
@@ -3751,66 +3942,80 @@ class MainWindow(QtWidgets.QDialog):
 
                lhandoptionctrl_transform.setTransformation(om2.MTransformationMatrix(lhandoptionctrl_transform_localmatrix))
 
-               self.ctrl_mod_n.renameNode(ctrl_lhandpositive_comb_cv, "FkLeftHand_shape1")
-               self.ctrl_mod_n.renameNode(ctrl_lhandnegative_comb_cv, "FkLeftHand_shape2")
-               self.ctrl_mod_n.renameNode(ctrl_lhandoption_cv, "LeftHandOptions_shape")
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftHand_ctrl"')
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 1 1 0 "Biped_LeftHandOptions_ctrl"')
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftHand_ctrl"')
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftHandOptions_ctrl"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.visibility"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.visibility"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.visibility"')
-               self.ctrl_mod_n.doIt()
+               self.MDG2_mod.renameNode(ctrl_lhandpositive_comb_cv, "FkLeftHand_shape1")
+               self.MDG2_mod.renameNode(ctrl_lhandnegative_comb_cv, "FkLeftHand_shape2")
+               self.MDG2_mod.renameNode(ctrl_lhandoption_cv, "LeftHandOptions_shape")
+               self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftHand_ctrl"')
+               self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0 "Biped_LeftHandOptions_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftHand_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftHandOptions_ctrl"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_null.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftHand_ctrl.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftHand_ctrl.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftHand_ctrl.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftHand_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftHand_ctrl.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftHandOptions_ctrl.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingers_null.visibility"')
+               self.MDG2_mod.doIt()
 
                ctrl_hand_line_l = [om2.MPoint(1.20, 0.15), om2.MPoint(1.10, 0.00, 0.20), om2.MPoint(0.90, 0.15, 0.35)]
                ctrl_hand_line = [om2.MPoint(0.90, 0.15, 0.35), om2.MPoint(0.30, 0.30, 0.35), om2.MPoint(0.25, 0.35, 0.30), om2.MPoint(0.25, 0.35, -0.30), om2.MPoint(0.30, 0.30, -0.35), om2.MPoint(0.90, 0.15, -0.35)]
                ctrl_hand_line_r = [om2.MPoint(0.90, 0.15, -0.35), om2.MPoint(1.10, 0.00, -0.20), om2.MPoint(1.20, 0.15)]
 
-               self.draw_lhand_tn = ctrl_tr_n.create("transform", "Draw_iklefthand_ctrl")
-               crv_ctrl_hand_line_l = ctrl_cv_n.createWithEditPoints(ctrl_hand_line_l, 1, 1, False, True, True, self.draw_lhand_tn)
-               crv_ctrl_hand_line = ctrl_cv_n.createWithEditPoints(ctrl_hand_line, 1, 1, False, True, True, self.draw_lhand_tn)
-               crv_ctrl_hand_line_r = ctrl_cv_n.createWithEditPoints(ctrl_hand_line_r, 1, 1, False, True, True, self.draw_lhand_tn)
+               self.draw_lhand_tn = self.MDag2_node.create("transform", "Draw_iklefthand_ctrl")
+               crv_ctrl_hand_line_l = self.MNurbs2_cv.createWithEditPoints(ctrl_hand_line_l, 1, 1, False, True, True, self.draw_lhand_tn)
+               crv_ctrl_hand_line = self.MNurbs2_cv.createWithEditPoints(ctrl_hand_line, 1, 1, False, True, True, self.draw_lhand_tn)
+               crv_ctrl_hand_line_r = self.MNurbs2_cv.createWithEditPoints(ctrl_hand_line_r, 1, 1, False, True, True, self.draw_lhand_tn)
 
-               self.likhandnull_tn = ctrl_tr_n.create("transform", "Biped_IkLeftHand_null", self.masterctrl_tn)
-               self.likhandctrl_tn = ctrl_tr_n.create("transform", "Biped_IkLeftHand_ctrl", self.likhandnull_tn)
-               ctrl_likhand_comb_cv = ctrl_cv_n.create([crv_ctrl_hand_line_l, crv_ctrl_hand_line, crv_ctrl_hand_line_r], self.likhandctrl_tn)
+               self.likhandnull_tn = self.MDag2_node.create("transform", "Biped_IkLeftHand_null", self.masterctrl_tn)
+               self.lhandrotnull_tn = self.MDag2_node.create("transform", "Biped_IkLeftHandRot_null", self.likhandnull_tn)
+               self.likhandctrl_tn = self.MDag2_node.create("transform", "Biped_IkLeftHand_ctrl", self.lhandrotnull_tn)
+               ctrl_likhand_comb_cv = self.MNurbs2_cv.create([crv_ctrl_hand_line_l, crv_ctrl_hand_line, crv_ctrl_hand_line_r], self.likhandctrl_tn)
+
+               self.nofliplelbownull_tn = self.MDag2_node.create("transform", "Biped_NoFlipLeftElbow_null", self.likhandnull_tn)
+               self.nofliplelbowctrl_tn = self.MDag2_node.create("transform", "Biped_NoFlipLeftElbow_ctrl", self.nofliplelbownull_tn)
+               self.nofliplelbowctrl_ln = self.MDag2_node.create("locator", "NoFlipLeftElbow_shape", self.nofliplelbowctrl_tn)
 
                likhandnull_transform = om2.MFnTransform(self.likhandnull_tn)
-               likhandnull_transform.setRotatePivotTranslation(jnt_lhand_t, om2.MSpace.kTransform)
+               likhandnull_transform.setTranslation(jnt_lhand_t, om2.MSpace.kTransform)
 
                likhandnull_transform_r = likhandnull_transform.rotation(om2.MSpace.kTransform)
                likhandnull_transform_r[0], likhandnull_transform_r[1], likhandnull_transform_r[2] = radian_lhand_x, radian_lhand_y, radian_lhand_z
                likhandnull_transform.setRotation(likhandnull_transform_r, om2.MSpace.kTransform)
 
                likhandctrl_transform = om2.MFnTransform(self.likhandctrl_tn)
+
+               lelbowctrl_transform = om2.MFnTransform(self.nofliplelbowctrl_tn)
 
                likhandctrl_transform_t = likhandctrl_transform.translation(om2.MSpace.kTransform)
                likhandctrl_transform_t[2] = -((jnt_lhand_t[1]+4)-jnt_lhand_t[1])
@@ -3820,21 +4025,18 @@ class MainWindow(QtWidgets.QDialog):
                likhandctrl_transform_r[0], likhandctrl_transform_r[2] = 1.57079, 1.57079
                likhandctrl_transform.setRotation(likhandctrl_transform_r, om2.MSpace.kTransform)
 
+               lelbowctrl_transform_t = lelbowctrl_transform.translation(om2.MSpace.kTransform)
+               lelbowctrl_transform_t[2] = -7
+               lelbowctrl_transform.setTranslation(lelbowctrl_transform_t, om2.MSpace.kTransform)
+
                likhandctrl_transform_s = likhandctrl_transform.findPlug("scale", False)
                if likhandctrl_transform_s.isCompound:
                    for i in range(likhandctrl_transform_s.numChildren()):
                        child_plug = likhandctrl_transform_s.child(i)
                        attr_value = child_plug.setDouble(box_transform_s[0]/3)
 
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_IkLeftHand_ctrl"')
-               self.ctrl_mod_n.doIt()
-
-               # likhandnull_transform_trans = likhandnull_transform.transformation()
-               # likhandnull_transform_worldmatrix = likhandnull_transform_trans.asMatrix()
-               #
-               # likhandnull_transform_localmatrix = likhandnull_transform_worldmatrix * spinenull_parentinvtransform_matrix * spinenull_childtransform_localmatrix.inverse() * lshouldernullnull_transform_localmatrix.inverse() * larmnull_transform_localmatrix.inverse() * lforearmnull_transform_localmatrix.inverse()
-               #
-               # likhandnull_transform.setTransformation(om2.MTransformationMatrix(likhandnull_transform_localmatrix))
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_IkLeftHand_ctrl"')
+               self.MDG2_mod.doIt()
 
                likhandnull_path_n = om2.MDagPath()
                likhandnull_path = likhandnull_path_n.getAPathTo(self.likhandctrl_tn)
@@ -3842,19 +4044,51 @@ class MainWindow(QtWidgets.QDialog):
 
                likhandnull_worldtransform.setRotatePivot(om2.MPoint(jnt_lhand_t), om2.MSpace.kWorld, False)
 
-               self.ctrl_mod_n.renameNode(ctrl_likhand_comb_cv, "IkLeftHand_shape")
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 1 0 0 "Biped_IkLeftHand_ctrl"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.visibility"')
-               self.ctrl_mod_n.doIt()
+               self.MDG2_mod.renameNode(ctrl_likhand_comb_cv, "IkLeftHand_shape")
+               self.MDG2_mod.commandToExecute('color -rgbColor 1 0 0 "Biped_IkLeftHand_ctrl"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_null.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftHand_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_IkLeftHand_ctrl.visibility"')
+               self.MDG2_mod.doIt()
+
+               ctrl_master_circle_points = [om2.MPoint(0.75, 0.0, 0.25), om2.MPoint(0.0, 0.0, 1.0), om2.MPoint(-1.0, 0.0), om2.MPoint(0.0, 0.0, -1.0), om2.MPoint(0.75, 0.0, -0.25), om2.MPoint(0.75, 0.0, 0.25)]
+
+               self.lfingerctrl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerOptions_ctrl", larm_sl_ls.getDependNode(2))
+               ctrl_lfingerpositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.lfingerctrl_tn)
+
+               lfingerctrl_transform = om2.MFnTransform(self.lfingerctrl_tn)
+
+               lfingerctrl_transform_s = lfingerctrl_transform.findPlug("scale", False)
+               if lfingerctrl_transform_s.isCompound:
+                   for i in range(lfingerctrl_transform_s.numChildren()):
+                       child_plug = lfingerctrl_transform_s.child(i)
+                       attr_value = child_plug.setDouble(box_transform_s[0]/3)
+
+               self.MDG2_mod.renameNode(ctrl_lfingerpositive_comb_cv, "LeftFingerOptions_shape")
+               self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_LeftFingerOptions_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFingerOptions_ctrl"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerOptions_ctrl.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerOptions_ctrl.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerOptions_ctrl.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerOptions_ctrl.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerOptions_ctrl.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerOptions_ctrl.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerOptions_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerOptions_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerOptions_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerOptions_ctrl.visibility"')
+               self.MDG2_mod.doIt()
 
         try:
             lhandthumb_sl_ls = om2.MSelectionList()
@@ -3867,13 +4101,15 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_lhandthumb_transform = om2.MFnTransform(jnt_lhandthumb_path)
                 jnt_lhandthumb_t = jnt_lhandthumb_transform.translation(om2.MSpace.kWorld)
 
-                self.lhandthumbnull_tn = ctrl_tr_n.create("transform", "Biped_LeftFingerThumb{0}_null".format(index+1))
-                self.lhandthumbctrl_tn = ctrl_tr_n.create("transform", "Biped_LeftFingerThumb{0}_ctrl".format(index+1), self.lhandthumbnull_tn )
-                ctrl_lhandthumbpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandthumbctrl_tn)
-                ctrl_lhandthumbnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandthumbctrl_tn)
+                self.lhandthumbnull_tn = self.MDag2_node.create("transform", "Biped_LeftFingerThumb{0}_null".format(index+1))
+                self.lhandthumbglobalcurl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerThumb{0}_globalcurl".format(index+1), self.lhandthumbnull_tn)
+                self.lhandthumbcurl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerThumb{0}_curl".format(index+1), self.lhandthumbglobalcurl_tn)
+                self.lhandthumbctrl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerThumb{0}_ctrl".format(index+1), self.lhandthumbcurl_tn)
+                ctrl_lhandthumbpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandthumbctrl_tn)
+                ctrl_lhandthumbnegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandthumbctrl_tn)
 
                 lhandthumbnull_transform = om2.MFnTransform(self.lhandthumbnull_tn)
-                lhandthumbnull_transform.setRotatePivotTranslation(jnt_lhandthumb_t, om2.MSpace.kTransform)
+                lhandthumbnull_transform.setTranslation(jnt_lhandthumb_t, om2.MSpace.kTransform)
 
                 jnt_lhandthumb_r = cmds.xform("LeftFingerThumb{0}".format(index+1), query=True, rotation=True, worldSpace=True)
 
@@ -3911,6 +4147,49 @@ class MainWindow(QtWidgets.QDialog):
 
                     lhandthumbnull_transform.setTransformation(om2.MTransformationMatrix(lhandthumbnull_transform_localmatrix))
 
+                    self.lfingerthumbctrl_tn = self.MDag2_node.create("transform", "Biped_LeftThumbOptions_ctrl")
+                    ctrl_lfingerthumbpositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.lfingerthumbctrl_tn)
+
+                    lfingerthumbctrl_transform = om2.MFnTransform(self.lfingerthumbctrl_tn)
+
+                    lfingerthumbctrl_transform_t = lfingerthumbctrl_transform.translation(om2.MSpace.kTransform)
+                    lfingerthumbctrl_transform_t[0], lfingerthumbctrl_transform_t[1], lfingerthumbctrl_transform_t[2] = jnt_lhandthumb_t[0], jnt_lhandthumb_t[1], jnt_lhandthumb_t[2]
+                    lfingerthumbctrl_transform.setTranslation(lfingerthumbctrl_transform_t, om2.MSpace.kTransform)
+
+                    lfingerthumbctrl_transform_r= lfingerthumbctrl_transform.rotation(om2.MSpace.kTransform)
+                    lfingerthumbctrl_transform_r[0], lfingerthumbctrl_transform_r[1], lfingerthumbctrl_transform_r[2] = lhandthumbnull_transform_r[0], lhandthumbnull_transform_r[1], lhandthumbnull_transform_r[2]
+                    lfingerthumbctrl_transform.setRotation(lfingerthumbctrl_transform_r, om2.MSpace.kTransform)
+
+                    lfingerthumbctrl_transform_s = lfingerthumbctrl_transform.findPlug("scale", False)
+                    if lfingerthumbctrl_transform_s.isCompound:
+                        for i in range(lfingerthumbctrl_transform_s.numChildren()):
+                            child_plug = lfingerthumbctrl_transform_s.child(i)
+                            attr_value = child_plug.setDouble(box_transform_s[0]/9)
+
+                    lhandjnt_tr_n = om2.MFnDagNode(larm_sl_ls.getDependNode(2))
+                    lhandjnt_tr_n.addChild(self.lfingerthumbctrl_tn)
+
+                    lfingerthumbctrl_transform_trans = lfingerthumbctrl_transform.transformation()
+                    lfingerthumbctrl_transform_worldmatrix = lfingerthumbctrl_transform_trans.asMatrix()
+
+                    lfingerthumbctrl_transform_localmatrix = lfingerthumbctrl_transform_worldmatrix * lfingernull_transform_worldmatrix
+
+                    lfingerthumbctrl_transform.setTransformation(om2.MTransformationMatrix(lfingerthumbctrl_transform_localmatrix))
+
+                    self.MDG2_mod.renameNode(ctrl_lfingerthumbpositive_comb_cv, "LeftThumbOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_LeftThumbOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftThumbOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftThumbOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftThumbOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftThumbOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftThumbOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftThumbOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftThumbOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftThumbOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftThumbOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftThumbOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftThumbOptions_ctrl.visibility"')
+
                 else:
                     lhandthumbctrl_sl_ls = om2.MSelectionList()
                     lhandthumbctrl_sl_ls.add("Biped_LeftFingerThumb*_ctrl")
@@ -3938,21 +4217,28 @@ class MainWindow(QtWidgets.QDialog):
 
                     lhandthumbnull_transform.setTransformation(om2.MTransformationMatrix(lhandthumbnull_childtransform_localmatrix))
 
-                self.ctrl_mod_n.renameNode(ctrl_lhandthumbpositive_comb_cv, "LeftFingerThumb{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_lhandthumbnegative_comb_cv, "LeftFingerThumb{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_LeftFingerThumb{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFingerThumb{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.renameNode(ctrl_lhandthumbpositive_comb_cv, "LeftFingerThumb{0}_shape1".format(index + 1))
+                self.MDG2_mod.renameNode(ctrl_lhandthumbnegative_comb_cv, "LeftFingerThumb{0}_shape2".format(index + 1))
+                self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_LeftFingerThumb{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFingerThumb{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.rotateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.rotateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.rotateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_null.visibility"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "Biped_LeftFingerThumb{0}_ctrl.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "Biped_LeftFingerThumb{0}_ctrl.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false "Biped_LeftFingerThumb{0}_ctrl.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_ctrl.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_ctrl.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerThumb{0}_ctrl.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_LeftFingerThumb{0}_ctrl.visibility"'.format(index + 1))
+                self.MDG2_mod.doIt()
 
         except:
             pass
@@ -3968,10 +4254,12 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_lhandindex_transform = om2.MFnTransform(jnt_lhandindex_path)
                 jnt_lhandindex_t = jnt_lhandindex_transform.translation(om2.MSpace.kWorld)
 
-                self.lhandindexnull_tn = ctrl_tr_n.create("transform", "Biped_LeftFingerIndex{0}_null".format(index + 1))
-                self.lhandindexctrl_tn = ctrl_tr_n.create("transform", "Biped_LeftFingerIndex{0}_ctrl".format(index + 1), self.lhandindexnull_tn)
-                ctrl_lhandIndexpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandindexctrl_tn)
-                ctrl_lhandIndexnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandindexctrl_tn)
+                self.lhandindexnull_tn = self.MDag2_node.create("transform", "Biped_LeftFingerIndex{0}_null".format(index + 1))
+                self.lhandindexglobalcurl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerIndex{0}_globalcurl".format(index+1), self.lhandindexnull_tn)
+                self.lhandindexcurl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerIndex{0}_curl".format(index+1), self.lhandindexglobalcurl_tn)
+                self.lhandindexctrl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerIndex{0}_ctrl".format(index + 1), self.lhandindexcurl_tn)
+                ctrl_lhandIndexpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandindexctrl_tn)
+                ctrl_lhandIndexnegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandindexctrl_tn)
 
                 lhandindexnull_transform = om2.MFnTransform(self.lhandindexnull_tn)
                 lhandindexnull_transform.setRotatePivotTranslation(jnt_lhandindex_t, om2.MSpace.kTransform)
@@ -4009,6 +4297,48 @@ class MainWindow(QtWidgets.QDialog):
 
                     lhandindexnull_transform.setTransformation(om2.MTransformationMatrix(lhandindexnull_transform_localmatrix))
 
+                    self.lfingerindexctrl_tn = self.MDag2_node.create("transform", "Biped_LeftIndexOptions_ctrl")
+                    ctrl_lfingerindexpositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.lfingerindexctrl_tn)
+
+                    lfingerindexctrl_transform = om2.MFnTransform(self.lfingerindexctrl_tn)
+
+                    lfingerindexctrl_transform_t = lfingerindexctrl_transform.translation(om2.MSpace.kTransform)
+                    lfingerindexctrl_transform_t[0], lfingerindexctrl_transform_t[1], lfingerindexctrl_transform_t[2] = jnt_lhandindex_t[0], jnt_lhandindex_t[1], jnt_lhandindex_t[2]
+                    lfingerindexctrl_transform.setTranslation(lfingerindexctrl_transform_t, om2.MSpace.kTransform)
+
+                    lfingerindexctrl_transform_r= lfingerindexctrl_transform.rotation(om2.MSpace.kTransform)
+                    lfingerindexctrl_transform_r[0], lfingerindexctrl_transform_r[1], lfingerindexctrl_transform_r[2] = lhandindexnull_transform_r[0], lhandindexnull_transform_r[1], lhandindexnull_transform_r[2]
+                    lfingerindexctrl_transform.setRotation(lfingerindexctrl_transform_r, om2.MSpace.kTransform)
+
+                    lfingerindexctrl_transform_s = lfingerindexctrl_transform.findPlug("scale", False)
+                    if lfingerindexctrl_transform_s.isCompound:
+                        for i in range(lfingerindexctrl_transform_s.numChildren()):
+                            child_plug = lfingerindexctrl_transform_s.child(i)
+                            attr_value = child_plug.setDouble(box_transform_s[0]/9)
+
+                    lhandjnt_tr_n.addChild(self.lfingerindexctrl_tn)
+
+                    lfingerindexctrl_transform_trans = lfingerindexctrl_transform.transformation()
+                    lfingerindexctrl_transform_worldmatrix = lfingerindexctrl_transform_trans.asMatrix()
+
+                    lfingerindexctrl_transform_localmatrix = lfingerindexctrl_transform_worldmatrix * lfingernull_transform_worldmatrix
+
+                    lfingerindexctrl_transform.setTransformation(om2.MTransformationMatrix(lfingerindexctrl_transform_localmatrix))
+
+                    self.MDG2_mod.renameNode(ctrl_lfingerindexpositive_comb_cv, "LeftIndexOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_LeftIndexOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftIndexOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftIndexOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftIndexOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftIndexOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftIndexOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftIndexOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftIndexOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftIndexOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftIndexOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftIndexOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftIndexOptions_ctrl.visibility"')
+
                 else:
                     lhandIndexctrl_sl_ls = om2.MSelectionList()
                     lhandIndexctrl_sl_ls.add("Biped_LeftFingerIndex*_ctrl")
@@ -4036,21 +4366,28 @@ class MainWindow(QtWidgets.QDialog):
 
                     lhandindexnull_transform.setTransformation(om2.MTransformationMatrix(lhandindexnull_childtransform_localmatrix))
 
-                self.ctrl_mod_n.renameNode(ctrl_lhandIndexpositive_comb_cv, "LeftFingerIndex{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_lhandIndexnegative_comb_cv, "LeftFingerIndex{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_LeftFingerIndex{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFingerIndex{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.renameNode(ctrl_lhandIndexpositive_comb_cv, "LeftFingerIndex{0}_shape1".format(index + 1))
+                self.MDG2_mod.renameNode(ctrl_lhandIndexnegative_comb_cv, "LeftFingerIndex{0}_shape2".format(index + 1))
+                self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_LeftFingerIndex{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFingerIndex{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.rotateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.rotateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.rotateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_null.visibility"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_LeftFingerIndex{0}_ctrl.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_LeftFingerIndex{0}_ctrl.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_LeftFingerIndex{0}_ctrl.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_ctrl.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_ctrl.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerIndex{0}_ctrl.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_LeftFingerIndex{0}_ctrl.visibility"'.format(index + 1))
+                self.MDG2_mod.doIt()
 
         except:
             pass
@@ -4066,10 +4403,12 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_lhandmiddle_transform = om2.MFnTransform(jnt_lhandmiddle_path)
                 jnt_lhandmiddle_t = jnt_lhandmiddle_transform.translation(om2.MSpace.kWorld)
 
-                self.lhandmiddlenull_tn = ctrl_tr_n.create("transform", "Biped_LeftFingerMiddle{0}_null".format(index + 1))
-                self.lhandmiddlectrl_tn = ctrl_tr_n.create("transform", "Biped_LeftFingerMiddle{0}_ctrl".format(index + 1), self.lhandmiddlenull_tn)
-                ctrl_lhandmiddlepositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandmiddlectrl_tn)
-                ctrl_lhandmiddlenegative_comb_cv = ctrl_cv_n.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandmiddlectrl_tn)
+                self.lhandmiddlenull_tn = self.MDag2_node.create("transform", "Biped_LeftFingerMiddle{0}_null".format(index + 1))
+                self.lhandmiddleglobalcurl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerMiddle{0}_globalcurl".format(index+1), self.lhandmiddlenull_tn)
+                self.lhandmiddlecurl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerMiddle{0}_curl".format(index+1), self.lhandmiddleglobalcurl_tn)
+                self.lhandmiddlectrl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerMiddle{0}_ctrl".format(index + 1), self.lhandmiddlecurl_tn)
+                ctrl_lhandmiddlepositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandmiddlectrl_tn)
+                ctrl_lhandmiddlenegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandmiddlectrl_tn)
 
                 lhandmiddlenull_transform = om2.MFnTransform(self.lhandmiddlenull_tn)
                 lhandmiddlenull_transform.setRotatePivotTranslation(jnt_lhandmiddle_t, om2.MSpace.kTransform)
@@ -4107,6 +4446,48 @@ class MainWindow(QtWidgets.QDialog):
 
                     lhandmiddlenull_transform.setTransformation(om2.MTransformationMatrix(lhandmiddlenull_transform_localmatrix))
 
+                    self.lfingermiddlectrl_tn = self.MDag2_node.create("transform", "Biped_LeftMiddleOptions_ctrl")
+                    ctrl_lfingermiddlepositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.lfingermiddlectrl_tn)
+
+                    lfingermiddlectrl_transform = om2.MFnTransform(self.lfingermiddlectrl_tn)
+
+                    lfingermiddlectrl_transform_t = lfingermiddlectrl_transform.translation(om2.MSpace.kTransform)
+                    lfingermiddlectrl_transform_t[0], lfingermiddlectrl_transform_t[1], lfingermiddlectrl_transform_t[2] = jnt_lhandmiddle_t[0], jnt_lhandmiddle_t[1], jnt_lhandmiddle_t[2]
+                    lfingermiddlectrl_transform.setTranslation(lfingermiddlectrl_transform_t, om2.MSpace.kTransform)
+
+                    lfingermiddlectrl_transform_r= lfingermiddlectrl_transform.rotation(om2.MSpace.kTransform)
+                    lfingermiddlectrl_transform_r[0], lfingermiddlectrl_transform_r[1], lfingermiddlectrl_transform_r[2] = lhandmiddlenull_transform_r[0], lhandmiddlenull_transform_r[1], lhandmiddlenull_transform_r[2]
+                    lfingermiddlectrl_transform.setRotation(lfingermiddlectrl_transform_r, om2.MSpace.kTransform)
+
+                    lfingermiddlectrl_transform_s = lfingermiddlectrl_transform.findPlug("scale", False)
+                    if lfingermiddlectrl_transform_s.isCompound:
+                        for i in range(lfingermiddlectrl_transform_s.numChildren()):
+                            child_plug = lfingermiddlectrl_transform_s.child(i)
+                            attr_value = child_plug.setDouble(box_transform_s[0]/9)
+
+                    lhandjnt_tr_n.addChild(self.lfingermiddlectrl_tn)
+
+                    lfingermiddlectrl_transform_trans = lfingermiddlectrl_transform.transformation()
+                    lfingermiddlectrl_transform_worldmatrix = lfingermiddlectrl_transform_trans.asMatrix()
+
+                    lfingermiddlectrl_transform_localmatrix = lfingermiddlectrl_transform_worldmatrix * lfingernull_transform_worldmatrix
+
+                    lfingermiddlectrl_transform.setTransformation(om2.MTransformationMatrix(lfingermiddlectrl_transform_localmatrix))
+
+                    self.MDG2_mod.renameNode(ctrl_lfingermiddlepositive_comb_cv, "LeftMiddleOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_LeftMiddleOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftMiddleOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftMiddleOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftMiddleOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftMiddleOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftMiddleOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftMiddleOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftMiddleOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftMiddleOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftMiddleOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftMiddleOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftMiddleOptions_ctrl.visibility"')
+
                 else:
                     lhandmiddlectrl_sl_ls = om2.MSelectionList()
                     lhandmiddlectrl_sl_ls.add("Biped_LeftFingerMiddle*_ctrl")
@@ -4134,21 +4515,28 @@ class MainWindow(QtWidgets.QDialog):
 
                     lhandmiddlenull_transform.setTransformation(om2.MTransformationMatrix(lhandmiddlenull_childtransform_localmatrix))
 
-                self.ctrl_mod_n.renameNode(ctrl_lhandmiddlepositive_comb_cv, "LeftFingerMiddle{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_lhandmiddlenegative_comb_cv, "LeftFingerMiddle{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_LeftFingerMiddle{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFingerMiddle{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.renameNode(ctrl_lhandmiddlepositive_comb_cv, "LeftFingerMiddle{0}_shape1".format(index + 1))
+                self.MDG2_mod.renameNode(ctrl_lhandmiddlenegative_comb_cv, "LeftFingerMiddle{0}_shape2".format(index + 1))
+                self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_LeftFingerMiddle{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFingerMiddle{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.rotateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.rotateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.rotateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_null.visibility"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_LeftFingerMiddle{0}_ctrl.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_LeftFingerMiddle{0}_ctrl.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_LeftFingerMiddle{0}_ctrl.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_ctrl.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_ctrl.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_ctrl.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_LeftFingerMiddle{0}_ctrl.visibility"'.format(index + 1))
+                self.MDG2_mod.doIt()
 
         except:
             pass
@@ -4164,10 +4552,12 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_lhandring_transform = om2.MFnTransform(jnt_lhandring_path)
                 jnt_lhandring_t = jnt_lhandring_transform.translation(om2.MSpace.kWorld)
 
-                self.lhandringnull_tn = ctrl_tr_n.create("transform", "Biped_LeftFingerRing{0}_null".format(index + 1))
-                self.lhandringctrl_tn = ctrl_tr_n.create("transform", "Biped_LeftFingerRing{0}_ctrl".format(index + 1), self.lhandringnull_tn)
-                ctrl_lhandringpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandringctrl_tn)
-                ctrl_lhandringnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandringctrl_tn)
+                self.lhandringnull_tn = self.MDag2_node.create("transform", "Biped_LeftFingerRing{0}_null".format(index + 1))
+                self.lhandringglobalcurl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerRing{0}_globalcurl".format(index+1), self.lhandringnull_tn)
+                self.lhandringcurl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerRing{0}_curl".format(index+1), self.lhandringglobalcurl_tn)
+                self.lhandringctrl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerRing{0}_ctrl".format(index + 1), self.lhandringcurl_tn)
+                ctrl_lhandringpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandringctrl_tn)
+                ctrl_lhandringnegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandringctrl_tn)
 
                 lhandringnull_transform = om2.MFnTransform(self.lhandringnull_tn)
                 lhandringnull_transform.setRotatePivotTranslation(jnt_lhandring_t, om2.MSpace.kTransform)
@@ -4205,6 +4595,48 @@ class MainWindow(QtWidgets.QDialog):
 
                     lhandringnull_transform.setTransformation(om2.MTransformationMatrix(lhandringnull_transform_localmatrix))
 
+                    self.lfingerringctrl_tn = self.MDag2_node.create("transform", "Biped_LeftRingOptions_ctrl")
+                    ctrl_lfingerringpositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.lfingerringctrl_tn)
+
+                    lfingerringctrl_transform = om2.MFnTransform(self.lfingerringctrl_tn)
+
+                    lfingerringctrl_transform_t = lfingerringctrl_transform.translation(om2.MSpace.kTransform)
+                    lfingerringctrl_transform_t[0], lfingerringctrl_transform_t[1], lfingerringctrl_transform_t[2] = jnt_lhandring_t[0], jnt_lhandring_t[1], jnt_lhandring_t[2]
+                    lfingerringctrl_transform.setTranslation(lfingerringctrl_transform_t, om2.MSpace.kTransform)
+
+                    lfingerringctrl_transform_r= lfingerringctrl_transform.rotation(om2.MSpace.kTransform)
+                    lfingerringctrl_transform_r[0], lfingerringctrl_transform_r[1], lfingerringctrl_transform_r[2] = lhandringnull_transform_r[0], lhandringnull_transform_r[1], lhandringnull_transform_r[2]
+                    lfingerringctrl_transform.setRotation(lfingerringctrl_transform_r, om2.MSpace.kTransform)
+
+                    lfingerringctrl_transform_s = lfingerringctrl_transform.findPlug("scale", False)
+                    if lfingerringctrl_transform_s.isCompound:
+                        for i in range(lfingerringctrl_transform_s.numChildren()):
+                            child_plug = lfingerringctrl_transform_s.child(i)
+                            attr_value = child_plug.setDouble(box_transform_s[0]/9)
+
+                    lhandjnt_tr_n.addChild(self.lfingerringctrl_tn)
+
+                    lfingerringctrl_transform_trans = lfingerringctrl_transform.transformation()
+                    lfingerringctrl_transform_worldmatrix = lfingerringctrl_transform_trans.asMatrix()
+
+                    lfingerringctrl_transform_localmatrix = lfingerringctrl_transform_worldmatrix * lfingernull_transform_worldmatrix
+
+                    lfingerringctrl_transform.setTransformation(om2.MTransformationMatrix(lfingerringctrl_transform_localmatrix))
+
+                    self.MDG2_mod.renameNode(ctrl_lfingerringpositive_comb_cv, "LeftRingOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_LeftRingOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftRingOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftRingOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftRingOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftRingOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftRingOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftRingOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftRingOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftRingOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftRingOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftRingOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftRingOptions_ctrl.visibility"')
+
                 else:
                     lhandringctrl_sl_ls = om2.MSelectionList()
                     lhandringctrl_sl_ls.add("Biped_LeftFingerRing*_ctrl")
@@ -4232,21 +4664,28 @@ class MainWindow(QtWidgets.QDialog):
 
                     lhandringnull_transform.setTransformation(om2.MTransformationMatrix(lhandringnull_childtransform_localmatrix))
 
-                self.ctrl_mod_n.renameNode(ctrl_lhandringpositive_comb_cv, "LeftFingerRing{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_lhandringnegative_comb_cv, "LeftFingerRing{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_LeftFingerRing{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFingerRing{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.renameNode(ctrl_lhandringpositive_comb_cv, "LeftFingerRing{0}_shape1".format(index + 1))
+                self.MDG2_mod.renameNode(ctrl_lhandringnegative_comb_cv, "LeftFingerRing{0}_shape2".format(index + 1))
+                self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_LeftFingerRing{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFingerRing{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.rotateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.rotateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.rotateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_null.visibility"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_LeftFingerRing{0}_ctrl.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_LeftFingerRing{0}_ctrl.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_LeftFingerRing{0}_ctrl.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_ctrl.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_ctrl.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerRing{0}_ctrl.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_LeftFingerRing{0}_ctrl.visibility"'.format(index + 1))
+                self.MDG2_mod.doIt()
 
         except:
             pass
@@ -4262,10 +4701,12 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_lhandpinky_transform = om2.MFnTransform(jnt_lhandpinky_path)
                 jnt_lhandpinky_t = jnt_lhandpinky_transform.translation(om2.MSpace.kWorld)
 
-                self.lhandpinkynull_tn = ctrl_tr_n.create("transform", "Biped_LeftFingerPinky{0}_null".format(index + 1))
-                self.lhandpinkyctrl_tn = ctrl_tr_n.create("transform", "Biped_LeftFingerPinky{0}_ctrl".format(index + 1), self.lhandpinkynull_tn)
-                ctrl_lhandpinkypositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandpinkyctrl_tn)
-                ctrl_lhandpinkynegative_comb_cv = ctrl_cv_n.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandpinkyctrl_tn)
+                self.lhandpinkynull_tn = self.MDag2_node.create("transform", "Biped_LeftFingerPinky{0}_null".format(index + 1))
+                self.lhandpinkyglobalcurl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerPinky{0}_globalcurl".format(index+1), self.lhandpinkynull_tn)
+                self.lhandpinkycurl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerPinky{0}_curl".format(index+1), self.lhandpinkyglobalcurl_tn)
+                self.lhandpinkyctrl_tn = self.MDag2_node.create("transform", "Biped_LeftFingerPinky{0}_ctrl".format(index + 1), self.lhandpinkycurl_tn)
+                ctrl_lhandpinkypositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.lhandpinkyctrl_tn)
+                ctrl_lhandpinkynegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_lhand_line_up, crv_ctrl_lhand_star, crv_ctrl_lhand_line_down], self.lhandpinkyctrl_tn)
 
                 lhandpinkynull_transform = om2.MFnTransform(self.lhandpinkynull_tn)
                 lhandpinkynull_transform.setRotatePivotTranslation(jnt_lhandpinky_t, om2.MSpace.kTransform)
@@ -4303,6 +4744,48 @@ class MainWindow(QtWidgets.QDialog):
 
                     lhandpinkynull_transform.setTransformation(om2.MTransformationMatrix(lhandpinkynull_transform_localmatrix))
 
+                    self.lfingerpinkyctrl_tn = self.MDag2_node.create("transform", "Biped_LeftPinkyOptions_ctrl")
+                    ctrl_lfingerpinkypositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.lfingerpinkyctrl_tn)
+
+                    lfingerpinkyctrl_transform = om2.MFnTransform(self.lfingerpinkyctrl_tn)
+
+                    lfingerpinkyctrl_transform_t = lfingerpinkyctrl_transform.translation(om2.MSpace.kTransform)
+                    lfingerpinkyctrl_transform_t[0], lfingerpinkyctrl_transform_t[1], lfingerpinkyctrl_transform_t[2] = jnt_lhandpinky_t[0], jnt_lhandpinky_t[1], jnt_lhandpinky_t[2]
+                    lfingerpinkyctrl_transform.setTranslation(lfingerpinkyctrl_transform_t, om2.MSpace.kTransform)
+
+                    lfingerpinkyctrl_transform_r= lfingerpinkyctrl_transform.rotation(om2.MSpace.kTransform)
+                    lfingerpinkyctrl_transform_r[0], lfingerpinkyctrl_transform_r[1], lfingerpinkyctrl_transform_r[2] = lhandpinkynull_transform_r[0], lhandpinkynull_transform_r[1], lhandpinkynull_transform_r[2]
+                    lfingerpinkyctrl_transform.setRotation(lfingerpinkyctrl_transform_r, om2.MSpace.kTransform)
+
+                    lfingerpinkyctrl_transform_s = lfingerpinkyctrl_transform.findPlug("scale", False)
+                    if lfingerpinkyctrl_transform_s.isCompound:
+                        for i in range(lfingerpinkyctrl_transform_s.numChildren()):
+                            child_plug = lfingerpinkyctrl_transform_s.child(i)
+                            attr_value = child_plug.setDouble(box_transform_s[0]/9)
+
+                    lhandjnt_tr_n.addChild(self.lfingerpinkyctrl_tn)
+
+                    lfingerpinkyctrl_transform_trans = lfingerpinkyctrl_transform.transformation()
+                    lfingerpinkyctrl_transform_worldmatrix = lfingerpinkyctrl_transform_trans.asMatrix()
+
+                    lfingerpinkyctrl_transform_localmatrix = lfingerpinkyctrl_transform_worldmatrix * lfingernull_transform_worldmatrix
+
+                    lfingerpinkyctrl_transform.setTransformation(om2.MTransformationMatrix(lfingerpinkyctrl_transform_localmatrix))
+
+                    self.MDG2_mod.renameNode(ctrl_lfingerpinkypositive_comb_cv, "LeftPinkyOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_LeftPinkyOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftPinkyOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftPinkyOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftPinkyOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftPinkyOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftPinkyOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftPinkyOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftPinkyOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftPinkyOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftPinkyOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftPinkyOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftPinkyOptions_ctrl.visibility"')
+
                 else:
                     lhandpinkyctrl_sl_ls = om2.MSelectionList()
                     lhandpinkyctrl_sl_ls.add("Biped_LeftFingerPinky*_ctrl")
@@ -4330,21 +4813,28 @@ class MainWindow(QtWidgets.QDialog):
 
                     lhandpinkynull_transform.setTransformation(om2.MTransformationMatrix(lhandpinkynull_childtransform_localmatrix))
 
-                self.ctrl_mod_n.renameNode(ctrl_lhandpinkypositive_comb_cv, "LeftFingerPinky{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_lhandpinkynegative_comb_cv, "LeftFingerPinky{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_LeftFingerPinky{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFingerPinky{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.renameNode(ctrl_lhandpinkypositive_comb_cv, "LeftFingerPinky{0}_shape1".format(index + 1))
+                self.MDG2_mod.renameNode(ctrl_lhandpinkynegative_comb_cv, "LeftFingerPinky{0}_shape2".format(index + 1))
+                self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_LeftFingerPinky{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFingerPinky{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.rotateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.rotateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.rotateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_null.visibility"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_LeftFingerPinky{0}_ctrl.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_LeftFingerPinky{0}_ctrl.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_LeftFingerPinky{0}_ctrl.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_ctrl.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_ctrl.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFingerPinky{0}_ctrl.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_LeftFingerPinky{0}_ctrl.visibility"'.format(index + 1))
+                self.MDG2_mod.doIt()
 
         except:
             pass
@@ -4369,9 +4859,13 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_lleg_t = jnt_lleg_transform.translation(om2.MSpace.kWorld)
 
                 if index == 0:
-                    self.luplegnull_tn = ctrl_tr_n.create("transform", "Biped_FkLeftUpLeg_null", self.rootctrl_tn)
-                    self.luplegupctrl_tn = ctrl_tr_n.create("transform", "Biped_FkLeftUpLeg_ctrl", self.luplegnull_tn)
-                    ctrl_luplegpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.luplegupctrl_tn)
+                    if self.hipjnt.currentIndex() == 1:
+                        self.luplegnull_tn = self.MDag2_node.create("transform", "Biped_FkLeftUpLeg_null", self.hipctrl_tn)
+                    else:
+                        self.luplegnull_tn = self.MDag2_node.create("transform", "Biped_FkLeftUpLeg_null", self.rootctrl_tn)
+
+                    self.luplegupctrl_tn = self.MDag2_node.create("transform", "Biped_FkLeftUpLeg_ctrl", self.luplegnull_tn)
+                    ctrl_luplegpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.luplegupctrl_tn)
 
                     luplegnull_transform = om2.MFnTransform(self.luplegnull_tn)
                     luplegnull_transform.setTranslation(jnt_lleg_t, om2.MSpace.kTransform)
@@ -4405,33 +4899,37 @@ class MainWindow(QtWidgets.QDialog):
 
                     luplegnull_transform.setTransformation(om2.MTransformationMatrix(luplegnull_transform_localmatrix))
 
-                    self.ctrl_mod_n.renameNode(ctrl_luplegpositive_comb_cv, "LeftUpLeg_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftUpLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftUpLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.visibility"')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.renameNode(ctrl_luplegpositive_comb_cv, "LeftUpLeg_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftUpLeg_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftUpLeg_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftUpLeg_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftUpLeg_ctrl.visibility"')
+                    self.MDG2_mod.doIt()
 
                 elif index == 1:
-                    self.llegnull_tn = ctrl_tr_n.create("transform", "Biped_FkLeftLeg_null", self.luplegupctrl_tn)
-                    self.llegctrl_tn = ctrl_tr_n.create("transform", "Biped_FkLeftLeg_ctrl", self.llegnull_tn)
-                    ctrl_llegpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.llegctrl_tn)
-                    
-                    ctrl_knee_triangle_points = [om2.MPoint(1.0, 0.0), om2.MPoint(0.0, 0.0, 1.0), om2.MPoint(-1.0, 0.0), om2.MPoint(0.0, 0.0, -1.0), om2.MPoint(1.0, 0.0)]
-                    ctrl_knee_arrow_points = [om2.MPoint(0.0, 0.0), om2.MPoint(0.0, 1.0), om2.MPoint(0.0, 0.8, 0.1), om2.MPoint(0.0, 1.0), om2.MPoint(-0.1, 0.8), om2.MPoint(0.0, 1.0), om2.MPoint(0.0, 0.8, -0.1), om2.MPoint(0.0, 1.0), om2.MPoint(0.1, 0.8)]
+                    self.llegnull_tn = self.MDag2_node.create("transform", "Biped_FkLeftLeg_null", self.luplegupctrl_tn)
+                    self.llegctrl_tn = self.MDag2_node.create("transform", "Biped_FkLeftLeg_ctrl", self.llegnull_tn)
+                    ctrl_llegpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.llegctrl_tn)
 
-                    self.pvllegkneenull_tn = ctrl_tr_n.create("transform", "Biped_PVLeftKnee_null", self.masterctrl_tn)
-                    self.pvllegknectrl_tn = ctrl_tr_n.create("transform", "Biped_PVLeftKnee_ctrl", self.pvllegkneenull_tn)
-                    crv_ctrl_knee_triangle_l = ctrl_cv_n.createWithEditPoints(ctrl_knee_triangle_points, 1, 1, False, True, True, self.pvllegknectrl_tn)
-                    crv_ctrl_knee_arrow_l = ctrl_cv_n.createWithEditPoints(ctrl_knee_arrow_points, 1, 1, False, True, True, self.pvllegknectrl_tn)
+                    self.pvllegkneenull_tn = self.MDag2_node.create("transform", "Biped_PVLeftKnee_null", self.masterctrl_tn)
+                    self.pvllegkneectrl_tn = self.MDag2_node.create("transform", "Biped_PVLeftKnee_ctrl", self.pvllegkneenull_tn)
+                    crv_ctrl_knee_triangle_l = self.MNurbs2_cv.createWithEditPoints(ctrl_elbow_triangle_points, 1, 1, False, True, True, self.pvllegkneectrl_tn)
+                    crv_ctrl_knee_arrow_l = self.MNurbs2_cv.createWithEditPoints(ctrl_elbow_arrow_points, 1, 1, False, True, True, self.pvllegkneectrl_tn)
 
                     llegnull_transform = om2.MFnTransform(self.llegnull_tn)
                     llegnull_transform.setRotatePivotTranslation(jnt_lleg_t, om2.MSpace.kTransform)
@@ -4451,7 +4949,7 @@ class MainWindow(QtWidgets.QDialog):
 
                     llegctrl_transform = om2.MFnTransform(self.llegctrl_tn)
 
-                    pvllegknectrl_transform = om2.MFnTransform(self.pvllegknectrl_tn)
+                    pvllegkneectrl_transform = om2.MFnTransform(self.pvllegkneectrl_tn)
 
                     llegctrl_transform_r = llegnull_transform.rotation(om2.MSpace.kTransform)
                     llegctrl_transform_r[0], llegctrl_transform_r[1], llegctrl_transform_r[2] = 0, 1.57079, 0
@@ -4461,9 +4959,9 @@ class MainWindow(QtWidgets.QDialog):
                     pvllegkneenull_transform_t[2] = pvllegkneenull_transform_t[2]+8
                     pvllegkneenull_transform.setTranslation(pvllegkneenull_transform_t, om2.MSpace.kTransform)
 
-                    pvllegknectrl_transform_r = pvllegknectrl_transform.rotation(om2.MSpace.kTransform)
+                    pvllegknectrl_transform_r = pvllegkneectrl_transform.rotation(om2.MSpace.kTransform)
                     pvllegknectrl_transform_r[0] = 1.57079
-                    pvllegknectrl_transform.setRotation(pvllegknectrl_transform_r, om2.MSpace.kTransform)
+                    pvllegkneectrl_transform.setRotation(pvllegknectrl_transform_r, om2.MSpace.kTransform)
 
                     llegctrl_transform_s = llegctrl_transform.findPlug("scale", False)
                     if llegctrl_transform_s.isCompound:
@@ -4478,39 +4976,49 @@ class MainWindow(QtWidgets.QDialog):
 
                     llegnull_transform.setTransformation(om2.MTransformationMatrix(llegnull_transform_localmatrix))
 
-                    self.ctrl_mod_n.renameNode(ctrl_llegpositive_comb_cv, "LeftLeg_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 1 1 0 "Biped_PVLeftKnee_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_PVLeftKnee_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.visibility"')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.renameNode(ctrl_llegpositive_comb_cv, "LeftLeg_shape")
+                    self.MDG2_mod.renameNode(crv_ctrl_knee_triangle_l, "PVLeftKnee_shape1")
+                    self.MDG2_mod.renameNode(crv_ctrl_knee_arrow_l, "PVLeftKnee_shape2")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftLeg_ctrl"')
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0 "Biped_PVLeftKnee_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftLeg_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_PVLeftKnee_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_FkLeftLeg_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_FkLeftLeg_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_FkLeftLeg_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftLeg_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftLeg_ctrl.visibility"')
+                    self.MDG2_mod.doIt()
 
                 elif index == 2:
-                    self.llegfootnull_tn = ctrl_tr_n.create("transform", "Biped_FkLeftFoot_null", self.llegctrl_tn)
-                    self.llegfootctrl_tn = ctrl_tr_n.create("transform", "Biped_FkLeftFoot_ctrl", self.llegfootnull_tn)
-                    ctrl_llegfootpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.llegfootctrl_tn)
+                    self.llegfootnull_tn = self.MDag2_node.create("transform", "Biped_FkLeftFoot_null", self.llegctrl_tn)
+                    self.llegfootctrl_tn = self.MDag2_node.create("transform", "Biped_FkLeftFoot_ctrl", self.llegfootnull_tn)
+                    ctrl_llegfootpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.llegfootctrl_tn)
 
-                    self.liklegfootnull_tn = ctrl_tr_n.create("transform", "Biped_IkLeftFoot_null", self.masterctrl_tn)
-                    self.liklegfootoffsetnull_tn = ctrl_tr_n.create("transform", "Biped_IkLeftFootOffset_null", self.liklegfootnull_tn)
-                    self.liklegfootctrl_tn = ctrl_tr_n.create("transform", "Biped_IkLeftFoot_ctrl", self.liklegfootoffsetnull_tn)
-                    ctrl_liklegfootpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_hand_line_l, crv_ctrl_hand_line, crv_ctrl_hand_line_r], self.liklegfootctrl_tn)
+                    self.liklegfootnull_tn = self.MDag2_node.create("transform", "Biped_IkLeftFoot_null", self.masterctrl_tn)
+                    self.liklegfootoffsetnull_tn = self.MDag2_node.create("transform", "Biped_IkLeftFootOffset_null", self.liklegfootnull_tn)
+                    self.liklegfootRotnull_tn = self.MDag2_node.create("transform", "Biped_IkLeftFootRot_null", self.liklegfootoffsetnull_tn)
+                    self.liklegfootctrl_tn = self.MDag2_node.create("transform", "Biped_IkLeftFoot_ctrl", self.liklegfootRotnull_tn)
+                    ctrl_liklegfootpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_hand_line_l, crv_ctrl_hand_line, crv_ctrl_hand_line_r], self.liklegfootctrl_tn)
 
-                    self.lfootoption_tn = ctrl_tr_n.create("transform", "Biped_LeftFootOptions_ctrl", lleg_sl_ls.getDependNode(2))
-                    ctrl_lfootoption_cv = ctrl_cv_n.createWithEditPoints(ctrl_lhandoption_line, 1, 1, False, True, True, self.lfootoption_tn)
+                    self.lfootoption_tn = self.MDag2_node.create("transform", "Biped_LeftFootOptions_ctrl", lleg_sl_ls.getDependNode(2))
+                    ctrl_lfootoption_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_lhandoption_line, 1, 1, False, True, True, self.lfootoption_tn)
 
-                    self.noflipllegkneenull_tn = ctrl_tr_n.create("transform", "Biped_NoFlipLeftKnee_null", self.liklegfootoffsetnull_tn)
-                    self.noflipllegkneectrl_tn = ctrl_tr_n.create("transform", "Biped_NoFlipLeftKnee_ctrl", self.noflipllegkneenull_tn)
-                    self.noflipllegknectrl_tn = ctrl_tr_n.create("locator", "NoFlipLeftKnee_shape", self.noflipllegkneectrl_tn)
+                    self.noflipllegkneenull_tn = self.MDag2_node.create("transform", "Biped_NoFlipLeftKnee_null", self.liklegfootoffsetnull_tn)
+                    self.noflipllegkneectrl_tn = self.MDag2_node.create("transform", "Biped_NoFlipLeftKnee_ctrl", self.noflipllegkneenull_tn)
+                    self.noflipllegknectrl_tn = self.MDag2_node.create("locator", "NoFlipLeftKnee_shape", self.noflipllegkneectrl_tn)
 
                     llegfootnull_transform = om2.MFnTransform(self.llegfootnull_tn)
                     llegfootnull_transform.setRotatePivotTranslation(jnt_lleg_t, om2.MSpace.kTransform)
@@ -4593,56 +5101,67 @@ class MainWindow(QtWidgets.QDialog):
 
                     lfootoptionctrl_transform.setTransformation(om2.MTransformationMatrix(lfootoptionctrl_transform_localmatrix))
 
-                    self.ctrl_mod_n.renameNode(ctrl_llegfootpositive_comb_cv, "LeftLegFoot_shape")
-                    self.ctrl_mod_n.renameNode(ctrl_liklegfootpositive_comb_cv, "LeftIkLegFoot_shape")
-                    self.ctrl_mod_n.renameNode(ctrl_lfootoption_cv, "LeftFootOptions_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 1 0 1 "Biped_IkLeftFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 1 1 0 "Biped_LeftFootOptions_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_IkLeftFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFootOptions_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.visibility"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.visibility"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.visibility"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.visibility"')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.renameNode(ctrl_llegfootpositive_comb_cv, "LeftLegFoot_shape")
+                    self.MDG2_mod.renameNode(ctrl_liklegfootpositive_comb_cv, "LeftIkLegFoot_shape")
+                    self.MDG2_mod.renameNode(ctrl_lfootoption_cv, "LeftFootOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftFoot_ctrl"')
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 0 1 "Biped_IkLeftFoot_ctrl"')
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0 "Biped_LeftFootOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftFoot_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_IkLeftFoot_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_LeftFootOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_FkLeftFoot_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_FkLeftFoot_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox true "Biped_FkLeftFoot_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftFoot_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftFoot_ctrl.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFoot_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_IkLeftFoot_ctrl.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkLeftFootOffset_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_LeftFootOptions_ctrl.visibility"')
+                    self.MDG2_mod.doIt()
 
                     liklegfootctrl_path_n = om2.MDagPath()
                     liklegfootctrl_path = liklegfootctrl_path_n.getAPathTo(self.liklegfootctrl_tn)
@@ -4651,9 +5170,9 @@ class MainWindow(QtWidgets.QDialog):
                     liklegfootctrl_worldtransform.setRotatePivot(om2.MPoint(jnt_lleg_t), om2.MSpace.kWorld, False)
 
                 elif index == 3:
-                    self.llegtoebasenull_tn = ctrl_tr_n.create("transform", "Biped_FkLeftToeBase_null", self.llegfootctrl_tn)
-                    self.llegtoebasectrl_tn = ctrl_tr_n.create("transform", "Biped_FkLeftToeBase_ctrl", self.llegtoebasenull_tn)
-                    ctrl_llegtoepositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.llegtoebasectrl_tn)
+                    self.llegtoebasenull_tn = self.MDag2_node.create("transform", "Biped_FkLeftToeBase_null", self.llegfootctrl_tn)
+                    self.llegtoebasectrl_tn = self.MDag2_node.create("transform", "Biped_FkLeftToeBase_ctrl", self.llegtoebasenull_tn)
+                    ctrl_llegtoepositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.llegtoebasectrl_tn)
 
                     llegtoebasenull_transform = om2.MFnTransform(self.llegtoebasenull_tn)
                     llegtoebasenull_transform.setRotatePivotTranslation(jnt_lleg_t, om2.MSpace.kTransform)
@@ -4687,20 +5206,27 @@ class MainWindow(QtWidgets.QDialog):
 
                     llegtoebasenull_transform.setTransformation(om2.MTransformationMatrix(llegtoebasenull_transform_localmatrix))
 
-                    self.ctrl_mod_n.renameNode(ctrl_llegtoepositive_comb_cv, "LeftLegToeBase_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftToeBase_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftToeBase_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.visibility"')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.renameNode(ctrl_llegtoepositive_comb_cv, "LeftLegToeBase_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkLeftToeBase_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkLeftToeBase_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkLeftToeBase_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkLeftToeBase_ctrl.visibility"')
+                    self.MDG2_mod.doIt()
 
         rarm_sl_ls = om2.MSelectionList()
         rarm_sl_ls.add("RightArm")
@@ -4717,18 +5243,18 @@ class MainWindow(QtWidgets.QDialog):
         ctrl_rshoulder_line = [om2.MPoint(0.90, 0.35, 0.25), om2.MPoint(0.30, 0.50, 0.25), om2.MPoint(0.25, 0.55, 0.20), om2.MPoint(0.25, 0.55, -0.20), om2.MPoint(0.30, 0.50, -0.25), om2.MPoint(0.90, 0.35, -0.25)]
         ctrl_rshoulder_arc_r = [om2.MPoint(0.90, 0.35, -0.25), om2.MPoint(1.10, 0.28, -0.10), om2.MPoint(1.20, 0.15)]
 
-        self.draw_shoulder_tn = ctrl_tr_n.create("transform", "Draw_shoulder_ctrl")
-        crv_ctrl_rshoulder_arc_l = ctrl_cv_n.createWithEditPoints(ctrl_rshoulder_arc_l, 3, 1, False, True, True, self.draw_shoulder_tn)
-        crv_ctrl_rshoulder_line = ctrl_cv_n.createWithEditPoints(ctrl_rshoulder_line, 1, 1, False, True, True, self.draw_shoulder_tn)
-        crv_ctrl_rshoulder_arc_r = ctrl_cv_n.createWithEditPoints(ctrl_rshoulder_arc_r, 3, 1, False, True, True, self.draw_shoulder_tn)
+        self.draw_shoulder_tn = self.MDag2_node.create("transform", "Draw_shoulder_ctrl")
+        crv_ctrl_rshoulder_arc_l = self.MNurbs2_cv.createWithEditPoints(ctrl_rshoulder_arc_l, 3, 1, False, True, True, self.draw_shoulder_tn)
+        crv_ctrl_rshoulder_line = self.MNurbs2_cv.createWithEditPoints(ctrl_rshoulder_line, 1, 1, False, True, True, self.draw_shoulder_tn)
+        crv_ctrl_rshoulder_arc_r = self.MNurbs2_cv.createWithEditPoints(ctrl_rshoulder_arc_r, 3, 1, False, True, True, self.draw_shoulder_tn)
 
         if self.autostretch.currentIndex() == 1:
-            self.rshouldernull_tn = ctrl_tr_n.create("transform", "Biped_RightShoulder_null", self.stretchyspine_tn)
+            self.rshouldernull_tn = self.MDag2_node.create("transform", "Biped_RightShoulder_null", self.stretchyspine_tn)
         else:
-            self.rshouldernull_tn = ctrl_tr_n.create("transform", "Biped_RightShoulder_null", self.spinectrl_tn)
+            self.rshouldernull_tn = self.MDag2_node.create("transform", "Biped_RightShoulder_null", self.spinectrl_tn)
 
-        self.rshoulderctrl_tn = ctrl_tr_n.create("transform", "Biped_RightShoulder_ctrl", self.rshouldernull_tn)
-        ctrl_rshoulder_comb_cv = ctrl_cv_n.create([crv_ctrl_rshoulder_arc_l, crv_ctrl_rshoulder_line, crv_ctrl_rshoulder_arc_r], self.rshoulderctrl_tn)
+        self.rshoulderctrl_tn = self.MDag2_node.create("transform", "Biped_RightShoulder_ctrl", self.rshouldernull_tn)
+        ctrl_rshoulder_comb_cv = self.MNurbs2_cv.create([crv_ctrl_rshoulder_arc_l, crv_ctrl_rshoulder_line, crv_ctrl_rshoulder_arc_r], self.rshoulderctrl_tn)
 
         jnt_rshoulder_obj = fkrarm_sl_ls.getDependNode(0)
         rshoulder_path_n = om2.MDagPath()
@@ -4774,21 +5300,28 @@ class MainWindow(QtWidgets.QDialog):
 
         rshoulderctrl_worldtransform.setRotatePivot(om2.MPoint(jnt_rshoulder_t), om2.MSpace.kWorld, False)
 
-        self.ctrl_mod_n.commandToExecute('delete "Draw_shoulder_ctrl"')
-        self.ctrl_mod_n.renameNode(ctrl_rshoulder_comb_cv, "RightShoulder_shape")
-        self.ctrl_mod_n.commandToExecute('color -rgbColor 1 0 0 "Biped_RightShoulder_ctrl"')
-        self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightShoulder_ctrl"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.translateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.translateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.translateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.rotateX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.rotateY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.rotateZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.scaleX"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.scaleY"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.scaleZ"')
-        self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.visibility"')
-        self.ctrl_mod_n.doIt()
+        self.MDG2_mod.commandToExecute('delete "Draw_shoulder_ctrl"')
+        self.MDG2_mod.renameNode(ctrl_rshoulder_comb_cv, "RightShoulder_shape")
+        self.MDG2_mod.commandToExecute('color -rgbColor 1 0 0 "Biped_RightShoulder_ctrl"')
+        self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightShoulder_ctrl"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.translateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.translateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.translateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.rotateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.rotateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.rotateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_null.visibility"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_ctrl.translateX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_ctrl.translateY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_ctrl.translateZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_ctrl.scaleX"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_ctrl.scaleY"')
+        self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightShoulder_ctrl.scaleZ"')
+        self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightShoulder_ctrl.visibility"')
+        self.MDG2_mod.doIt()
 
         for index in range(fkrarm_sl_ls.length()):
            jnt_rhand_obj = fkrarm_sl_ls.getDependNode(index)
@@ -4798,9 +5331,9 @@ class MainWindow(QtWidgets.QDialog):
            jnt_rhand_t = jnt_rhand_transform.translation(om2.MSpace.kWorld)
 
            if index == 1:
-               self.rarmnull_tn = ctrl_tr_n.create("transform", "Biped_FkRightArm_null", self.rshoulderctrl_tn)
-               self.rarmctrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightArm_ctrl", self.rarmnull_tn)
-               ctrl_larm_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rarmctrl_tn)
+               self.rarmnull_tn = self.MDag2_node.create("transform", "Biped_FkRightArm_null", self.rshoulderctrl_tn)
+               self.rarmctrl_tn = self.MDag2_node.create("transform", "Biped_FkRightArm_ctrl", self.rarmnull_tn)
+               ctrl_larm_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rarmctrl_tn)
 
                rarmnull_transform = om2.MFnTransform(self.rarmnull_tn)
                rarmnull_transform.setRotatePivotTranslation(jnt_rhand_t, om2.MSpace.kTransform)
@@ -4834,28 +5367,43 @@ class MainWindow(QtWidgets.QDialog):
 
                rarmnull_transform.setTransformation(om2.MTransformationMatrix(rarmnull_transform_localmatrix))
 
-               self.ctrl_mod_n.renameNode(ctrl_larm_comb_cv, "FkRightArm_shape")
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightArm_ctrl"')
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightArm_ctrl"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.visibility"')
-               self.ctrl_mod_n.doIt()
+               self.MDG2_mod.renameNode(ctrl_larm_comb_cv, "FkRightArm_shape")
+               self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightArm_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightArm_ctrl"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightArm_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightArm_ctrl.visibility"')
+               self.MDG2_mod.doIt()
 
            elif index == 2:
-               self.rforearmnull_tn = ctrl_tr_n.create("transform", "Biped_FkRightForeArm_null", self.rarmctrl_tn)
-               self.rforearmctrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightForeArm_ctrl", self.rforearmnull_tn)
-               ctrl_rforearm_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rforearmctrl_tn)
+               self.rforearmnull_tn = self.MDag2_node.create("transform", "Biped_FkRightForeArm_null", self.rarmctrl_tn)
+               self.rforearmctrl_tn = self.MDag2_node.create("transform", "Biped_FkRightForeArm_ctrl", self.rforearmnull_tn)
+               ctrl_rforearm_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rforearmctrl_tn)
+
+               self.pvrelbownull_tn = self.MDag2_node.create("transform", "Biped_PVRightElbow_null", self.masterctrl_tn)
+               self.pvrelbowctrl_tn = self.MDag2_node.create("transform", "Biped_PVRightElbow_ctrl", self.pvrelbownull_tn)
+               crv_ctrl_elbow_triangle_l = self.MNurbs2_cv.createWithEditPoints(ctrl_elbow_triangle_points, 1, 1, False, True, True, self.pvrelbowctrl_tn)
+               crv_ctrl_elbow_arrow_l = self.MNurbs2_cv.createWithEditPoints(ctrl_elbow_arrow_points, 1, 1, False, True, True, self.pvrelbowctrl_tn)
 
                rforearmnull_transform = om2.MFnTransform(self.rforearmnull_tn)
                rforearmnull_transform.setRotatePivotTranslation(jnt_rhand_t, om2.MSpace.kTransform)
+
+               pvrelbownull_transform = om2.MFnTransform(self.pvrelbownull_tn)
+               pvrelbownull_transform.setTranslation(jnt_rhand_t, om2.MSpace.kTransform)
 
                jnt_rforearm_r = cmds.xform("RightForeArm", query=True, rotation=True, worldSpace=True)
 
@@ -4869,6 +5417,8 @@ class MainWindow(QtWidgets.QDialog):
 
                rforearmctrl_transform = om2.MFnTransform(self.rforearmctrl_tn)
 
+               pvrelbowctrl_transform = om2.MFnTransform(self.pvrelbowctrl_tn)
+
                rforearmctrl_transform_r = rforearmctrl_transform.rotation(om2.MSpace.kTransform)
                rforearmctrl_transform_r[1] = 3.1415
                rforearmctrl_transform.setRotation(rforearmctrl_transform_r, om2.MSpace.kTransform)
@@ -4879,6 +5429,14 @@ class MainWindow(QtWidgets.QDialog):
                        child_plug = rforearmctrl_transform_s.child(i)
                        attr_value = child_plug.setDouble(box_transform_s[0]/2)
 
+               pvrelbownull_transform_t = pvrelbownull_transform.translation(om2.MSpace.kTransform)
+               pvrelbownull_transform_t[2] = -(pvrelbownull_transform_t[2]+8)
+               pvrelbownull_transform.setTranslation(pvrelbownull_transform_t, om2.MSpace.kTransform)
+
+               pvrelbowctrl_transform_r = pvrelbowctrl_transform.rotation(om2.MSpace.kTransform)
+               pvrelbowctrl_transform_r[0] = -1.57079
+               pvrelbowctrl_transform.setRotation(pvrelbowctrl_transform_r, om2.MSpace.kTransform)
+
                rforearmnull_transform_trans = rforearmnull_transform.transformation()
                rforearmnull_transform_worldmatrix = rforearmnull_transform_trans.asMatrix()
 
@@ -4886,39 +5444,67 @@ class MainWindow(QtWidgets.QDialog):
 
                rforearmnull_transform.setTransformation(om2.MTransformationMatrix(rforearmnull_transform_localmatrix))
 
-               self.ctrl_mod_n.renameNode(ctrl_rforearm_comb_cv, "FkRightForeArm_shape")
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightForeArm_ctrl"')
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightForeArm_ctrl"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.visibility"')
-               self.ctrl_mod_n.doIt()
+               self.MDG2_mod.renameNode(ctrl_rforearm_comb_cv, "FkRightForeArm_shape")
+               self.MDG2_mod.renameNode(crv_ctrl_elbow_triangle_l, "PVRightElbow_shape1")
+               self.MDG2_mod.renameNode(crv_ctrl_elbow_arrow_l, "PVRightElbow_shape2")
+               self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightForeArm_ctrl"')
+               self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0 "Biped_PVRightElbow_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightForeArm_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_PVRightElbow_ctrl"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightForeArm_ctrl.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightForeArm_ctrl.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightForeArm_ctrl.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightForeArm_ctrl.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_null.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_ctrl.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_ctrl.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_ctrl.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightElbow_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_PVRightElbow_ctrl.visibility"')
+               self.MDG2_mod.doIt()
         #
            elif index == 3:
                ctrl_rhand_line_up_points = [om2.MPoint(0.00, 0.05, 0.02), om2.MPoint(-0.60, 0.05, 0.02)]
                ctrl_rhand_star_up_points = [om2.MPoint(-0.60, 0.05, 0.02), om2.MPoint(-0.70, 0.15, 0.20), om2.MPoint(-0.70, 0.09, 0.20), om2.MPoint(-0.70, 0.06, 0.13), om2.MPoint(-0.60, 0.00, 0.00), om2.MPoint(-0.70, 0.05, -0.13), om2.MPoint(-0.70, 0.09, -0.20), om2.MPoint(-0.70, 0.15, -0.20), om2.MPoint(-0.60, 0.05, -0.02)]
                ctrl_rhand_line_down_points = [om2.MPoint(-0.60, 0.05, -0.02), om2.MPoint(-0.00, 0.05, -0.02)]
 
-               self.draw_rhand_tn = ctrl_tr_n.create("transform", "Draw_righthand_ctrl")
-               crv_ctrl_rhand_line_up = ctrl_cv_n.createWithEditPoints(ctrl_rhand_line_up_points, 1, 1, False, True, True, self.draw_rhand_tn)
-               crv_ctrl_rhand_star = ctrl_cv_n.createWithEditPoints(ctrl_rhand_star_up_points, 1, 1, False, True, True, self.draw_rhand_tn)
-               crv_ctrl_rhand_line_down = ctrl_cv_n.createWithEditPoints(ctrl_rhand_line_down_points, 1, 1, False, True, True, self.draw_rhand_tn)
+               self.draw_rhand_tn = self.MDag2_node.create("transform", "Draw_righthand_ctrl")
+               crv_ctrl_rhand_line_up = self.MNurbs2_cv.createWithEditPoints(ctrl_rhand_line_up_points, 1, 1, False, True, True, self.draw_rhand_tn)
+               crv_ctrl_rhand_star = self.MNurbs2_cv.createWithEditPoints(ctrl_rhand_star_up_points, 1, 1, False, True, True, self.draw_rhand_tn)
+               crv_ctrl_rhand_line_down = self.MNurbs2_cv.createWithEditPoints(ctrl_rhand_line_down_points, 1, 1, False, True, True, self.draw_rhand_tn)
 
-               self.rhandnull_tn = ctrl_tr_n.create("transform", "Biped_FkRightHand_null", self.rforearmctrl_tn)
-               self.rhandctrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightHand_ctrl", self.rhandnull_tn)
-               ctrl_rhandpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandctrl_tn)
-               ctrl_rhandnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandctrl_tn)
+               self.rhandnull_tn = self.MDag2_node.create("transform", "Biped_FkRightHand_null", self.rforearmctrl_tn)
+               self.rhandctrl_tn = self.MDag2_node.create("transform", "Biped_FkRightHand_ctrl", self.rhandnull_tn)
+               ctrl_rhandpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandctrl_tn)
+               ctrl_rhandnegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandctrl_tn)
 
-               self.rfingernull_tn = ctrl_tr_n.create("transform", "Biped_RightFingers_null", self.masterctrl_tn)
-               self.rhandoption_tn = ctrl_tr_n.create("transform", "Biped_RightHandOptions_ctrl", rarm_sl_ls.getDependNode(2))
-               ctrl_rhandoption_cv = ctrl_cv_n.createWithEditPoints(ctrl_lhandoption_line, 1, 1, False, True, True, self.rhandoption_tn)
+               self.rfingernull_tn = self.MDag2_node.create("transform", "Biped_RightFingers_null", self.masterctrl_tn)
+               self.rhandoption_tn = self.MDag2_node.create("transform", "Biped_RightHandOptions_ctrl", rarm_sl_ls.getDependNode(2))
+               ctrl_rhandoption_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_lhandoption_line, 1, 1, False, True, True, self.rhandoption_tn)
 
                rhandnull_transform = om2.MFnTransform(self.rhandnull_tn)
                rhandnull_transform.setRotatePivotTranslation(jnt_rhand_t, om2.MSpace.kTransform)
@@ -4950,7 +5536,7 @@ class MainWindow(QtWidgets.QDialog):
                rhandctrl_transform.setRotation(rhandctrl_transform_r, om2.MSpace.kTransform)
 
                rhandoptionctrl_transform_t = rhandoptionctrl_transform.translation(om2.MSpace.kTransform)
-               rhandoptionctrl_transform_t[2] = jnt_lhand_t[2]-3
+               rhandoptionctrl_transform_t[2] = jnt_lhand_t[2]-5
                rhandoptionctrl_transform.setTranslation(rhandoptionctrl_transform_t, om2.MSpace.kTransform)
 
                rhandoptionctrl_transform_r = rhandoptionctrl_transform.rotation(om2.MSpace.kTransform)
@@ -4977,48 +5563,60 @@ class MainWindow(QtWidgets.QDialog):
 
                rhandoptionctrl_transform.setTransformation(om2.MTransformationMatrix(rhandoptionctrl_transform_localmatrix))
 
-               self.ctrl_mod_n.renameNode(ctrl_rhandpositive_comb_cv, "FkRightHand_shape1")
-               self.ctrl_mod_n.renameNode(ctrl_rhandnegative_comb_cv, "FkRightHand_shape2")
-               self.ctrl_mod_n.renameNode(ctrl_rhandoption_cv, "RightHandOptions_shape")
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightHand_ctrl"')
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 1 1 0 "Biped_RightHandOptions_ctrl"')
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightHand_ctrl"')
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightHandOptions_ctrl"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.visibility"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.visibility"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.visibility"')
-               self.ctrl_mod_n.doIt()
+               self.MDG2_mod.renameNode(ctrl_rhandpositive_comb_cv, "FkRightHand_shape1")
+               self.MDG2_mod.renameNode(ctrl_rhandnegative_comb_cv, "FkRightHand_shape2")
+               self.MDG2_mod.renameNode(ctrl_rhandoption_cv, "RightHandOptions_shape")
+               self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightHand_ctrl"')
+               self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0 "Biped_RightHandOptions_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightHand_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightHandOptions_ctrl"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightHand_ctrl.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightHand_ctrl.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightHand_ctrl.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightHand_ctrl.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.visibility"')
+               self.MDG2_mod.doIt()
 
-               self.rikhandnull_tn = ctrl_tr_n.create("transform", "Biped_IkRightHand_null", self.masterctrl_tn)
-               self.rikhandctrl_tn = ctrl_tr_n.create("transform", "Biped_IkRightHand_ctrl", self.rikhandnull_tn)
-               ctrl_rikhand_comb_cv = ctrl_cv_n.create([crv_ctrl_hand_line_l, crv_ctrl_hand_line, crv_ctrl_hand_line_r], self.rikhandctrl_tn)
+               self.rikhandnull_tn = self.MDag2_node.create("transform", "Biped_IkRightHand_null", self.masterctrl_tn)
+               self.rhandrotnull_tn = self.MDag2_node.create("transform", "Biped_IkRightHandRot_null", self.rikhandnull_tn)
+               self.rikhandctrl_tn = self.MDag2_node.create("transform", "Biped_IkRightHand_ctrl", self.rhandrotnull_tn)
+               ctrl_rikhand_comb_cv = self.MNurbs2_cv.create([crv_ctrl_hand_line_l, crv_ctrl_hand_line, crv_ctrl_hand_line_r], self.rikhandctrl_tn)
+
+               self.nofliprelbownull_tn = self.MDag2_node.create("transform", "Biped_NoFlipRightElbow_null", self.rikhandnull_tn)
+               self.nofliprelbowctrl_tn = self.MDag2_node.create("transform", "Biped_NoFlipRightElbow_ctrl", self.nofliprelbownull_tn)
+               self.nofliprelbowctrl_ln = self.MDag2_node.create("locator", "NoFlipRightElbow_shape", self.nofliprelbowctrl_tn)
 
                rikhandnull_transform = om2.MFnTransform(self.rikhandnull_tn)
                rikhandnull_transform.setRotatePivotTranslation(jnt_rhand_t, om2.MSpace.kTransform)
@@ -5029,6 +5627,8 @@ class MainWindow(QtWidgets.QDialog):
 
                rikhandctrl_transform = om2.MFnTransform(self.rikhandctrl_tn)
 
+               relbowctrl_transform = om2.MFnTransform(self.nofliprelbowctrl_tn)
+
                rikhandctrl_transform_t = rikhandctrl_transform.rotatePivotTranslation(om2.MSpace.kTransform)
                rikhandctrl_transform_t[2] = -((jnt_rhand_t[1]+4)-jnt_rhand_t[1])
                rikhandctrl_transform.setRotatePivotTranslation(rikhandctrl_transform_t, om2.MSpace.kTransform)
@@ -5037,21 +5637,18 @@ class MainWindow(QtWidgets.QDialog):
                rikhandctrl_transform_r[0], rikhandctrl_transform_r[2] = 1.57079, 1.57079
                rikhandctrl_transform.setRotation(rikhandctrl_transform_r, om2.MSpace.kTransform)
 
+               relbowctrl_transform_t = relbowctrl_transform.translation(om2.MSpace.kTransform)
+               relbowctrl_transform_t[2] = -7
+               relbowctrl_transform.setTranslation(relbowctrl_transform_t, om2.MSpace.kTransform)
+
                rikhandctrl_transform_s = rikhandctrl_transform.findPlug("scale", False)
                if rikhandctrl_transform_s.isCompound:
                    for i in range(rikhandctrl_transform_s.numChildren()):
                        child_plug = rikhandctrl_transform_s.child(i)
                        attr_value = child_plug.setDouble(box_transform_s[0]/3)
 
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_IkRightHand_ctrl"')
-               self.ctrl_mod_n.doIt()
-
-               # rikhandnull_transform_trans = rikhandnull_transform.transformation()
-               # rikhandnull_transform_worldmatrix = rikhandnull_transform_trans.asMatrix()
-               #
-               # rikhandnull_transform_localmatrix = rikhandnull_transform_worldmatrix * spinenull_parentinvtransform_matrix * spinenull_childtransform_localmatrix.inverse() * rshouldernullnull_transform_localmatrix.inverse() * rarmnull_transform_localmatrix.inverse() * rforearmnull_transform_localmatrix.inverse() * rhandnull_transform_localmatrix.inverse()
-               #
-               # rikhandnull_transform.setTransformation(om2.MTransformationMatrix(rikhandnull_transform_localmatrix))
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_IkRightHand_ctrl"')
+               self.MDG2_mod.doIt()
 
                rikhandnull_path_n = om2.MDagPath()
                rikhandnull_path = rikhandnull_path_n.getAPathTo(self.rikhandctrl_tn)
@@ -5059,19 +5656,56 @@ class MainWindow(QtWidgets.QDialog):
 
                rikhandnull_worldtransform.setRotatePivot(om2.MPoint(jnt_rhand_t), om2.MSpace.kWorld, False)
 
-               self.ctrl_mod_n.renameNode(ctrl_rikhand_comb_cv, "IkRightHand_shape")
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 1 0 0 "Biped_IkRightHand_ctrl"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.visibility"')
-               self.ctrl_mod_n.doIt()
+               self.MDG2_mod.renameNode(ctrl_rikhand_comb_cv, "IkRightHand_shape")
+               self.MDG2_mod.commandToExecute('color -rgbColor 1 0 0 "Biped_IkRightHand_ctrl"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.visibility"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_IkRightHand_ctrl.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_IkRightHand_ctrl.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_IkRightHand_ctrl.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_IkRightHand_ctrl.visibility"')
+               self.MDG2_mod.doIt()
+
+               self.rfingerctrl_tn = self.MDag2_node.create("transform", "Biped_RightFingerOptions_ctrl", rarm_sl_ls.getDependNode(2))
+               ctrl_rfingerpositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.rfingerctrl_tn)
+
+               rfingerctrl_transform = om2.MFnTransform(self.rfingerctrl_tn)
+
+               rfingerctrl_transform_r = rfingerctrl_transform.rotation(om2.MSpace.kTransform)
+               rfingerctrl_transform_r[1] = 3.1415
+               rfingerctrl_transform.setRotation(rfingerctrl_transform_r, om2.MSpace.kTransform)
+
+               rfingerctrl_transform_s = rfingerctrl_transform.findPlug("scale", False)
+               if rfingerctrl_transform_s.isCompound:
+                   for i in range(rfingerctrl_transform_s.numChildren()):
+                       child_plug = rfingerctrl_transform_s.child(i)
+                       attr_value = child_plug.setDouble(box_transform_s[0]/3)
+
+               self.MDG2_mod.renameNode(ctrl_rfingerpositive_comb_cv, "RightFingerOptions_shape")
+               self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_RightFingerOptions_ctrl"')
+               self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerOptions_ctrl"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerOptions_ctrl.translateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerOptions_ctrl.translateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerOptions_ctrl.translateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerOptions_ctrl.rotateX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerOptions_ctrl.rotateY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerOptions_ctrl.rotateZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerOptions_ctrl.scaleX"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerOptions_ctrl.scaleY"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerOptions_ctrl.scaleZ"')
+               self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerOptions_ctrl.visibility"')
+               self.MDG2_mod.doIt()
 
         try:
             rhandthumb_sl_ls = om2.MSelectionList()
@@ -5084,10 +5718,12 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_rhandthumb_transform = om2.MFnTransform(jnt_rhandthumb_path)
                 jnt_rhandthumb_t = jnt_rhandthumb_transform.translation(om2.MSpace.kWorld)
 
-                self.rhandthumbnull_tn = ctrl_tr_n.create("transform", "Biped_RightFingerThumb{0}_null".format(index + 1))
-                self.rhandthumbctrl_tn = ctrl_tr_n.create("transform", "Biped_RightFingerThumb{0}_ctrl".format(index + 1), self.rhandthumbnull_tn)
-                ctrl_rhandthumbpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandthumbctrl_tn)
-                ctrl_rhandthumbnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandthumbctrl_tn)
+                self.rhandthumbnull_tn = self.MDag2_node.create("transform", "Biped_RightFingerThumb{0}_null".format(index+1))
+                self.rhandthumbglobalcurl_tn = self.MDag2_node.create("transform", "Biped_RightFingerThumb{0}_globalcurl".format(index+1), self.rhandthumbnull_tn)
+                self.rhandthumbcurl_tn = self.MDag2_node.create("transform", "Biped_RightFingerThumb{0}_curl".format(index+1), self.rhandthumbglobalcurl_tn)
+                self.rhandthumbctrl_tn = self.MDag2_node.create("transform", "Biped_RightFingerThumb{0}_ctrl".format(index+1), self.rhandthumbcurl_tn)
+                ctrl_rhandthumbpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandthumbctrl_tn)
+                ctrl_rhandthumbnegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandthumbctrl_tn)
 
                 rhandthumbnull_transform = om2.MFnTransform(self.rhandthumbnull_tn)
                 rhandthumbnull_transform.setRotatePivotTranslation(jnt_rhandthumb_t, om2.MSpace.kTransform)
@@ -5128,6 +5764,52 @@ class MainWindow(QtWidgets.QDialog):
 
                     rhandthumbnull_transform.setTransformation(om2.MTransformationMatrix(rhandthumbnull_transform_localmatrix))
 
+                    self.rfingerthumbctrl_tn = self.MDag2_node.create("transform", "Biped_RightThumbOptions_ctrl")
+                    ctrl_rfingerthumbpositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.rfingerthumbctrl_tn)
+
+                    rfingerthumbctrl_transform = om2.MFnTransform(self.rfingerthumbctrl_tn)
+
+                    rfingerthumbctrl_transform_t = rfingerthumbctrl_transform.translation(om2.MSpace.kTransform)
+                    rfingerthumbctrl_transform_t[0], rfingerthumbctrl_transform_t[1], rfingerthumbctrl_transform_t[2] = jnt_rhandthumb_t[0], jnt_rhandthumb_t[1], jnt_rhandthumb_t[2]
+                    rfingerthumbctrl_transform.setTranslation(rfingerthumbctrl_transform_t, om2.MSpace.kTransform)
+
+                    rfingerthumbctrl_transform_r= rfingerthumbctrl_transform.rotation(om2.MSpace.kTransform)
+                    rfingerthumbctrl_transform_r[0], rfingerthumbctrl_transform_r[1], rfingerthumbctrl_transform_r[2] = rhandthumbnull_transform_r[0], rhandthumbnull_transform_r[1], rhandthumbnull_transform_r[2]
+                    rfingerthumbctrl_transform.setRotation(rfingerthumbctrl_transform_r, om2.MSpace.kTransform)
+
+                    rfingerthumbctrl_transform_s = rfingerthumbctrl_transform.findPlug("scale", False)
+                    if rfingerthumbctrl_transform_s.isCompound:
+                        for i in range(rfingerthumbctrl_transform_s.numChildren()):
+                            child_plug = rfingerthumbctrl_transform_s.child(i)
+                            if i == 0:
+                                attr_value = child_plug.setDouble(-(box_transform_s[0]/9))
+                            else:
+                                attr_value = child_plug.setDouble(box_transform_s[0]/9)
+
+                    rhandjnt_tr_n = om2.MFnDagNode(rarm_sl_ls.getDependNode(2))
+                    rhandjnt_tr_n.addChild(self.rfingerthumbctrl_tn)
+
+                    rfingerthumbctrl_transform_trans = rfingerthumbctrl_transform.transformation()
+                    rfingerthumbctrl_transform_worldmatrix = rfingerthumbctrl_transform_trans.asMatrix()
+
+                    rfingerthumbctrl_transform_localmatrix = rfingerthumbctrl_transform_worldmatrix * rfingernull_transform_worldmatrix
+
+                    rfingerthumbctrl_transform.setTransformation(om2.MTransformationMatrix(rfingerthumbctrl_transform_localmatrix))
+
+                    self.MDG2_mod.renameNode(ctrl_rfingerthumbpositive_comb_cv, "RightThumbOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_RightThumbOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightThumbOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightThumbOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightThumbOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightThumbOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightThumbOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightThumbOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightThumbOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightThumbOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightThumbOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightThumbOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightThumbOptions_ctrl.visibility"')
+
                 else:
                     rhandthumbctrl_sl_ls = om2.MSelectionList()
                     rhandthumbctrl_sl_ls.add("Biped_RightFingerThumb*_ctrl")
@@ -5155,21 +5837,28 @@ class MainWindow(QtWidgets.QDialog):
 
                     rhandthumbnull_transform.setTransformation(om2.MTransformationMatrix(lhandthumbnull_childtransform_localmatrix))
 
-                self.ctrl_mod_n.renameNode(ctrl_rhandthumbpositive_comb_cv, "RightFingerThumb{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_rhandthumbnegative_comb_cv, "RightFingerThumb{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerThumb{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerThumb{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.renameNode(ctrl_rhandthumbpositive_comb_cv, "RightFingerThumb{0}_shape1".format(index + 1))
+                self.MDG2_mod.renameNode(ctrl_rhandthumbnegative_comb_cv, "RightFingerThumb{0}_shape2".format(index + 1))
+                self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerThumb{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerThumb{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.rotateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.rotateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.rotateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.visibility"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerThumb{0}_ctrl.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerThumb{0}_ctrl.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerThumb{0}_ctrl.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_ctrl.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_ctrl.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_ctrl.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerThumb{0}_ctrl.visibility"'.format(index + 1))
+                self.MDG2_mod.doIt()
 
         except:
             pass
@@ -5185,10 +5874,12 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_rhandindex_transform = om2.MFnTransform(jnt_rhandindex_path)
                 jnt_rhandindex_t = jnt_rhandindex_transform.translation(om2.MSpace.kWorld)
 
-                self.rhandindexnull_tn = ctrl_tr_n.create("transform", "Biped_RightFingerIndex{0}_null".format(index + 1))
-                self.rhandindexctrl_tn = ctrl_tr_n.create("transform", "Biped_RightFingerIndex{0}_ctrl".format(index + 1), self.rhandindexnull_tn)
-                ctrl_rhandIndexpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandindexctrl_tn)
-                ctrl_rhandIndexnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandindexctrl_tn)
+                self.rhandindexnull_tn = self.MDag2_node.create("transform", "Biped_RightFingerIndex{0}_null".format(index+1))
+                self.rhandindexglobalcurl_tn = self.MDag2_node.create("transform", "Biped_RightFingerIndex{0}_globalcurl".format(index+1), self.rhandindexnull_tn)
+                self.rhandindexcurl_tn = self.MDag2_node.create("transform", "Biped_RightFingerIndex{0}_curl".format(index+1), self.rhandindexglobalcurl_tn)
+                self.rhandindexctrl_tn = self.MDag2_node.create("transform", "Biped_RightFingerIndex{0}_ctrl".format(index+1), self.rhandindexcurl_tn)
+                ctrl_rhandIndexpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandindexctrl_tn)
+                ctrl_rhandIndexnegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandindexctrl_tn)
 
                 rhandindexnull_transform = om2.MFnTransform(self.rhandindexnull_tn)
                 rhandindexnull_transform.setRotatePivotTranslation(jnt_rhandindex_t, om2.MSpace.kTransform)
@@ -5226,6 +5917,51 @@ class MainWindow(QtWidgets.QDialog):
 
                     rhandindexnull_transform.setTransformation(om2.MTransformationMatrix(rhandindexnull_transform_localmatrix))
 
+                    self.rfingerindexctrl_tn = self.MDag2_node.create("transform", "Biped_RightIndexOptions_ctrl")
+                    ctrl_rfingerindexpositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.rfingerindexctrl_tn)
+
+                    rfingerindexctrl_transform = om2.MFnTransform(self.rfingerindexctrl_tn)
+
+                    rfingerindexctrl_transform_t = rfingerindexctrl_transform.translation(om2.MSpace.kTransform)
+                    rfingerindexctrl_transform_t[0], rfingerindexctrl_transform_t[1], rfingerindexctrl_transform_t[2] = jnt_rhandindex_t[0], jnt_rhandindex_t[1], jnt_rhandindex_t[2]
+                    rfingerindexctrl_transform.setTranslation(rfingerindexctrl_transform_t, om2.MSpace.kTransform)
+
+                    rfingerindexctrl_transform_r= rfingerindexctrl_transform.rotation(om2.MSpace.kTransform)
+                    rfingerindexctrl_transform_r[0], rfingerindexctrl_transform_r[1], rfingerindexctrl_transform_r[2] = rhandindexnull_transform_r[0], rhandindexnull_transform_r[1], rhandindexnull_transform_r[2]
+                    rfingerindexctrl_transform.setRotation(rfingerindexctrl_transform_r, om2.MSpace.kTransform)
+
+                    rfingerindexctrl_transform_s = rfingerindexctrl_transform.findPlug("scale", False)
+                    if rfingerindexctrl_transform_s.isCompound:
+                        for i in range(rfingerindexctrl_transform_s.numChildren()):
+                            child_plug = rfingerindexctrl_transform_s.child(i)
+                            if i == 0:
+                                attr_value = child_plug.setDouble(-(box_transform_s[0]/9))
+                            else:
+                                attr_value = child_plug.setDouble(box_transform_s[0]/9)
+
+                    rhandjnt_tr_n.addChild(self.rfingerindexctrl_tn)
+
+                    rfingerindexctrl_transform_trans = rfingerindexctrl_transform.transformation()
+                    rfingerindexctrl_transform_worldmatrix = rfingerindexctrl_transform_trans.asMatrix()
+
+                    rfingerindexctrl_transform_localmatrix = rfingerindexctrl_transform_worldmatrix * rfingernull_transform_worldmatrix
+
+                    rfingerindexctrl_transform.setTransformation(om2.MTransformationMatrix(rfingerindexctrl_transform_localmatrix))
+
+                    self.MDG2_mod.renameNode(ctrl_rfingerindexpositive_comb_cv, "RightIndexOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_RightIndexOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightIndexOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightIndexOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightIndexOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightIndexOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightIndexOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightIndexOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightIndexOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightIndexOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightIndexOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightIndexOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightIndexOptions_ctrl.visibility"')
+
                 else:
                     rhandIndexctrl_sl_ls = om2.MSelectionList()
                     rhandIndexctrl_sl_ls.add("Biped_RightFingerIndex*_ctrl")
@@ -5253,21 +5989,28 @@ class MainWindow(QtWidgets.QDialog):
 
                     rhandindexnull_transform.setTransformation(om2.MTransformationMatrix(rhandindexnull_childtransform_localmatrix))
 
-                self.ctrl_mod_n.renameNode(ctrl_rhandIndexpositive_comb_cv, "RightFingerIndex{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_rhandIndexnegative_comb_cv, "RightFingerIndex{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerIndex{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerIndex{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.renameNode(ctrl_rhandIndexpositive_comb_cv, "RightFingerIndex{0}_shape1".format(index + 1))
+                self.MDG2_mod.renameNode(ctrl_rhandIndexnegative_comb_cv, "RightFingerIndex{0}_shape2".format(index + 1))
+                self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerIndex{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerIndex{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.rotateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.rotateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.rotateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.visibility"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerIndex{0}_ctrl.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerIndex{0}_ctrl.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerIndex{0}_ctrl.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_ctrl.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_ctrl.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_ctrl.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerIndex{0}_ctrl.visibility"'.format(index + 1))
+                self.MDG2_mod.doIt()
 
         except:
             pass
@@ -5283,10 +6026,12 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_rhandmiddle_transform = om2.MFnTransform(jnt_rhandmiddle_path)
                 jnt_rhandmiddle_t = jnt_rhandmiddle_transform.translation(om2.MSpace.kWorld)
 
-                self.rhandmiddlenull_tn = ctrl_tr_n.create("transform", "Biped_RightFingerMiddle{0}_null".format(index + 1))
-                self.rhandmiddlectrl_tn = ctrl_tr_n.create("transform", "Biped_RightFingerMiddle{0}_ctrl".format(index + 1), self.rhandmiddlenull_tn)
-                ctrl_rhandmiddlepositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandmiddlectrl_tn)
-                ctrl_rhandmiddlenegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandmiddlectrl_tn)
+                self.rhandmiddlenull_tn = self.MDag2_node.create("transform", "Biped_RightFingerMiddle{0}_null".format(index + 1))
+                self.rhandmiddleglobalcurl_tn = self.MDag2_node.create("transform", "Biped_RightFingerMiddle{0}_globalcurl".format(index+1), self.rhandmiddlenull_tn)
+                self.rhandmiddlecurl_tn = self.MDag2_node.create("transform", "Biped_RightFingerMiddle{0}_curl".format(index+1), self.rhandmiddleglobalcurl_tn)
+                self.rhandmiddlectrl_tn = self.MDag2_node.create("transform", "Biped_RightFingerMiddle{0}_ctrl".format(index + 1), self.rhandmiddlecurl_tn)
+                ctrl_rhandmiddlepositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandmiddlectrl_tn)
+                ctrl_rhandmiddlenegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandmiddlectrl_tn)
 
                 rhandmiddlenull_transform = om2.MFnTransform(self.rhandmiddlenull_tn)
                 rhandmiddlenull_transform.setRotatePivotTranslation(jnt_rhandmiddle_t, om2.MSpace.kTransform)
@@ -5324,6 +6069,51 @@ class MainWindow(QtWidgets.QDialog):
 
                     rhandmiddlenull_transform.setTransformation(om2.MTransformationMatrix(rhandmiddlenull_transform_localmatrix))
 
+                    self.rfingermiddlectrl_tn = self.MDag2_node.create("transform", "Biped_RightMiddleOptions_ctrl")
+                    ctrl_rfingermiddlepositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.rfingermiddlectrl_tn)
+
+                    rfingermiddlectrl_transform = om2.MFnTransform(self.rfingermiddlectrl_tn)
+
+                    rfingermiddlectrl_transform_t = rfingermiddlectrl_transform.translation(om2.MSpace.kTransform)
+                    rfingermiddlectrl_transform_t[0], rfingermiddlectrl_transform_t[1], rfingermiddlectrl_transform_t[2] = jnt_rhandmiddle_t[0], jnt_rhandmiddle_t[1], jnt_rhandmiddle_t[2]
+                    rfingermiddlectrl_transform.setTranslation(rfingermiddlectrl_transform_t, om2.MSpace.kTransform)
+
+                    rfingermiddlectrl_transform_r= rfingermiddlectrl_transform.rotation(om2.MSpace.kTransform)
+                    rfingermiddlectrl_transform_r[0], rfingermiddlectrl_transform_r[1], rfingermiddlectrl_transform_r[2] = rhandmiddlenull_transform_r[0], rhandmiddlenull_transform_r[1], rhandmiddlenull_transform_r[2]
+                    rfingermiddlectrl_transform.setRotation(rfingermiddlectrl_transform_r, om2.MSpace.kTransform)
+
+                    rfingermiddlectrl_transform_s = rfingermiddlectrl_transform.findPlug("scale", False)
+                    if rfingermiddlectrl_transform_s.isCompound:
+                        for i in range(rfingermiddlectrl_transform_s.numChildren()):
+                            child_plug = rfingermiddlectrl_transform_s.child(i)
+                            if i == 0:
+                                attr_value = child_plug.setDouble(-(box_transform_s[0]/9))
+                            else:
+                                attr_value = child_plug.setDouble(box_transform_s[0]/9)
+
+                    rhandjnt_tr_n.addChild(self.rfingermiddlectrl_tn)
+
+                    rfingermiddlectrl_transform_trans = rfingermiddlectrl_transform.transformation()
+                    rfingermiddlectrl_transform_worldmatrix = rfingermiddlectrl_transform_trans.asMatrix()
+
+                    rfingermiddlectrl_transform_localmatrix = rfingermiddlectrl_transform_worldmatrix * rfingernull_transform_worldmatrix
+
+                    rfingermiddlectrl_transform.setTransformation(om2.MTransformationMatrix(rfingermiddlectrl_transform_localmatrix))
+
+                    self.MDG2_mod.renameNode(ctrl_rfingermiddlepositive_comb_cv, "RightMiddleOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_RightMiddleOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightMiddleOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightMiddleOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightMiddleOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightMiddleOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightMiddleOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightMiddleOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightMiddleOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightMiddleOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightMiddleOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightMiddleOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightMiddleOptions_ctrl.visibility"')
+
                 else:
                     rhandmiddlectrl_sl_ls = om2.MSelectionList()
                     rhandmiddlectrl_sl_ls.add("Biped_RightFingerMiddle*_ctrl")
@@ -5351,21 +6141,28 @@ class MainWindow(QtWidgets.QDialog):
 
                     rhandmiddlenull_transform.setTransformation(om2.MTransformationMatrix(rhandmiddlenull_childtransform_localmatrix))
 
-                self.ctrl_mod_n.renameNode(ctrl_rhandmiddlepositive_comb_cv, "RightFingerMiddle{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_rhandmiddlenegative_comb_cv, "RightFingerMiddle{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerMiddle{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerMiddle{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.renameNode(ctrl_rhandmiddlepositive_comb_cv, "RightFingerMiddle{0}_shape1".format(index + 1))
+                self.MDG2_mod.renameNode(ctrl_rhandmiddlenegative_comb_cv, "RightFingerMiddle{0}_shape2".format(index + 1))
+                self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerMiddle{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerMiddle{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.rotateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.rotateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.rotateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.visibility"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerMiddle{0}_ctrl.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerMiddle{0}_ctrl.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerMiddle{0}_ctrl.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_ctrl.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_ctrl.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_ctrl.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerMiddle{0}_ctrl.visibility"'.format(index + 1))
+                self.MDG2_mod.doIt()
 
         except:
             pass
@@ -5381,10 +6178,12 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_rhandring_transform = om2.MFnTransform(jnt_rhandring_path)
                 jnt_rhandring_t = jnt_rhandring_transform.translation(om2.MSpace.kWorld)
 
-                self.rhandringnull_tn = ctrl_tr_n.create("transform", "Biped_RightFingerRing{0}_null".format(index + 1))
-                self.rhandringctrl_tn = ctrl_tr_n.create("transform", "Biped_RightFingerRing{0}_ctrl".format(index + 1), self.rhandringnull_tn)
-                ctrl_rhandringpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandringctrl_tn)
-                ctrl_rhandringnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandringctrl_tn)
+                self.rhandringnull_tn = self.MDag2_node.create("transform", "Biped_RightFingerRing{0}_null".format(index + 1))
+                self.rhandringglobalcurl_tn = self.MDag2_node.create("transform", "Biped_RightFingerRing{0}_globalcurl".format(index+1), self.rhandringnull_tn)
+                self.rhandringcurl_tn = self.MDag2_node.create("transform", "Biped_RightFingerRing{0}_curl".format(index+1), self.rhandringglobalcurl_tn)
+                self.rhandringctrl_tn = self.MDag2_node.create("transform", "Biped_RightFingerRing{0}_ctrl".format(index + 1), self.rhandringcurl_tn)
+                ctrl_rhandringpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandringctrl_tn)
+                ctrl_rhandringnegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandringctrl_tn)
 
                 rhandringnull_transform = om2.MFnTransform(self.rhandringnull_tn)
                 rhandringnull_transform.setRotatePivotTranslation(jnt_rhandring_t, om2.MSpace.kTransform)
@@ -5422,6 +6221,51 @@ class MainWindow(QtWidgets.QDialog):
 
                     rhandringnull_transform.setTransformation(om2.MTransformationMatrix(rhandringnull_transform_localmatrix))
 
+                    self.rfingerringctrl_tn = self.MDag2_node.create("transform", "Biped_RightRingOptions_ctrl")
+                    ctrl_rfingerringpositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.rfingerringctrl_tn)
+
+                    rfingerringctrl_transform = om2.MFnTransform(self.rfingerringctrl_tn)
+
+                    rfingerringctrl_transform_t = rfingerringctrl_transform.translation(om2.MSpace.kTransform)
+                    rfingerringctrl_transform_t[0], rfingerringctrl_transform_t[1], rfingerringctrl_transform_t[2] = jnt_rhandring_t[0], jnt_rhandring_t[1], jnt_rhandring_t[2]
+                    rfingerringctrl_transform.setTranslation(rfingerringctrl_transform_t, om2.MSpace.kTransform)
+
+                    rfingerringctrl_transform_r= rfingerringctrl_transform.rotation(om2.MSpace.kTransform)
+                    rfingerringctrl_transform_r[0], rfingerringctrl_transform_r[1], rfingerringctrl_transform_r[2] = rhandringnull_transform_r[0], rhandringnull_transform_r[1], rhandringnull_transform_r[2]
+                    rfingerringctrl_transform.setRotation(rfingerringctrl_transform_r, om2.MSpace.kTransform)
+
+                    rfingerringctrl_transform_s = rfingerringctrl_transform.findPlug("scale", False)
+                    if rfingerringctrl_transform_s.isCompound:
+                        for i in range(rfingerringctrl_transform_s.numChildren()):
+                            child_plug = rfingerringctrl_transform_s.child(i)
+                            if i == 0:
+                                attr_value = child_plug.setDouble(-(box_transform_s[0]/9))
+                            else:
+                                attr_value = child_plug.setDouble(box_transform_s[0]/9)
+
+                    rhandjnt_tr_n.addChild(self.rfingerringctrl_tn)
+
+                    rfingerringctrl_transform_trans = rfingerringctrl_transform.transformation()
+                    rfingerringctrl_transform_worldmatrix = rfingerringctrl_transform_trans.asMatrix()
+
+                    rfingerringctrl_transform_localmatrix = rfingerringctrl_transform_worldmatrix * rfingernull_transform_worldmatrix
+
+                    rfingerringctrl_transform.setTransformation(om2.MTransformationMatrix(rfingerringctrl_transform_localmatrix))
+
+                    self.MDG2_mod.renameNode(ctrl_rfingerringpositive_comb_cv, "RightRingOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_RightRingOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightRingOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightRingOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightRingOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightRingOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightRingOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightRingOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightRingOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightRingOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightRingOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightRingOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightRingOptions_ctrl.visibility"')
+
                 else:
                     rhandringctrl_sl_ls = om2.MSelectionList()
                     rhandringctrl_sl_ls.add("Biped_RightFingerRing*_ctrl")
@@ -5449,21 +6293,28 @@ class MainWindow(QtWidgets.QDialog):
 
                     rhandringnull_transform.setTransformation(om2.MTransformationMatrix(rhandringnull_childtransform_localmatrix))
 
-                self.ctrl_mod_n.renameNode(ctrl_rhandringpositive_comb_cv, "RightFingerRing{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_rhandringnegative_comb_cv, "RightFingerRing{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerRing{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerRing{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.renameNode(ctrl_rhandringpositive_comb_cv, "RightFingerRing{0}_shape1".format(index + 1))
+                self.MDG2_mod.renameNode(ctrl_rhandringnegative_comb_cv, "RightFingerRing{0}_shape2".format(index + 1))
+                self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerRing{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerRing{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.rotateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.rotateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.rotateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.visibility"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerRing{0}_ctrl.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerRing{0}_ctrl.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerRing{0}_ctrl.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_ctrl.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_ctrl.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_ctrl.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerRing{0}_ctrl.visibility"'.format(index + 1))
+                self.MDG2_mod.doIt()
 
         except:
             pass
@@ -5479,10 +6330,12 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_rhandpinky_transform = om2.MFnTransform(jnt_rhandpinky_path)
                 jnt_rhandpinky_t = jnt_rhandpinky_transform.translation(om2.MSpace.kWorld)
 
-                self.rhandpinkynull_tn = ctrl_tr_n.create("transform", "Biped_RightFingerPinky{0}_null".format(index + 1))
-                self.rhandpinkyctrl_tn = ctrl_tr_n.create("transform", "Biped_RightFingerPinky{0}_ctrl".format(index + 1), self.rhandpinkynull_tn)
-                ctrl_rhandpinkypositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandpinkyctrl_tn)
-                ctrl_rhandpinkynegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandpinkyctrl_tn)
+                self.rhandpinkynull_tn = self.MDag2_node.create("transform", "Biped_RightFingerPinky{0}_null".format(index + 1))
+                self.rhandpinkyglobalcurl_tn = self.MDag2_node.create("transform", "Biped_RightFingerPinky{0}_globalcurl".format(index+1), self.rhandpinkynull_tn)
+                self.rhandpinkycurl_tn = self.MDag2_node.create("transform", "Biped_RightFingerPinky{0}_curl".format(index+1), self.rhandpinkyglobalcurl_tn)
+                self.rhandpinkyctrl_tn = self.MDag2_node.create("transform", "Biped_RightFingerPinky{0}_ctrl".format(index + 1), self.rhandpinkycurl_tn)
+                ctrl_rhandpinkypositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandpinkyctrl_tn)
+                ctrl_rhandpinkynegative_comb_cv = self.MNurbs2_cv.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandpinkyctrl_tn)
 
                 rhandpinkynull_transform = om2.MFnTransform(self.rhandpinkynull_tn)
                 rhandpinkynull_transform.setRotatePivotTranslation(jnt_rhandpinky_t, om2.MSpace.kTransform)
@@ -5520,6 +6373,51 @@ class MainWindow(QtWidgets.QDialog):
 
                     rhandpinkynull_transform.setTransformation(om2.MTransformationMatrix(rhandpinkynull_transform_localmatrix))
 
+                    self.rfingerpinkyctrl_tn = self.MDag2_node.create("transform", "Biped_RightPinkyOptions_ctrl")
+                    ctrl_rfingerpinkypositive_comb_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_master_circle_points, 1, 1, False, True, True, self.rfingerpinkyctrl_tn)
+
+                    rfingerpinkyctrl_transform = om2.MFnTransform(self.rfingerpinkyctrl_tn)
+
+                    rfingerpinkyctrl_transform_t = rfingerpinkyctrl_transform.translation(om2.MSpace.kTransform)
+                    rfingerpinkyctrl_transform_t[0], rfingerpinkyctrl_transform_t[1], rfingerpinkyctrl_transform_t[2] = jnt_rhandpinky_t[0], jnt_rhandpinky_t[1], jnt_rhandpinky_t[2]
+                    rfingerpinkyctrl_transform.setTranslation(rfingerpinkyctrl_transform_t, om2.MSpace.kTransform)
+
+                    rfingerpinkyctrl_transform_r= rfingerpinkyctrl_transform.rotation(om2.MSpace.kTransform)
+                    rfingerpinkyctrl_transform_r[0], rfingerpinkyctrl_transform_r[1], rfingerpinkyctrl_transform_r[2] = rhandpinkynull_transform_r[0], rhandpinkynull_transform_r[1], rhandpinkynull_transform_r[2]
+                    rfingerpinkyctrl_transform.setRotation(rfingerpinkyctrl_transform_r, om2.MSpace.kTransform)
+
+                    rfingerpinkyctrl_transform_s = rfingerpinkyctrl_transform.findPlug("scale", False)
+                    if rfingerpinkyctrl_transform_s.isCompound:
+                        for i in range(rfingerpinkyctrl_transform_s.numChildren()):
+                            child_plug = rfingerpinkyctrl_transform_s.child(i)
+                            if i == 0:
+                                attr_value = child_plug.setDouble(-(box_transform_s[0]/9))
+                            else:
+                                attr_value = child_plug.setDouble(box_transform_s[0]/9)
+
+                    rhandjnt_tr_n.addChild(self.rfingerpinkyctrl_tn)
+
+                    rfingerpinkyctrl_transform_trans = rfingerpinkyctrl_transform.transformation()
+                    rfingerpinkyctrl_transform_worldmatrix = rfingerpinkyctrl_transform_trans.asMatrix()
+
+                    rfingerpinkyctrl_transform_localmatrix = rfingerpinkyctrl_transform_worldmatrix * rfingernull_transform_worldmatrix
+
+                    rfingerpinkyctrl_transform.setTransformation(om2.MTransformationMatrix(rfingerpinkyctrl_transform_localmatrix))
+
+                    self.MDG2_mod.renameNode(ctrl_rfingerpinkypositive_comb_cv, "RightPinkyOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0.5 "Biped_RightPinkyOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightPinkyOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightPinkyOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightPinkyOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightPinkyOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightPinkyOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightPinkyOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightPinkyOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightPinkyOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightPinkyOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightPinkyOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightPinkyOptions_ctrl.visibility"')
+
                 else:
                     rhandpinkyctrl_sl_ls = om2.MSelectionList()
                     rhandpinkyctrl_sl_ls.add("Biped_RightFingerPinky*_ctrl")
@@ -5547,21 +6445,28 @@ class MainWindow(QtWidgets.QDialog):
 
                     rhandpinkynull_transform.setTransformation(om2.MTransformationMatrix(rhandpinkynull_childtransform_localmatrix))
 
-                self.ctrl_mod_n.renameNode(ctrl_rhandpinkypositive_comb_cv, "RightFingerPinky{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_rhandpinkynegative_comb_cv, "RightFingerPinky{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerPinky{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerPinky{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.renameNode(ctrl_rhandpinkypositive_comb_cv, "RightFingerPinky{0}_shape1".format(index + 1))
+                self.MDG2_mod.renameNode(ctrl_rhandpinkynegative_comb_cv, "RightFingerPinky{0}_shape2".format(index + 1))
+                self.MDG2_mod.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerPinky{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerPinky{0}_ctrl"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.rotateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.rotateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.rotateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.visibility"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerPinky{0}_ctrl.translateX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerPinky{0}_ctrl.translateY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerPinky{0}_ctrl.translateZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_ctrl.scaleX"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_ctrl.scaleY"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_ctrl.scaleZ"'.format(index + 1))
+                self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_RightFingerPinky{0}_ctrl.visibility"'.format(index + 1))
+                self.MDG2_mod.doIt()
 
         except:
             pass
@@ -5586,9 +6491,13 @@ class MainWindow(QtWidgets.QDialog):
                 jnt_rleg_t = jnt_rleg_transform.translation(om2.MSpace.kWorld)
 
                 if index == 0:
-                    self.ruplegnull_tn = ctrl_tr_n.create("transform", "Biped_FkRightUpLeg_null", self.rootctrl_tn)
-                    self.ruplegupctrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightUpLeg_ctrl", self.ruplegnull_tn)
-                    ctrl_ruplegpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.ruplegupctrl_tn)
+                    if self.hipjnt.currentIndex() == 1:
+                        self.ruplegnull_tn = self.MDag2_node.create("transform", "Biped_FkRightUpLeg_null", self.hipctrl_tn)
+                    else:
+                        self.ruplegnull_tn = self.MDag2_node.create("transform", "Biped_FkRightUpLeg_null", self.rootctrl_tn)
+
+                    self.ruplegupctrl_tn = self.MDag2_node.create("transform", "Biped_FkRightUpLeg_ctrl", self.ruplegnull_tn)
+                    ctrl_ruplegpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.ruplegupctrl_tn)
 
                     ruplegnull_transform = om2.MFnTransform(self.ruplegnull_tn)
                     ruplegnull_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
@@ -5622,30 +6531,37 @@ class MainWindow(QtWidgets.QDialog):
 
                     ruplegnull_transform.setTransformation(om2.MTransformationMatrix(ruplegnull_transform_localmatrix))
 
-                    self.ctrl_mod_n.renameNode(ctrl_ruplegpositive_comb_cv, "FkRightUpLeg_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightUpLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightUpLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.visibility"')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.renameNode(ctrl_ruplegpositive_comb_cv, "FkRightUpLeg_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightUpLeg_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightUpLeg_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightUpLeg_ctrl.visibility"')
+                    self.MDG2_mod.doIt()
 
                 elif index == 1:
-                    self.rlegnull_tn = ctrl_tr_n.create("transform", "Biped_FkRightLeg_null", self.ruplegupctrl_tn)
-                    self.rlegctrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightLeg_ctrl", self.rlegnull_tn)
-                    ctrl_rlegpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rlegctrl_tn)
+                    self.rlegnull_tn = self.MDag2_node.create("transform", "Biped_FkRightLeg_null", self.ruplegupctrl_tn)
+                    self.rlegctrl_tn = self.MDag2_node.create("transform", "Biped_FkRightLeg_ctrl", self.rlegnull_tn)
+                    ctrl_rlegpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rlegctrl_tn)
 
-                    self.pvrlegkneenull_tn = ctrl_tr_n.create("transform", "Biped_PVRightKnee_null", self.masterctrl_tn)
-                    self.pvrlegknectrl_tn = ctrl_tr_n.create("transform", "Biped_PVRightKnee_ctrl", self.pvrlegkneenull_tn)
-                    crv_ctrl_knee_triangle_l = ctrl_cv_n.createWithEditPoints(ctrl_knee_triangle_points, 1, 1, False, True, True, self.pvrlegknectrl_tn)
-                    crv_ctrl_knee_arrow_l = ctrl_cv_n.createWithEditPoints(ctrl_knee_arrow_points, 1, 1, False, True, True, self.pvrlegknectrl_tn)
+                    self.pvrlegkneenull_tn = self.MDag2_node.create("transform", "Biped_PVRightKnee_null", self.masterctrl_tn)
+                    self.pvrlegknectrl_tn = self.MDag2_node.create("transform", "Biped_PVRightKnee_ctrl", self.pvrlegkneenull_tn)
+                    crv_ctrl_knee_triangle_l = self.MNurbs2_cv.createWithEditPoints(ctrl_elbow_triangle_points, 1, 1, False, True, True, self.pvrlegknectrl_tn)
+                    crv_ctrl_knee_arrow_l = self.MNurbs2_cv.createWithEditPoints(ctrl_elbow_arrow_points, 1, 1, False, True, True, self.pvrlegknectrl_tn)
 
                     rlegnull_transform = om2.MFnTransform(self.rlegnull_tn)
                     rlegnull_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
@@ -5692,39 +6608,64 @@ class MainWindow(QtWidgets.QDialog):
 
                     rlegnull_transform.setTransformation(om2.MTransformationMatrix(rlegnull_transform_localmatrix))
 
-                    self.ctrl_mod_n.renameNode(ctrl_rlegpositive_comb_cv, "FkRightLeg_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 1 1 0 "Biped_PVRightKnee_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_PVRightKnee_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.visibility"')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.renameNode(ctrl_rlegpositive_comb_cv, "FkRightLeg_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightLeg_ctrl"')
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0 "Biped_PVRightKnee_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightLeg_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_PVRightKnee_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightLeg_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightLeg_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightLeg_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightLeg_ctrl.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_PVRightKnee_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_PVRightKnee_ctrl.visibility"')
+                    self.MDG2_mod.doIt()
 
                 elif index == 2:
-                    self.rlegfootnull_tn = ctrl_tr_n.create("transform", "Biped_FkRightFoot_null", self.rlegctrl_tn)
-                    self.rlegfootctrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightFoot_ctrl", self.rlegfootnull_tn)
-                    ctrl_rlegfootpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rlegfootctrl_tn)
+                    self.rlegfootnull_tn = self.MDag2_node.create("transform", "Biped_FkRightFoot_null", self.rlegctrl_tn)
+                    self.rlegfootctrl_tn = self.MDag2_node.create("transform", "Biped_FkRightFoot_ctrl", self.rlegfootnull_tn)
+                    ctrl_rlegfootpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rlegfootctrl_tn)
 
-                    self.riklegfootnull_tn = ctrl_tr_n.create("transform", "Biped_IkRightFoot_null", self.masterctrl_tn)
-                    self.riklegfootoffsetnull_tn = ctrl_tr_n.create("transform", "Biped_IkRightFootOffset_null", self.riklegfootnull_tn)
-                    self.riklegfootctrl_tn = ctrl_tr_n.create("transform", "Biped_IkRightFoot_ctrl", self.riklegfootoffsetnull_tn)
-                    ctrl_riklegfootpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_hand_line_l, crv_ctrl_hand_line, crv_ctrl_hand_line_r], self.riklegfootctrl_tn)
+                    self.riklegfootnull_tn = self.MDag2_node.create("transform", "Biped_IkRightFoot_null", self.masterctrl_tn)
+                    self.riklegfootoffsetnull_tn = self.MDag2_node.create("transform", "Biped_IkRightFootOffset_null", self.riklegfootnull_tn)
+                    self.riklegfootrotnull_tn = self.MDag2_node.create("transform", "Biped_IkRightFootRot_null", self.riklegfootoffsetnull_tn)
+                    self.riklegfootctrl_tn = self.MDag2_node.create("transform", "Biped_IkRightFoot_ctrl", self.riklegfootrotnull_tn)
+                    ctrl_riklegfootpositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_hand_line_l, crv_ctrl_hand_line, crv_ctrl_hand_line_r], self.riklegfootctrl_tn)
 
-                    self.rfootoption_tn = ctrl_tr_n.create("transform", "Biped_RightFootOptions_ctrl", rleg_sl_ls.getDependNode(2))
-                    ctrl_rfootoption_cv = ctrl_cv_n.createWithEditPoints(ctrl_lhandoption_line, 1, 1, False, True, True, self.rfootoption_tn)
+                    self.rfootoption_tn = self.MDag2_node.create("transform", "Biped_RightFootOptions_ctrl", rleg_sl_ls.getDependNode(2))
+                    ctrl_rfootoption_cv = self.MNurbs2_cv.createWithEditPoints(ctrl_lhandoption_line, 1, 1, False, True, True, self.rfootoption_tn)
 
-                    self.nofliprlegkneenull_tn = ctrl_tr_n.create("transform", "Biped_NoFlipRightKnee_null", self.riklegfootoffsetnull_tn)
-                    self.nofliprlegkneectrl_tn = ctrl_tr_n.create("transform", "Biped_NoFlipRightKnee_ctrl", self.nofliprlegkneenull_tn)
-                    self.nofliprlegknectrl_tn = ctrl_tr_n.create("locator", "NoFlipRightKnee_shape", self.nofliprlegkneectrl_tn)
+                    self.nofliprlegkneenull_tn = self.MDag2_node.create("transform", "Biped_NoFlipRightKnee_null", self.riklegfootoffsetnull_tn)
+                    self.nofliprlegkneectrl_tn = self.MDag2_node.create("transform", "Biped_NoFlipRightKnee_ctrl", self.nofliprlegkneenull_tn)
+                    self.nofliprlegknectrl_tn = self.MDag2_node.create("locator", "NoFlipRightKnee_shape", self.nofliprlegkneectrl_tn)
 
                     rlegfootnull_transform = om2.MFnTransform(self.rlegfootnull_tn)
                     rlegfootnull_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
@@ -5807,56 +6748,67 @@ class MainWindow(QtWidgets.QDialog):
 
                     rfootoptionctrl_transform.setTransformation(om2.MTransformationMatrix(rfootoptionctrl_transform_localmatrix))
 
-                    self.ctrl_mod_n.renameNode(ctrl_rlegfootpositive_comb_cv, "RightLegFoot_shape")
-                    self.ctrl_mod_n.renameNode(ctrl_riklegfootpositive_comb_cv, "RightIkLegFoot_shape")
-                    self.ctrl_mod_n.renameNode(ctrl_rfootoption_cv, "RightFootOptions_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 1 0 1 "Biped_IkRightFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 1 1 0 "Biped_RightFootOptions_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_IkRightFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFootOptions_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.visibility"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.visibility"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.visibility"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.visibility"')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.renameNode(ctrl_rlegfootpositive_comb_cv, "RightLegFoot_shape")
+                    self.MDG2_mod.renameNode(ctrl_riklegfootpositive_comb_cv, "RightIkLegFoot_shape")
+                    self.MDG2_mod.renameNode(ctrl_rfootoption_cv, "RightFootOptions_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightFoot_ctrl"')
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 0 1 "Biped_IkRightFoot_ctrl"')
+                    self.MDG2_mod.commandToExecute('color -rgbColor 1 1 0 "Biped_RightFootOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightFoot_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_IkRightFoot_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFootOptions_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightFoot_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightFoot_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightFoot_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightFoot_ctrl.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_IkRightFoot_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_IkRightFoot_ctrl.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.visibility"')
+                    self.MDG2_mod.doIt()
 
                     riklegfootctrl_path_n = om2.MDagPath()
                     riklegfootctrl_path = riklegfootctrl_path_n.getAPathTo(self.riklegfootctrl_tn)
@@ -5865,9 +6817,9 @@ class MainWindow(QtWidgets.QDialog):
                     riklegfootctrl_worldtransform.setRotatePivot(om2.MPoint(jnt_rleg_t), om2.MSpace.kWorld, False)
 
                 elif index == 3:
-                    self.rlegtoebasenull_tn = ctrl_tr_n.create("transform", "Biped_FkRightToeBase_null", self.rlegfootctrl_tn)
-                    self.rlegtoebasectrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightToeBase_ctrl", self.rlegtoebasenull_tn)
-                    ctrl_rlegtoepositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rlegtoebasectrl_tn)
+                    self.rlegtoebasenull_tn = self.MDag2_node.create("transform", "Biped_FkRightToeBase_null", self.rlegfootctrl_tn)
+                    self.rlegtoebasectrl_tn = self.MDag2_node.create("transform", "Biped_FkRightToeBase_ctrl", self.rlegtoebasenull_tn)
+                    ctrl_rlegtoepositive_comb_cv = self.MNurbs2_cv.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rlegtoebasectrl_tn)
 
                     rlegtoebasenull_transform = om2.MFnTransform(self.rlegtoebasenull_tn)
                     rlegtoebasenull_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
@@ -5901,38 +6853,46 @@ class MainWindow(QtWidgets.QDialog):
 
                     rlegtoebasenull_transform.setTransformation(om2.MTransformationMatrix(rlegtoebasenull_transform_localmatrix))
 
-                    self.ctrl_mod_n.renameNode(ctrl_rlegtoepositive_comb_cv, "FkRightLegToeBase_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightToeBase_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightToeBase_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.visibility"')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.renameNode(ctrl_rlegtoepositive_comb_cv, "FkRightLegToeBase_shape")
+                    self.MDG2_mod.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightToeBase_ctrl"')
+                    self.MDG2_mod.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightToeBase_ctrl"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.translateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.translateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.translateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.rotateX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.rotateY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.rotateZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.visibility"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_ctrl.scaleX"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_ctrl.scaleY"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_ctrl.scaleZ"')
+                    self.MDG2_mod.commandToExecute('setAttr -lock false -keyable false -channelBox false "Biped_FkRightToeBase_ctrl.visibility"')
+                    self.MDG2_mod.doIt()
 
         obj_root = om1.MObject()
         obj_endspine = om1.MObject()
         obj_masterctrl1 = om1.MObject()
-        ik_system = omanim1.MIkSystem()
-        ik_effector = omanim1.MFnIkEffector()
-        ik_handle = omanim1.MFnIkHandle()
-        ikspline_cv_n = om1.MFnNurbsCurve()
+        obj_stretchyspine = om1.MObject()
 
         masterctrl_sl_lst2 = om2.MSelectionList()
         masterctrl_sl_lst2.add("Biped_Master_ctrl")
         obj_masterctrl2 = masterctrl_sl_lst2.getDependNode(0)
 
         if self.autostretch.currentIndex() == 1:
+
+            self.MDG2_mod.commandToExecute('addAttr -longName "stretchable" -niceName "Stretchable" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_StretchySpine_ctrl')
+            self.MDG2_mod.doIt()
+
+            stretchy_sl_lst1 = om1.MSelectionList()
+            stretchy_sl_lst1.add("Biped_StretchySpine_ctrl")
+            stretchy_sl_lst1.getDependNode(0, obj_stretchyspine)
+
             if cmds.objExists("IkHip") and cmds.objExists("IkCvHip") and cmds.objExists("IkCvSpine"):
                 ikspineiksolver_lst = om1.MSelectionList()
                 ikspinedag_n = om1.MFnDagNode()
-                ikspineobj_path_n = om1.MDagPath()
                 ikspinedg_modifier = om1.MDGModifier()
 
                 ikspine_sl_lst = om1.MSelectionList()
@@ -5953,24 +6913,24 @@ class MainWindow(QtWidgets.QDialog):
                 except:
                     cmds.createNode("ikSplineSolver")
 
-                self.ikspline_effector = ik_effector.create(obj_endspine)
+                self.ikspline_effector = self.IK_Effector.create(obj_endspine)
                 ikspine_effector_path = spine_pathnode.getAPathTo(self.ikspline_effector)
 
-                self.spine_ik = ik_handle.create(rootspine_path, ikspine_effector_path)
+                self.spine_ik = self.IK_Handle.create(rootspine_path, ikspine_effector_path)
 
                 obj_array = om1.MPointArray()
                 obj_lst_mpoint = []
                 obj = om1.MObject()
                 for index in range(ikspine_sl_lst.length()):
                     ikspine_sl_lst.getDependNode(index, obj)
-                    obj_path = ikspineobj_path_n.getAPathTo(obj)
+                    obj_path = self.MDag_path.getAPathTo(obj)
                     obj_tn = om1.MFnTransform(obj_path)
                     obj_t = obj_tn.translation(om1.MSpace.kWorld)
                     obj_lst_mpoint.append(om1.MPoint(obj_t))
                     obj_array.append(obj_lst_mpoint[index])
 
                 self.ikspline_cv_tn = ikspinedag_n.create("transform", "BackBone_SplineCv")
-                ikspline_cv = ikspline_cv_n.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                ikspline_cv = self.MNurbs1_cv.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
                 cmds.parent("BackBone_SplineCv", "DoNotTouch")
 
                 spinecrv_info = ikspinedg_modifier.createNode("curveInfo")
@@ -5978,13 +6938,16 @@ class MainWindow(QtWidgets.QDialog):
                 spinestretchpow = ikspinedg_modifier.createNode("multiplyDivide")
                 spinestretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
                 spinescalediv = ikspinedg_modifier.createNode("multiplyDivide")
+                blendstretch = ikspinedg_modifier.createNode("blendColors")
 
                 spinecrvinfo_fs = om1.MFnDependencyNode(spinecrv_info)
                 spinestretchpercent_fs = om1.MFnDependencyNode(spinestretchpercent)
                 spinestretchpow_fs = om1.MFnDependencyNode(spinestretchpow)
                 spinestretchdiv_fs = om1.MFnDependencyNode(spinestretchdiv)
                 spinescalediv_fs = om1.MFnDependencyNode(spinescalediv)
+                blendstretch_fs = om1.MFnDependencyNode(blendstretch)
                 masterctrl_fs = om1.MFnDependencyNode(obj_masterctrl1)
+                backbonestretchctrl_fs = om1.MFnDependencyNode(obj_stretchyspine)
 
                 spinecrvinfoarc_plug = spinecrvinfo_fs.findPlug("arcLength")
                 spinestretchpercentinp1y_plug = spinestretchpercent_fs.findPlug("input1Y")
@@ -6000,7 +6963,15 @@ class MainWindow(QtWidgets.QDialog):
                 spinescaledivinp1y_plug = spinescalediv_fs.findPlug("input1Y")
                 spinescaledivinp2y_plug = spinescalediv_fs.findPlug("input2Y")
                 spinescaledivotpy_plug = spinescalediv_fs.findPlug("outputY")
+                blendstretchinp1r_plug = blendstretch_fs.findPlug("color1R")
+                blendstretchinp1g_plug = blendstretch_fs.findPlug("color1G")
+                blendstretchinp1b_plug = blendstretch_fs.findPlug("color1B")
+                blendstretchotpr_plug = blendstretch_fs.findPlug("outputR")
+                blendstretchotpg_plug = blendstretch_fs.findPlug("outputG")
+                blendstretchotpb_plug = blendstretch_fs.findPlug("outputB")
+                blendstretch_plug = blendstretch_fs.findPlug("blender")
                 masterctrlsy_plug = masterctrl_fs.findPlug("scaleY")
+                backbonestretchctrl_plug = backbonestretchctrl_fs.findPlug("stretchable")
 
                 objparent = om1.MObject()
                 objchild = om1.MObject()
@@ -6015,9 +6986,12 @@ class MainWindow(QtWidgets.QDialog):
                         spinejnt_szplug = spineparentjnt_fs.findPlug("scaleZ")
                         spinejnt_sotpplug = spineparentjnt_fs.findPlug("scale")
                         spinejnt_invsplug = spinechildjnt_fs.findPlug("inverseScale")
-                        ikspinedg_modifier.connect(spinestretchpercentotp_plug, spinejnt_syplug)
-                        ikspinedg_modifier.connect(spinestretchdivotox_plug, spinejnt_sxplug)
-                        ikspinedg_modifier.connect(spinestretchdivotpz_plug, spinejnt_szplug)
+                        ikspinedg_modifier.connect(spinestretchpercentotp_plug, blendstretchinp1g_plug)
+                        ikspinedg_modifier.connect(spinestretchdivotox_plug, blendstretchinp1r_plug)
+                        ikspinedg_modifier.connect(spinestretchdivotpz_plug, blendstretchinp1b_plug)
+                        ikspinedg_modifier.connect(blendstretchotpg_plug, spinejnt_syplug)
+                        ikspinedg_modifier.connect(blendstretchotpr_plug, spinejnt_sxplug)
+                        ikspinedg_modifier.connect(blendstretchotpb_plug, spinejnt_szplug)
                         ikspinedg_modifier.connect(spinejnt_sotpplug, spinejnt_invsplug)
 
                 ikspinedg_modifier.renameNode(spinecrv_info, "BackBoneSpline_Info")
@@ -6028,6 +7002,7 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.renameNode(self.spine_ik, "BackBone_Ik")
                 ikspinedg_modifier.renameNode(self.ikspline_effector, "BackBone_effector")
                 ikspinedg_modifier.renameNode(spinescalediv, "IkSpineGlobalScale_Average")
+                ikspinedg_modifier.renameNode(blendstretch, "BackBoneStretch_Blend")
                 ikspinedg_modifier.commandToExecute('parent "BackBone_Ik" "DoNotTouch"')
                 ikspinedg_modifier.commandToExecute('connectAttr -f BackBone_SplineCvShape.worldSpace[0] BackBone_Ik.inCurve')
                 ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "SpineIk_skin" IkCvHip IkCvSpine BackBone_SplineCv')
@@ -6049,6 +7024,7 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.connect(spinestretchpercentotp_plug, spinestretchpowinp1z_plug)
                 ikspinedg_modifier.connect(spinestretchpowotpx_plug, spinestretchdivinp2x_plug)
                 ikspinedg_modifier.connect(spinestretchpowotpz_plug, spinestretchdivinp2z_plug)
+                ikspinedg_modifier.connect(backbonestretchctrl_plug, blendstretch_plug)
                 ikspinedg_modifier.commandToExecute('float $backbonestretchinput1Y = `getAttr "BackBoneStretch_Percent.input1Y"`; setAttr "BackBoneStretch_Percent.input2Y" $backbonestretchinput1Y')
                 ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Power.input2X" 0.5')
                 ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Power.input2Z" 0.5')
@@ -6058,32 +7034,21 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Power.operation" 3')
                 ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Divide.operation" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "IkSpineGlobalScale_Average.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Blend.color2R" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Blend.color2G" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Blend.color2B" 1')
                 ikspinedg_modifier.doIt()
 
-                ikspline_solver = ik_system.findSolver("ikSplineSolver")
-                ik_handle.setSolver(ikspline_solver)
-
-            # ikspine_sl_lst2 = om2.MSelectionList()
-            # ikspine_sl_lst2.add("IkHip")
-            # ikspine_sl_lst2.add("IkSpin*")
-            #
-            # for index in range(ikspine_sl_lst2.length()):
-            #     jnt_obj = ikspine_sl_lst2.getDependNode(index)
-            #     jnt_string = ikspine_sl_lst2.getSelectionStrings(index)
-            #
-            #     if jnt_obj.hasFn(om2.MFn.kJoint):
-            #         if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
+                ikspline_solver = self.IK_System.findSolver("ikSplineSolver")
+                self.IK_Handle.setSolver(ikspline_solver)
 
         iksplinegrp_sl_ls = om2.MSelectionList()
         iksplinegrp_sl_ls.add("SplineIk_grp")
 
-        masterscale_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-        masterscale_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-        self.ctrl_mod_n.renameNode(masterscale_multMatrix, "MasterScale_multMatrix")
-        self.ctrl_mod_n.renameNode(masterscale_decomposeMatrix, "MasterScale_decomposeMatrix")
+        masterscale_multMatrix = self.MDG2_mod.createNode("multMatrix")
+        masterscale_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+        self.MDG2_mod.renameNode(masterscale_multMatrix, "MasterScale_multMatrix")
+        self.MDG2_mod.renameNode(masterscale_decomposeMatrix, "MasterScale_decomposeMatrix")
 
         masterscalemultMatrix_fs = om2.MFnDependencyNode(masterscale_multMatrix)
         masterscaledecomposeMatrix_fs = om2.MFnDependencyNode(masterscale_decomposeMatrix)
@@ -6094,18 +7059,18 @@ class MainWindow(QtWidgets.QDialog):
         masterdecomposeOtpScale_plug = masterscaledecomposeMatrix_fs.findPlug("outputScale", False)
         splineikScale_plug = splineik_fs.findPlug("scale", False)
 
-        self.ctrl_mod_n.commandToExecute('connectAttr - force Biped_Master_ctrl.worldMatrix[0] MasterScale_multMatrix.matrixIn[0]')
-        self.ctrl_mod_n.connect(mastermultMatrixSum_plug, masterdecomposeInpMatrix_plug)
-        self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, splineikScale_plug)
+        self.MDG2_mod.commandToExecute('connectAttr - force Biped_Master_ctrl.worldMatrix[0] MasterScale_multMatrix.matrixIn[0]')
+        self.MDG2_mod.connect(mastermultMatrixSum_plug, masterdecomposeInpMatrix_plug)
+        self.MDG2_mod.connect(masterdecomposeOtpScale_plug, splineikScale_plug)
 
-        rootctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-        rootctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-        self.ctrl_mod_n.renameNode(rootctrl_multMatrix, "Hip_multMatrix")
-        self.ctrl_mod_n.renameNode(rootctrl_decomposeMatrix, "Hip_decomposeMatrix")
+        rootctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+        rootctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+        self.MDG2_mod.renameNode(rootctrl_multMatrix, "Root_multMatrix")
+        self.MDG2_mod.renameNode(rootctrl_decomposeMatrix, "Root_decomposeMatrix")
 
         rootmultMatrix_fs = om2.MFnDependencyNode(rootctrl_multMatrix)
         rootdecomposeMatrix_fs = om2.MFnDependencyNode(rootctrl_decomposeMatrix)
-        hipjnt_fs = om2.MFnDependencyNode(hip_obj)
+        hipjnt_fs = om2.MFnDependencyNode(root_obj)
 
         mastermultMatrixSum_plug = rootmultMatrix_fs.findPlug("matrixSum", False)
         masterdecomposeInpMatrix_plug = rootdecomposeMatrix_fs.findPlug("inputMatrix", False)
@@ -6114,11 +7079,11 @@ class MainWindow(QtWidgets.QDialog):
         hipjntTrans_plug = hipjnt_fs.findPlug("translate", False)
         hipjntRot_plug = hipjnt_fs.findPlug("rotate", False)
 
-        self.ctrl_mod_n.commandToExecute('connectAttr - force Biped_Root_ctrl.worldMatrix[0] Hip_multMatrix.matrixIn[0]')
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Hip.parentInverseMatrix[0] Hip_multMatrix.matrixIn[1]')
-        self.ctrl_mod_n.connect(mastermultMatrixSum_plug, masterdecomposeInpMatrix_plug)
-        self.ctrl_mod_n.connect(rootdecomposeOtpTrans_plug, hipjntTrans_plug)
-        self.ctrl_mod_n.connect(rootdecomposeOtpRot_plug, hipjntRot_plug)
+        self.MDG2_mod.commandToExecute('connectAttr - force Biped_Root_ctrl.worldMatrix[0] Root_multMatrix.matrixIn[0]')
+        self.MDG2_mod.commandToExecute('connectAttr -force Root.parentInverseMatrix[0] Root_multMatrix.matrixIn[1]')
+        self.MDG2_mod.connect(mastermultMatrixSum_plug, masterdecomposeInpMatrix_plug)
+        self.MDG2_mod.connect(rootdecomposeOtpTrans_plug, hipjntTrans_plug)
+        self.MDG2_mod.connect(rootdecomposeOtpRot_plug, hipjntRot_plug)
 
         if self.autostretch.currentIndex() == 1:
             if cmds.objExists("IkHip") and cmds.objExists("IkCvHip") and cmds.objExists("IkCvSpine"):
@@ -6126,46 +7091,53 @@ class MainWindow(QtWidgets.QDialog):
                 ikcvspinespline_sl_lst.add("IkCvHip")
                 ikcvspinespline_sl_lst.add("IkCvSpine")
 
-                hipctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                hipctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(hipctrl_multMatrix, "Hiprot_multMatrix")
-                self.ctrl_mod_n.renameNode(hipctrl_decomposeMatrix, "Hiprot_decomposeMatrix")
+                if self.hipjnt.currentIndex() == 1:
+                    ikcvspinespline_sl_lst.add("Hip")
 
-                hipmultMatrix_fs = om2.MFnDependencyNode(hipctrl_multMatrix)
-                hipdecomposeMatrix_fs = om2.MFnDependencyNode(hipctrl_decomposeMatrix)
-                hiprotjnt_fs = om2.MFnDependencyNode(ikcvspinespline_sl_lst.getDependNode(0))
+                    hipctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                    hipctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    self.MDG2_mod.renameNode(hipctrl_multMatrix, "Hiprot_multMatrix")
+                    self.MDG2_mod.renameNode(hipctrl_decomposeMatrix, "Hiprot_decomposeMatrix")
 
-                hipmultMatrixSum_plug = hipmultMatrix_fs.findPlug("matrixSum", False)
-                hipdecomposeInpMatrix_plug = hipdecomposeMatrix_fs.findPlug("inputMatrix", False)
-                hipdecomposeOtpTrans_plug = hipdecomposeMatrix_fs.findPlug("outputTranslate", False)
-                hipdecomposeOtpRot_plug = hipdecomposeMatrix_fs.findPlug("outputRotate", False)
-                hiprotjntTrans_plug = hiprotjnt_fs.findPlug("translate", False)
-                hiprotjntRot_plug = hiprotjnt_fs.findPlug("rotate", False)
+                    hipmultMatrix_fs = om2.MFnDependencyNode(hipctrl_multMatrix)
+                    hipdecomposeMatrix_fs = om2.MFnDependencyNode(hipctrl_decomposeMatrix)
+                    ikhiprotjnt_fs = om2.MFnDependencyNode(ikcvspinespline_sl_lst.getDependNode(0))
+                    hiprotjnt_fs = om2.MFnDependencyNode(ikcvspinespline_sl_lst.getDependNode(2))
 
-                self.ctrl_mod_n.commandToExecute('connectAttr - force Biped_Hip_ctrl.worldMatrix[0] Hiprot_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.commandToExecute('connectAttr -force IkCvHip.parentInverseMatrix[0] Hiprot_multMatrix.matrixIn[1]')
-                self.ctrl_mod_n.connect(hipmultMatrixSum_plug, hipdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(hipdecomposeOtpTrans_plug, hiprotjntTrans_plug)
-                self.ctrl_mod_n.connect(hipdecomposeOtpRot_plug, hiprotjntRot_plug)
-                if cmds.getAttr("IkCvSpine.jointOrientX") != 0 or cmds.getAttr("IkCvSpine.jointOrientX") != 0 or cmds.getAttr("IkCvSpine.jointOrientX") != 0:
-                    self.ctrl_mod_n.commandToExecute('setAttr "IkCvSpine.jointOrientX" 0')
-                    self.ctrl_mod_n.commandToExecute('setAttr "IkCvSpine.jointOrientY" 0')
-                    self.ctrl_mod_n.commandToExecute('setAttr "IkCvSpine.jointOrientZ" 0')
+                    hipmultMatrixSum_plug = hipmultMatrix_fs.findPlug("matrixSum", False)
+                    hipdecomposeInpMatrix_plug = hipdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                    hipdecomposeOtpTrans_plug = hipdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    hipdecomposeOtpRot_plug = hipdecomposeMatrix_fs.findPlug("outputRotate", False)
+                    ikhiprotjntTrans_plug = ikhiprotjnt_fs.findPlug("translate", False)
+                    ikhiprotjntRot_plug = ikhiprotjnt_fs.findPlug("rotate", False)
+                    hiprotjntRot_plug = hiprotjnt_fs.findPlug("rotate", False)
+
+                    self.MDG2_mod.commandToExecute('connectAttr - force Biped_Hip_ctrl.worldMatrix[0] Hiprot_multMatrix.matrixIn[0]')
+                    self.MDG2_mod.commandToExecute('connectAttr -force IkCvHip.parentInverseMatrix[0] Hiprot_multMatrix.matrixIn[1]')
+                    self.MDG2_mod.connect(hipmultMatrixSum_plug, hipdecomposeInpMatrix_plug)
+                    self.MDG2_mod.connect(hipdecomposeOtpTrans_plug, ikhiprotjntTrans_plug)
+                    self.MDG2_mod.connect(hipdecomposeOtpRot_plug, ikhiprotjntRot_plug)
+                    self.MDG2_mod.connect(ikhiprotjntRot_plug, hiprotjntRot_plug)
+
 
         elif cmds.objExists("IkCvHip"):
-            self.ctrl_mod_n.commandToExecute('delete "IkCvHip"')
-            self.ctrl_mod_n.commandToExecute('delete "IkHip"')
-            self.ctrl_mod_n.commandToExecute('delete "Biped_Hip_ctrl"')
-            self.ctrl_mod_n.commandToExecute('delete "Biped_StretchySpine_ctrl"')
+            self.MDG2_mod.commandToExecute('delete "IkCvHip"')
+            self.MDG2_mod.commandToExecute('delete "IkHip"')
 
-        elif cmds.objExists("Biped_StretchySpine_ctrl"):
-            self.ctrl_mod_n.commandToExecute('delete "Biped_StretchySpine_ctrl"')
+            if self.hipjnt.currentIndex() == 1: 
+                hipjnt_fs = om2.MFnDependencyNode(jnt_hip)
+                hipctrlRot_fs = om2.MFnDependencyNode(self.hipctrl_tn)
+
+                hipjntRot_plug = hipjnt_fs.findPlug("rotate", False)
+                hipctrlRot_plug = hipctrlRot_fs.findPlug("rotate", False)
+
+                self.MDG2_mod.connect(hipctrlRot_plug, hipjntRot_plug)
 
         for index in range(spine_sl_lst.length()):
-            spinectrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-            spinectrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-            self.ctrl_mod_n.renameNode(spinectrl_multMatrix, "Spine{0}_multMatrix".format(index))
-            self.ctrl_mod_n.renameNode(spinectrl_decomposeMatrix, "Spine{0}_decomposeMatrix".format(index))
+            spinectrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+            spinectrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+            self.MDG2_mod.renameNode(spinectrl_multMatrix, "Spine{0}_multMatrix".format(index))
+            self.MDG2_mod.renameNode(spinectrl_decomposeMatrix, "Spine{0}_decomposeMatrix".format(index))
 
             spinemultMatrix_fs = om2.MFnDependencyNode(spinectrl_multMatrix)
             spinedecomposeMatrix_fs = om2.MFnDependencyNode(spinectrl_decomposeMatrix)
@@ -6178,24 +7150,34 @@ class MainWindow(QtWidgets.QDialog):
             spinejntTrans_plug = spinejnt_fs.findPlug("translate", False)
             spinejntRot_plug = spinejnt_fs.findPlug("rotate", False)
 
-            self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_Spine{0}_ctrl.worldMatrix[0] Spine{0}_multMatrix.matrixIn[0]'.format(index))
-            self.ctrl_mod_n.commandToExecute('connectAttr -force Spine{0}.parentInverseMatrix[0] Spine{0}_multMatrix.matrixIn[1]'.format(index))
-            self.ctrl_mod_n.connect(spinemultMatrixSum_plug, spinedecomposeInpMatrix_plug)
-            self.ctrl_mod_n.connect(spinedecomposeOtpTrans_plug, spinejntTrans_plug)
-            self.ctrl_mod_n.connect(spinedecomposeOtpRot_plug, spinejntRot_plug)
+            self.MDG2_mod.commandToExecute('connectAttr -force Biped_Spine{0}_ctrl.worldMatrix[0] Spine{0}_multMatrix.matrixIn[0]'.format(index))
+            self.MDG2_mod.commandToExecute('connectAttr -force Spine{0}.parentInverseMatrix[0] Spine{0}_multMatrix.matrixIn[1]'.format(index))
+            self.MDG2_mod.connect(spinemultMatrixSum_plug, spinedecomposeInpMatrix_plug)
+            self.MDG2_mod.connect(spinedecomposeOtpTrans_plug, spinejntTrans_plug)
+            self.MDG2_mod.connect(spinedecomposeOtpRot_plug, spinejntRot_plug)
+
+            if index == 0:
+                spinejntScale_plug = spinejnt_fs.findPlug("scale", False)
+                self.MDG2_mod.connect(masterdecomposeOtpScale_plug, spinejntScale_plug)
 
             jnt_string = spine_sl_lst.getSelectionStrings(index)
             if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-                self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
 
         if self.autostretch.currentIndex() == 1:
             if cmds.objExists("IkHip") and cmds.objExists("IkCvHip") and cmds.objExists("IkCvSpine"):
-                ikspinectrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                ikspinectrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(ikspinectrl_multMatrix, "IkSpine_multMatrix")
-                self.ctrl_mod_n.renameNode(ikspinectrl_decomposeMatrix, "IkSpine_decomposeMatrix")
+
+                if cmds.getAttr("IkCvSpine.jointOrientX") != 0 or cmds.getAttr("IkCvSpine.jointOrientX") != 0 or cmds.getAttr("IkCvSpine.jointOrientX") != 0:
+                    self.MDG2_mod.commandToExecute('setAttr "IkCvSpine.jointOrientX" 0')
+                    self.MDG2_mod.commandToExecute('setAttr "IkCvSpine.jointOrientY" 0')
+                    self.MDG2_mod.commandToExecute('setAttr "IkCvSpine.jointOrientZ" 0')
+
+                ikspinectrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                ikspinectrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(ikspinectrl_multMatrix, "IkSpine_multMatrix")
+                self.MDG2_mod.renameNode(ikspinectrl_decomposeMatrix, "IkSpine_decomposeMatrix")
 
                 spinesplinemultMatrix_fs = om2.MFnDependencyNode(ikspinectrl_multMatrix)
                 spinesplinedecomposeMatrix_fs = om2.MFnDependencyNode(ikspinectrl_decomposeMatrix)
@@ -6208,16 +7190,26 @@ class MainWindow(QtWidgets.QDialog):
                 spinesplinejntTrans_plug = spinesplinejnt_fs.findPlug("translate", False)
                 spinesplinejntRot_plug = spinesplinejnt_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_StretchySpine_ctrl.worldMatrix[0] IkSpine_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.commandToExecute('connectAttr -force IkCvSpine.parentInverseMatrix[0] IkSpine_multMatrix.matrixIn[1]')
-                self.ctrl_mod_n.connect(spinesplinemultMatrixSum_plug, spinesplinedecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(spinesplinedecomposeOtpTrans_plug, spinesplinejntTrans_plug)
-                self.ctrl_mod_n.connect(spinesplinedecomposeOtpRot_plug, spinesplinejntRot_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_StretchySpine_ctrl.worldMatrix[0] IkSpine_multMatrix.matrixIn[0]')
+                self.MDG2_mod.commandToExecute('connectAttr -force IkCvSpine.parentInverseMatrix[0] IkSpine_multMatrix.matrixIn[1]')
+                self.MDG2_mod.connect(spinesplinemultMatrixSum_plug, spinesplinedecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(spinesplinedecomposeOtpTrans_plug, spinesplinejntTrans_plug)
+                self.MDG2_mod.connect(spinesplinedecomposeOtpRot_plug, spinesplinejntRot_plug)
 
         elif cmds.objExists("IkCvSpine"):
-            self.ctrl_mod_n.commandToExecute('delete "IkCvSpine"')
+            self.MDG2_mod.commandToExecute('delete "IkCvSpine"')
+            self.MDG2_mod.commandToExecute('delete "Biped_StretchySpine_ctrl"')
+
+        obj_stretchyneck = om1.MObject()
 
         if self.autostretch.currentIndex() == 1:
+
+            self.MDG2_mod.commandToExecute('addAttr -longName "stretchable" -niceName "Stretchable" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_StretchyNeck_ctrl')
+            self.MDG2_mod.doIt()
+
+            stretchy_sl_lst1.add("Biped_StretchyNeck_ctrl")
+            stretchy_sl_lst1.getDependNode(1, obj_stretchyneck)
+
             if cmds.objExists("IkNeck*") and cmds.objExists("IkCvNeck") and cmds.objExists("IkCvHead"):
                 ikneckspline_sl_lst = om1.MSelectionList()
                 ikneckspline_sl_lst.add("IkNeck*")
@@ -6227,24 +7219,24 @@ class MainWindow(QtWidgets.QDialog):
                 neck_pathnode = om1.MDagPath()
                 neck_path = neck_pathnode.getAPathTo(obj_root)
 
-                self.ikneckspline_effector = ik_effector.create(obj_endspine)
+                self.ikneckspline_effector = self.IK_Effector.create(obj_endspine)
                 ikneckspine_effector_path = neck_pathnode.getAPathTo(self.ikneckspline_effector)
 
-                self.neckspine_ik = ik_handle.create(neck_path, ikneckspine_effector_path)
+                self.neckspine_ik = self.IK_Handle.create(neck_path, ikneckspine_effector_path)
 
                 neckobj_array = om1.MPointArray()
                 neckobj_lst_mpoint = []
                 neckobj = om1.MObject()
                 for index in range(ikneckspline_sl_lst.length()):
                     ikneckspline_sl_lst.getDependNode(index, neckobj)
-                    obj_path = ikspineobj_path_n.getAPathTo(neckobj)
+                    obj_path = self.MDag_path.getAPathTo(neckobj)
                     obj_tn = om1.MFnTransform(obj_path)
                     obj_t = obj_tn.translation(om1.MSpace.kWorld)
                     neckobj_lst_mpoint.append(om1.MPoint(obj_t))
                     neckobj_array.append(neckobj_lst_mpoint[index])
 
                 self.ikneckspline_cv_tn = ikspinedag_n.create("transform", "Neck_SplineCv")
-                ikneckspline_cv = ikspline_cv_n.createWithEditPoints(neckobj_array, 1, 1, False, True, True, self.ikneckspline_cv_tn)
+                ikneckspline_cv = self.MNurbs1_cv.createWithEditPoints(neckobj_array, 1, 1, False, True, True, self.ikneckspline_cv_tn)
                 cmds.parent("Neck_SplineCv", "DoNotTouch")
 
                 neckcrv_info = ikspinedg_modifier.createNode("curveInfo")
@@ -6252,12 +7244,15 @@ class MainWindow(QtWidgets.QDialog):
                 neckstretchpow = ikspinedg_modifier.createNode("multiplyDivide")
                 neckstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
                 neckscalediv = ikspinedg_modifier.createNode("multiplyDivide")
+                blendstretch = ikspinedg_modifier.createNode("blendColors")
 
                 neckcrvinfo_fs = om1.MFnDependencyNode(neckcrv_info)
                 neckstretchpercent_fs = om1.MFnDependencyNode(neckstretchpercent)
                 neckstretchpow_fs = om1.MFnDependencyNode(neckstretchpow)
                 neckstretchdiv_fs = om1.MFnDependencyNode(neckstretchdiv)
                 neckscale_fs = om1.MFnDependencyNode(neckscalediv)
+                blendstretch_fs = om1.MFnDependencyNode(blendstretch)
+                neckstretchctrl_fs = om1.MFnDependencyNode(obj_stretchyneck)
 
                 neckcrvinfoarc_plug = neckcrvinfo_fs.findPlug("arcLength")
                 neckstretchpercentinp_plug = neckstretchpercent_fs.findPlug("input1Y")
@@ -6273,6 +7268,14 @@ class MainWindow(QtWidgets.QDialog):
                 neckscaledivinp1y_plug = neckscale_fs.findPlug("input1Y")
                 neckscaledivinp2y_plug = neckscale_fs.findPlug("input2Y")
                 neckscaledivotpy_plug = neckscale_fs.findPlug("outputY")
+                blendstretchinp1r_plug = blendstretch_fs.findPlug("color1R")
+                blendstretchinp1g_plug = blendstretch_fs.findPlug("color1G")
+                blendstretchinp1b_plug = blendstretch_fs.findPlug("color1B")
+                blendstretchotpr_plug = blendstretch_fs.findPlug("outputR")
+                blendstretchotpg_plug = blendstretch_fs.findPlug("outputG")
+                blendstretchotpb_plug = blendstretch_fs.findPlug("outputB")
+                blendstretch_plug = blendstretch_fs.findPlug("blender")
+                neckstretchctrl_plug = neckstretchctrl_fs.findPlug("stretchable")
 
                 objparent = om1.MObject()
                 objchild = om1.MObject()
@@ -6287,9 +7290,12 @@ class MainWindow(QtWidgets.QDialog):
                         neckjnt_szplug = neckparentjnt_fs.findPlug("scaleZ")
                         neckjnt_sotpplug = neckparentjnt_fs.findPlug("scale")
                         neckjnt_invsplug = neckchildjnt_fs.findPlug("inverseScale")
-                        ikspinedg_modifier.connect(neckstretchpercentotp_plug, neckjnt_syplug)
-                        ikspinedg_modifier.connect(neckstretchdivotox_plug, neckjnt_sxplug)
-                        ikspinedg_modifier.connect(neckstretchdivotpz_plug, neckjnt_szplug)
+                        ikspinedg_modifier.connect(neckstretchpercentotp_plug, blendstretchinp1g_plug)
+                        ikspinedg_modifier.connect(neckstretchdivotox_plug, blendstretchinp1r_plug)
+                        ikspinedg_modifier.connect(neckstretchdivotpz_plug, blendstretchinp1b_plug)
+                        ikspinedg_modifier.connect(blendstretchotpg_plug, neckjnt_syplug)
+                        ikspinedg_modifier.connect(blendstretchotpr_plug, neckjnt_sxplug)
+                        ikspinedg_modifier.connect(blendstretchotpb_plug, neckjnt_szplug)
                         ikspinedg_modifier.connect(neckjnt_sotpplug, neckjnt_invsplug)
 
                 ikspinedg_modifier.renameNode(neckcrv_info, "NeckSpline_Info")
@@ -6300,6 +7306,7 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.renameNode(self.neckspine_ik, "Neck_Ik")
                 ikspinedg_modifier.renameNode(self.ikneckspline_effector, "Neck_effector")
                 ikspinedg_modifier.renameNode(neckscalediv, "IkNeckGlobalScale_Average")
+                ikspinedg_modifier.renameNode(blendstretch, "NeckStretch_Blend")
                 ikspinedg_modifier.commandToExecute('parent "Neck_Ik" "DoNotTouch"')
                 ikspinedg_modifier.commandToExecute('connectAttr -f Neck_SplineCvShape.worldSpace[0] Neck_Ik.inCurve')
                 ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "NeckIk_skin" IkCvNeck IkCvHead Neck_SplineCv')
@@ -6321,6 +7328,7 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.connect(neckstretchpercentotp_plug, neckstretchpowinpz_plug)
                 ikspinedg_modifier.connect(neckstretchpowotpx_plug, neckstretchdivinpx_plug)
                 ikspinedg_modifier.connect(neckstretchpowotpz_plug, neckstretchdivinpz_plug)
+                ikspinedg_modifier.connect(neckstretchctrl_plug, blendstretch_plug)
                 ikspinedg_modifier.commandToExecute('float $neckstretchinput1Y = `getAttr "NeckStretch_Percent.input1Y"`; setAttr "NeckStretch_Percent.input2Y" $neckstretchinput1Y')
                 ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Power.input2X" 0.5')
                 ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Power.input2Z" 0.5')
@@ -6330,28 +7338,18 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Power.operation" 3')
                 ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Divide.operation" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "IkNeckGlobalScale_Average.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Blend.color2R" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Blend.color2G" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Blend.color2B" 1')
                 ikspinedg_modifier.doIt()
 
-                ikspline_solver = ik_system.findSolver("ikSplineSolver")
-                ik_handle.setSolver(ikspline_solver)
+                ikspline_solver = self.IK_System.findSolver("ikSplineSolver")
+                self.IK_Handle.setSolver(ikspline_solver)
 
-            # ikneckspline_sl_lst2 = om2.MSelectionList()
-            # ikneckspline_sl_lst2.add("IkNeck*")
-            #
-            # for index in range(ikneckspline_sl_lst2.length()):
-            #     jnt_obj = ikneckspline_sl_lst2.getDependNode(index)
-            #     jnt_string = ikneckspline_sl_lst2.getSelectionStrings(index)
-            #
-            #     if jnt_obj.hasFn(om2.MFn.kJoint):
-            #         if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
-
-        neckctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-        neckctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-        self.ctrl_mod_n.renameNode(neckctrl_multMatrix, "Neck_multMatrix")
-        self.ctrl_mod_n.renameNode(neckctrl_decomposeMatrix, "Neck_decomposeMatrix")
+        neckctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+        neckctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+        self.MDG2_mod.renameNode(neckctrl_multMatrix, "Neck_multMatrix")
+        self.MDG2_mod.renameNode(neckctrl_decomposeMatrix, "Neck_decomposeMatrix")
 
         neckmultMatrix_fs = om2.MFnDependencyNode(neckctrl_multMatrix)
         neckdecomposeMatrix_fs = om2.MFnDependencyNode(neckctrl_decomposeMatrix)
@@ -6364,11 +7362,11 @@ class MainWindow(QtWidgets.QDialog):
         neckjntTrans_plug = neckjnt_fs.findPlug("translate", False)
         neckjntRot_plug = neckjnt_fs.findPlug("rotate", False)
 
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_Neck_ctrl.worldMatrix[0] Neck_multMatrix.matrixIn[0]')
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Neck.parentInverseMatrix[0] Neck_multMatrix.matrixIn[1]')
-        self.ctrl_mod_n.connect(neckmultMatrixSum_plug, neckdecomposeInpMatrix_plug)
-        self.ctrl_mod_n.connect(neckdecomposeOtpTrans_plug, neckjntTrans_plug)
-        self.ctrl_mod_n.connect(neckdecomposeOtpRot_plug, neckjntRot_plug)
+        self.MDG2_mod.commandToExecute('connectAttr -force Biped_Neck_ctrl.worldMatrix[0] Neck_multMatrix.matrixIn[0]')
+        self.MDG2_mod.commandToExecute('connectAttr -force Neck.parentInverseMatrix[0] Neck_multMatrix.matrixIn[1]')
+        self.MDG2_mod.connect(neckmultMatrixSum_plug, neckdecomposeInpMatrix_plug)
+        self.MDG2_mod.connect(neckdecomposeOtpTrans_plug, neckjntTrans_plug)
+        self.MDG2_mod.connect(neckdecomposeOtpRot_plug, neckjntRot_plug)
 
         if self.autostretch.currentIndex() == 1:
             if cmds.objExists("IkNeck*") and cmds.objExists("IkCvNeck") and cmds.objExists("IkCvHead"):
@@ -6377,10 +7375,10 @@ class MainWindow(QtWidgets.QDialog):
                 ikneckspline_sl_lst.add("IkCvHead")
                 obj_first = ikneckspline_sl_lst.getDependNode(0)
 
-                ikcvneck_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                ikcvneck_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(ikcvneck_multMatrix, "IkCvNeck_multMatrix")
-                self.ctrl_mod_n.renameNode(ikcvneck_decomposeMatrix, "IkCvNeck_decomposeMatrix")
+                ikcvneck_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                ikcvneck_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(ikcvneck_multMatrix, "IkCvNeck_multMatrix")
+                self.MDG2_mod.renameNode(ikcvneck_decomposeMatrix, "IkCvNeck_decomposeMatrix")
 
                 ikcvneckmultMatrix_fs = om2.MFnDependencyNode(ikcvneck_multMatrix)
                 ikcvneckdecomposeMatrix_fs = om2.MFnDependencyNode(ikcvneck_decomposeMatrix)
@@ -6393,17 +7391,17 @@ class MainWindow(QtWidgets.QDialog):
                 ikcvneckjntTrans_plug = ikcvneckjnt_fs.findPlug("translate", False)
                 ikcvneckjntRot_plug = ikcvneckjnt_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Neck.worldMatrix[0] IkCvNeck_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.connect(ikcvneckmultMatrixSum_plug, ikcvneckdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(ikcvneckdecomposeOtpTrans_plug, ikcvneckjntTrans_plug)
-                self.ctrl_mod_n.connect(ikcvneckdecomposeOtpRot_plug, ikcvneckjntRot_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Neck.worldMatrix[0] IkCvNeck_multMatrix.matrixIn[0]')
+                self.MDG2_mod.connect(ikcvneckmultMatrixSum_plug, ikcvneckdecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(ikcvneckdecomposeOtpTrans_plug, ikcvneckjntTrans_plug)
+                self.MDG2_mod.connect(ikcvneckdecomposeOtpRot_plug, ikcvneckjntRot_plug)
 
                 obj_lastspine = ikneckspline_sl_lst.getDependNode(1)
 
-                ikcvhead_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                ikcvhead_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(ikcvhead_multMatrix, "IkCvHead_multMatrix")
-                self.ctrl_mod_n.renameNode(ikcvhead_decomposeMatrix, "IkCvHead_decomposeMatrix")
+                ikcvhead_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                ikcvhead_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(ikcvhead_multMatrix, "IkCvHead_multMatrix")
+                self.MDG2_mod.renameNode(ikcvhead_decomposeMatrix, "IkCvHead_decomposeMatrix")
 
                 ikcvheadmultMatrix_fs = om2.MFnDependencyNode(ikcvhead_multMatrix)
                 ikcvheaddecomposeMatrix_fs = om2.MFnDependencyNode(ikcvhead_decomposeMatrix)
@@ -6416,24 +7414,24 @@ class MainWindow(QtWidgets.QDialog):
                 ikcvheadjntTrans_plug = ikcvheadjnt_fs.findPlug("translate", False)
                 ikcvheadjntRot_plug = ikcvheadjnt_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_StretchyNeck_ctrl.worldMatrix[0] IkCvHead_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.connect(ikcvheadmultMatrixSum_plug, ikcvheaddecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(ikcvheaddecomposeOtpTrans_plug, ikcvheadjntTrans_plug)
-                self.ctrl_mod_n.connect(ikcvheaddecomposeOtpRot_plug, ikcvheadjntRot_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_StretchyNeck_ctrl.worldMatrix[0] IkCvHead_multMatrix.matrixIn[0]')
+                self.MDG2_mod.connect(ikcvheadmultMatrixSum_plug, ikcvheaddecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(ikcvheaddecomposeOtpTrans_plug, ikcvheadjntTrans_plug)
+                self.MDG2_mod.connect(ikcvheaddecomposeOtpRot_plug, ikcvheadjntRot_plug)
 
         elif cmds.objExists("IkCvNeck") and cmds.objExists("IkCvHead"):
-            self.ctrl_mod_n.commandToExecute('delete "IkCvNeck"')
-            self.ctrl_mod_n.commandToExecute('delete "IkCvHead"')
-            self.ctrl_mod_n.commandToExecute('delete "IkNeck0"')
-            self.ctrl_mod_n.commandToExecute('delete "Biped_StretchyNeck_ctrl"')
+            self.MDG2_mod.commandToExecute('delete "IkCvNeck"')
+            self.MDG2_mod.commandToExecute('delete "IkCvHead"')
+            self.MDG2_mod.commandToExecute('delete "IkNeck0"')
+            self.MDG2_mod.commandToExecute('delete "Biped_StretchyNeck_ctrl"')
 
         elif cmds.objExists("Biped_StretchyNeck_ctrl"):
-            self.ctrl_mod_n.commandToExecute('delete "Biped_StretchyNeck_ctrl"')
+            self.MDG2_mod.commandToExecute('delete "Biped_StretchyNeck_ctrl"')
 
-        headctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-        headctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-        self.ctrl_mod_n.renameNode(headctrl_multMatrix, "Head_multMatrix")
-        self.ctrl_mod_n.renameNode(headctrl_decomposeMatrix, "Head_decomposeMatrix")
+        headctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+        headctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+        self.MDG2_mod.renameNode(headctrl_multMatrix, "Head_multMatrix")
+        self.MDG2_mod.renameNode(headctrl_decomposeMatrix, "Head_decomposeMatrix")
 
         headmultMatrix_fs = om2.MFnDependencyNode(headctrl_multMatrix)
         headdecomposeMatrix_fs = om2.MFnDependencyNode(headctrl_decomposeMatrix)
@@ -6446,44 +7444,79 @@ class MainWindow(QtWidgets.QDialog):
         headjntTrans_plug = headjnt_fs.findPlug("translate", False)
         headjntRot_plug = headjnt_fs.findPlug("rotate", False)
 
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_Head_ctrl.worldMatrix[0] Head_multMatrix.matrixIn[0]')
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Head.parentInverseMatrix[0] Head_multMatrix.matrixIn[1]')
-        self.ctrl_mod_n.connect(headmultMatrixSum_plug, headdecomposeInpMatrix_plug)
-        self.ctrl_mod_n.connect(headdecomposeOtpTrans_plug, headjntTrans_plug)
-        self.ctrl_mod_n.connect(headdecomposeOtpRot_plug, headjntRot_plug)
+        self.MDG2_mod.commandToExecute('connectAttr -force Biped_Head_ctrl.worldMatrix[0] Head_multMatrix.matrixIn[0]')
+        self.MDG2_mod.commandToExecute('connectAttr -force Head.parentInverseMatrix[0] Head_multMatrix.matrixIn[1]')
+        self.MDG2_mod.connect(headmultMatrixSum_plug, headdecomposeInpMatrix_plug)
+        self.MDG2_mod.connect(headdecomposeOtpTrans_plug, headjntTrans_plug)
+        self.MDG2_mod.connect(headdecomposeOtpRot_plug, headjntRot_plug)
+
+        self.MDG2_mod.commandToExecute('addAttr -longName "world" -niceName "World" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_Head_ctrl')
+        self.MDG2_mod.doIt()
+
+        headrotate_multMatrix = self.MDG2_mod.createNode("multMatrix")
+        headrotate_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+        headrotblendnode = self.MDG2_mod.createNode("blendColors")
+        self.MDG2_mod.renameNode(headrotate_multMatrix, "HeadRotate_multMatrix")
+        self.MDG2_mod.renameNode(headrotate_decomposeMatrix, "HeadRotate_decomposeMatrix")
+        self.MDG2_mod.renameNode(headrotblendnode, "HeadRotate_blend")
+
+        headrotatemultMatrix_fs = om2.MFnDependencyNode(headrotate_multMatrix)
+        headrotatedecomposeMatrix_fs = om2.MFnDependencyNode(headrotate_decomposeMatrix)
+        headrotblend_fs = om2.MFnDependencyNode(headrotblendnode)
+        headrot_fs = om2.MFnDependencyNode(self.headrot_tn)
+        headctrl_fs = om2.MFnDependencyNode(self.headctrl_tn)
+
+        headrotatemultMatrixSum_plug = headrotatemultMatrix_fs.findPlug("matrixSum", False)
+        headrotatedecomposeInpMatrix_plug = headrotatedecomposeMatrix_fs.findPlug("inputMatrix", False)
+        headrotatedecomposeOtpRot_plug = headrotatedecomposeMatrix_fs.findPlug("outputRotate", False)
+        headrotblendnodeblender_plug = headrotblend_fs.findPlug("blender", False)
+        headrotblendnodeinp1_plug = headrotblend_fs.findPlug("color1", False)
+        headrotblendnodeotp_plug = headrotblend_fs.findPlug("output", False)
+        headRot_plug = headrot_fs.findPlug("rotate", False)
+        headctrl_plug = headctrl_fs.findPlug("world", False)
+
+        self.MDG2_mod.commandToExecute('connectAttr -force Biped_Head_null.worldInverseMatrix[0] HeadRotate_multMatrix.matrixIn[0]')
+        self.MDG2_mod.commandToExecute('connectAttr -force Biped_Root_ctrl.worldMatrix[0] HeadRotate_multMatrix.matrixIn[1]')
+        self.MDG2_mod.connect(headrotatemultMatrixSum_plug, headrotatedecomposeInpMatrix_plug)
+        self.MDG2_mod.connect(headrotatedecomposeOtpRot_plug, headrotblendnodeinp1_plug)
+        self.MDG2_mod.connect(headrotblendnodeotp_plug, headRot_plug)
+        self.MDG2_mod.connect(headctrl_plug, headrotblendnodeblender_plug)
+        self.MDG2_mod.commandToExecute('setAttr "HeadRotate_blend.color2R" 0')
+        self.MDG2_mod.commandToExecute('setAttr "HeadRotate_blend.color2G" 0')
+        self.MDG2_mod.commandToExecute('setAttr "HeadRotate_blend.color2B" 0')
+
 
         for index in range(fklarm_sl_ls.length()):
             jnt_obj = fklarm_sl_ls.getDependNode(index)
             jnt_string = fklarm_sl_ls.getSelectionStrings(index)
 
             if jnt_obj.hasFn(om2.MFn.kJoint):
-                larmctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                larmctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(larmctrl_multMatrix, str(jnt_string)[2:][:-3]+"_multMatrix")
-                self.ctrl_mod_n.renameNode(larmctrl_decomposeMatrix, str(jnt_string)[2:][:-3]+"_decomposeMatrix")
+                larmctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                larmctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(larmctrl_multMatrix, str(jnt_string)[2:][:-3] + "_multMatrix")
+                self.MDG2_mod.renameNode(larmctrl_decomposeMatrix, str(jnt_string)[2:][:-3] + "_decomposeMatrix")
 
-                larmmultMatrix_fs = om2.MFnDependencyNode(larmctrl_multMatrix)
-                larmdecomposeMatrix_fs = om2.MFnDependencyNode(larmctrl_decomposeMatrix)
-
+                rarmmultMatrix_fs = om2.MFnDependencyNode(larmctrl_multMatrix)
+                rarmdecomposeMatrix_fs = om2.MFnDependencyNode(larmctrl_decomposeMatrix)
                 larmjnt_fs = om2.MFnDependencyNode(jnt_obj)
 
-                larmmultMatrixSum_plug = larmmultMatrix_fs.findPlug("matrixSum", False)
-                larmdecomposeInpMatrix_plug = larmdecomposeMatrix_fs.findPlug("inputMatrix", False)
-                larmdecomposeOtpTrans_plug = larmdecomposeMatrix_fs.findPlug("outputTranslate", False)
-                larmdecomposeOtpRot_plug = larmdecomposeMatrix_fs.findPlug("outputRotate", False)
+                rarmmultMatrixSum_plug = rarmmultMatrix_fs.findPlug("matrixSum", False)
+                rarmdecomposeInpMatrix_plug = rarmdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                rarmdecomposeOtpTrans_plug = rarmdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                rarmdecomposeOtpRot_plug = rarmdecomposeMatrix_fs.findPlug("outputRotate", False)
                 larmjntTrans_plug = larmjnt_fs.findPlug("translate", False)
                 larmjntRot_plug = larmjnt_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.connect(larmmultMatrixSum_plug, larmdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(larmdecomposeOtpTrans_plug, larmjntTrans_plug)
-                self.ctrl_mod_n.connect(larmdecomposeOtpRot_plug, larmjntRot_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.connect(rarmmultMatrixSum_plug, rarmdecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(rarmdecomposeOtpTrans_plug, larmjntTrans_plug)
+                self.MDG2_mod.connect(rarmdecomposeOtpRot_plug, larmjntRot_plug)
 
                 if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
 
         fklarm_sl_ls = om2.MSelectionList()
         fklarm_sl_ls.add("FkLeftArm")
@@ -6495,15 +7528,29 @@ class MainWindow(QtWidgets.QDialog):
         iklarm_sl_ls.add("IkLeftForeArm")
         iklarm_sl_ls.add("IkLeftHand")
 
+        noflipiklarm_sl_ls = om2.MSelectionList()
+        noflipiklarm_sl_ls.add("IkNoFlipLeftArm")
+        noflipiklarm_sl_ls.add("IkNoFlipLeftForeArm")
+        noflipiklarm_sl_ls.add("IkNoFlipLeftHand")
+
+        pviklarm_sl_ls = om2.MSelectionList()
+        pviklarm_sl_ls.add("IkPVLeftArm")
+        pviklarm_sl_ls.add("IkPVLeftForeArm")
+        pviklarm_sl_ls.add("IkPVLeftHand")
+
         lhandoptions_sl_ls = om2.MSelectionList()
         lhandoptions_sl_ls.add("Biped_LeftHandOptions_ctrl")
         lhandoptions_obj = lhandoptions_sl_ls.getDependNode(0)
 
-        self.ctrl_mod_n.commandToExecute('addAttr -longName "fkik" -niceName "Fk/Ik" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftHandOptions_ctrl')
-        self.ctrl_mod_n.doIt()
+        self.MDG2_mod.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkLeftArm_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkLeftForeArm_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "fkik" -niceName "Fk/Ik" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftHandOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "kneeswitch" -niceName "Auto/Manual Knee" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftHandOptions_ctrl')
+        self.MDG2_mod.doIt()
 
         lhandoptions_fs = om2.MFnDependencyNode(lhandoptions_obj)
         lhandoptionsfkik_plug = lhandoptions_fs.findPlug("fkik", False)
+        lhandoptionskneeswitch_plug = lhandoptions_fs.findPlug("kneeswitch", False)
 
         for index in range(larm_sl_ls.length()):
             fkjnt_obj = fklarm_sl_ls.getDependNode(index)
@@ -6513,6 +7560,12 @@ class MainWindow(QtWidgets.QDialog):
 
             bindjnt_obj = larm_sl_ls.getDependNode(index)
             bindjnt_string = larm_sl_ls.getSelectionStrings(index)
+
+            noflipjnt_obj = noflipiklarm_sl_ls.getDependNode(index)
+            noflipjnt_string = noflipiklarm_sl_ls.getSelectionStrings(index)
+
+            pvjnt_obj = pviklarm_sl_ls.getDependNode(index)
+            pvjnt_string = pviklarm_sl_ls.getSelectionStrings(index)
 
             if bindjnt_obj.hasFn(om2.MFn.kJoint):
                 if cmds.getAttr("{0}.jointOrientX".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(bindjnt_string)[3:][:-3])) != 0:
@@ -6531,57 +7584,564 @@ class MainWindow(QtWidgets.QDialog):
                 armjoint_fs = om2.MFnDependencyNode(bindjnt_obj)
                 fkarmjoint_fs = om2.MFnDependencyNode(fkjnt_obj)
 
+                armjointtransinp_plug = armjoint_fs.findPlug("translate", False)
                 armjointrotinp_plug = armjoint_fs.findPlug("rotate", False)
+                fkarmjointtransotp_plug = fkarmjoint_fs.findPlug("translate", False)
                 fkarmjointrototp_plug = fkarmjoint_fs.findPlug("rotate", False)
 
-                if cmds.objExists("LeftHand_Ik"):
-                    armblendnode = self.ctrl_mod_n.createNode("blendColors")
-                    armjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                    self.ctrl_mod_n.renameNode(armjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
-                    self.ctrl_mod_n.renameNode(armblendnode, str(bindjnt_string)[2:][:-3]+"_blend")
+                if cmds.objExists("NoFlipLeftHand_Ik") and cmds.objExists("PVLeftHand_Ik"):
+                    armrotblendnode = self.MDG2_mod.createNode("blendColors")
+                    armtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    armjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    self.MDG2_mod.renameNode(armjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3] + "Blend_decomposeMatrix")
+                    self.MDG2_mod.renameNode(armrotblendnode, str(bindjnt_string)[2:][:-3] + "_blend")
+                    self.MDG2_mod.renameNode(armtransblendnode, str(bindjnt_string)[2:][:-3]+"Trans_blend")
 
-                    armblendnode_fs = om2.MFnDependencyNode(armblendnode)
+                    armrotblendnode_fs = om2.MFnDependencyNode(armrotblendnode)
+                    armtransblendnode_fs = om2.MFnDependencyNode(armtransblendnode)
                     armdecomposeMatrix_fs = om2.MFnDependencyNode(armjoint_decomposeMatrix)
                     ikarmjoint_fs = om2.MFnDependencyNode(ikjnt_obj)
 
                     armdecomposeInpMatrix_plug = armdecomposeMatrix_fs.findPlug("inputMatrix", False)
                     armdecomposeOtpRot_plug = armdecomposeMatrix_fs.findPlug("outputRotate", False)
-                    armblendnodeinp1_plug = armblendnode_fs.findPlug("color1", False)
-                    armblendnodeinp2_plug = armblendnode_fs.findPlug("color2", False)
-                    armblendnodeotp_plug = armblendnode_fs.findPlug("output", False)
-                    armblendnodeblender_plug = armblendnode_fs.findPlug("blender", False)
+                    armdecomposeOtpTrans_plug = armdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    armrotblendnodeinp1_plug = armrotblendnode_fs.findPlug("color1", False)
+                    armrotblendnodeinp2_plug = armrotblendnode_fs.findPlug("color2", False)
+                    armrotblendnodeotp_plug = armrotblendnode_fs.findPlug("output", False)
+                    armrotblendnodeblender_plug = armrotblendnode_fs.findPlug("blender", False)
+                    armtransblendnodeinp1_plug = armtransblendnode_fs.findPlug("color1", False)
+                    armtransblendnodeinp2_plug = armtransblendnode_fs.findPlug("color2", False)
+                    armtransblendnodeotp_plug = armtransblendnode_fs.findPlug("output", False)
+                    armtransblendnodeblender_plug = armtransblendnode_fs.findPlug("blender", False)
                     ikarmjointrototp_plug = ikarmjoint_fs.findPlug("matrix", False)
 
-                    self.ctrl_mod_n.connect(ikarmjointrototp_plug, armdecomposeInpMatrix_plug)
-                    self.ctrl_mod_n.connect(armdecomposeOtpRot_plug, armblendnodeinp1_plug)
-                    self.ctrl_mod_n.connect(fkarmjointrototp_plug, armblendnodeinp2_plug)
-                    self.ctrl_mod_n.connect(armblendnodeotp_plug, armjointrotinp_plug)
-                    self.ctrl_mod_n.connect(lhandoptionsfkik_plug, armblendnodeblender_plug)
+                    self.MDG2_mod.connect(ikarmjointrototp_plug, armdecomposeInpMatrix_plug)
+                    self.MDG2_mod.connect(armdecomposeOtpRot_plug, armrotblendnodeinp1_plug)
+                    self.MDG2_mod.connect(armdecomposeOtpTrans_plug, armtransblendnodeinp1_plug)
+                    self.MDG2_mod.connect(fkarmjointrototp_plug, armrotblendnodeinp2_plug)
+                    self.MDG2_mod.connect(fkarmjointtransotp_plug, armtransblendnodeinp2_plug)
+                    self.MDG2_mod.connect(armrotblendnodeotp_plug, armjointrotinp_plug)
+                    self.MDG2_mod.connect(armtransblendnodeotp_plug, armjointtransinp_plug)
+                    self.MDG2_mod.connect(lhandoptionsfkik_plug, armrotblendnodeblender_plug)
+                    self.MDG2_mod.connect(lhandoptionsfkik_plug, armtransblendnodeblender_plug)
 
-            else:
-                    self.ctrl_mod_n.connect(fkarmjointrototp_plug, armjointrotinp_plug)
-                    self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_LeftHandOptions_ctrl.fkik')
-                    self.ctrl_mod_n.commandToExecute('setAttr "IkLeftArm.visibility" 0')
+                    armrotblendnode = self.MDG2_mod.createNode("blendColors")
+                    armtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    nofliparmjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    pvarmjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    self.MDG2_mod.renameNode(nofliparmjoint_decomposeMatrix, str(noflipjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
+                    self.MDG2_mod.renameNode(pvarmjoint_decomposeMatrix, str(pvjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
+                    self.MDG2_mod.renameNode(armrotblendnode, str(bindjnt_string)[2:][:-3]+"Rot_kneeblend")
+                    self.MDG2_mod.renameNode(armtransblendnode, str(bindjnt_string)[2:][:-3]+"Trans_kneeblend")
 
-        if cmds.objExists("LeftHand_Ik"):
+                    armrotblendnode_fs = om2.MFnDependencyNode(armrotblendnode)
+                    armtransblendnode_fs = om2.MFnDependencyNode(armtransblendnode)
+                    nofliparmdecomposeMatrix_fs = om2.MFnDependencyNode(nofliparmjoint_decomposeMatrix)
+                    pvarmdecomposeMatrix_fs = om2.MFnDependencyNode(pvarmjoint_decomposeMatrix)
+                    noflipikarmjoint_fs = om2.MFnDependencyNode(noflipjnt_obj)
+                    pvikarmjoint_fs = om2.MFnDependencyNode(pvjnt_obj)
+
+                    nofliparmdecomposeInpMatrix_plug = nofliparmdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                    nofliparmdecomposeOtpRot_plug = nofliparmdecomposeMatrix_fs.findPlug("outputRotate", False)
+                    nofliparmdecomposeOtpTrans_plug = nofliparmdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    pvarmdecomposeInpMatrix_plug = pvarmdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                    pvarmdecomposeOtpRot_plug = pvarmdecomposeMatrix_fs.findPlug("outputRotate", False)
+                    pvarmdecomposeOtpTrans_plug = pvarmdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    armrotblendnodeinp1_plug = armrotblendnode_fs.findPlug("color1", False)
+                    armrotblendnodeinp2_plug = armrotblendnode_fs.findPlug("color2", False)
+                    armrotblendnodeotp_plug = armrotblendnode_fs.findPlug("output", False)
+                    armrotblendnodeblender_plug = armrotblendnode_fs.findPlug("blender", False)
+                    armtransblendnodeinp1_plug = armtransblendnode_fs.findPlug("color1", False)
+                    armtransblendnodeinp2_plug = armtransblendnode_fs.findPlug("color2", False)
+                    armtransblendnodeotp_plug = armtransblendnode_fs.findPlug("output", False)
+                    armtransblendnodeblender_plug = armtransblendnode_fs.findPlug("blender", False)
+                    noflipikarmjointotp_plug = noflipikarmjoint_fs.findPlug("matrix", False)
+                    pvikarmjointotp_plug = pvikarmjoint_fs.findPlug("matrix", False)
+                    ikarmjointinpTrans_plug = ikarmjoint_fs.findPlug("translate", False)
+                    ikarmjointinpRot_plug = ikarmjoint_fs.findPlug("jointOrient", False)
+
+                    self.MDG2_mod.connect(noflipikarmjointotp_plug, nofliparmdecomposeInpMatrix_plug)
+                    self.MDG2_mod.connect(pvikarmjointotp_plug, pvarmdecomposeInpMatrix_plug)
+                    self.MDG2_mod.connect(pvarmdecomposeOtpRot_plug, armrotblendnodeinp1_plug)
+                    self.MDG2_mod.connect(pvarmdecomposeOtpTrans_plug, armtransblendnodeinp1_plug)
+                    self.MDG2_mod.connect(nofliparmdecomposeOtpRot_plug, armrotblendnodeinp2_plug)
+                    self.MDG2_mod.connect(nofliparmdecomposeOtpTrans_plug, armtransblendnodeinp2_plug)
+                    self.MDG2_mod.connect(armrotblendnodeotp_plug, ikarmjointinpRot_plug)
+                    self.MDG2_mod.connect(armtransblendnodeotp_plug, ikarmjointinpTrans_plug)
+                    self.MDG2_mod.connect(lhandoptionskneeswitch_plug, armrotblendnodeblender_plug)
+                    self.MDG2_mod.connect(lhandoptionskneeswitch_plug, armtransblendnodeblender_plug)
+
+                else:
+                    self.MDG2_mod.connect(fkarmjointtransotp_plug, armjointtransinp_plug)
+                    self.MDG2_mod.connect(fkarmjointrototp_plug, armjointrotinp_plug)
+
+            if self.autostretch.currentIndex() == 1:
+                if index < 2:
+                    iklarmgrp_sl_lst = om2.MSelectionList()
+                    iklarmgrp_sl_lst.add("LeftUpperArmIkCluster_grp")
+                    iklarmgrp_sl_lst.add("LeftUpperArmIkCluster2_grp")
+                    iklarmgrp_sl_lst.add("LeftLowerArmIkCluster_grp")
+                    iklarmgrp_sl_lst.add("LeftLowerArmIkCluster2_grp")
+                    grp_armupperikcluster = iklarmgrp_sl_lst.getDependNode(0)
+                    grp_armupperikcluster2 = iklarmgrp_sl_lst.getDependNode(1)
+                    grp_armlowerikcluster = iklarmgrp_sl_lst.getDependNode(2)
+                    grp_armlowerikcluster2 = iklarmgrp_sl_lst.getDependNode(3)
+
+                    larmjoint_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                    armjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+
+                    larmmultMatrix_fs = om2.MFnDependencyNode(larmjoint_multMatrix)
+                    larmdecomposeMatrix_fs = om2.MFnDependencyNode(armjoint_decomposeMatrix)
+                    iklupperarmgrp_fs = om2.MFnDependencyNode(grp_armupperikcluster)
+                    ikllowerarmgrp_fs = om2.MFnDependencyNode(grp_armlowerikcluster)
+
+                    larmmultMatrixSum_plug = larmmultMatrix_fs.findPlug("matrixSum", False)
+                    larmdecomposeInpMatrix_plug = larmdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                    larmdecomposeOtpTrans_plug = larmdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    larmdecomposeOtpRot_plug = larmdecomposeMatrix_fs.findPlug("outputRotate", False)
+                    iklupperarmgrpTrans_plug = iklupperarmgrp_fs.findPlug("translate", False)
+                    iklupperarmgrpRot_plug = iklupperarmgrp_fs.findPlug("rotate", False)
+                    ikllowerarmgrpTrans_plug = ikllowerarmgrp_fs.findPlug("translate", False)
+                    ikllowerarmgrpRot_plug = ikllowerarmgrp_fs.findPlug("rotate", False)
+
+                    self.MDG2_mod.renameNode(larmjoint_multMatrix, str(bindjnt_string)[2:][:-3]+"_multMatrix")
+                    self.MDG2_mod.renameNode(armjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"_decomposeMatrix")
+                    self.MDG2_mod.commandToExecute('connectAttr -force {0}.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(bindjnt_string)[3:][:-3]))
+                    self.MDG2_mod.connect(larmmultMatrixSum_plug, larmdecomposeInpMatrix_plug)
+
+                    fklarmstretch_expression = om1.MFnExpression()
+
+                    if index == 0:
+                        fklarmstretch_expression.create("Biped_FkLeftForeArm_ctrl.translateY = Biped_FkLeftArm_ctrl.stretchy")
+                        fklarmstretch_expression.create("Biped_FkLeftForeArm_ctrl.translateZ = Biped_FkLeftForeArm_ctrl.translateY/10")
+                        fklarmstretch_expression.create("Biped_FkLeftForeArm_ctrl.translateX = Biped_FkLeftForeArm_ctrl.translateY/10")
+
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftUpperArmIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.MDG2_mod.connect(larmdecomposeOtpTrans_plug, iklupperarmgrpTrans_plug)
+                        self.MDG2_mod.connect(larmdecomposeOtpRot_plug, iklupperarmgrpRot_plug)
+
+                        lupperarmcluster2_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                        lupperarmcluster2_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+
+                        lupperarmcluster2multMatrix_fs = om2.MFnDependencyNode(lupperarmcluster2_multMatrix)
+                        lupperarmcluster2decomposeMatrix_fs = om2.MFnDependencyNode(lupperarmcluster2_decomposeMatrix)
+                        lupperarmcluster2_fs = om2.MFnDependencyNode(grp_armupperikcluster2)
+
+                        lupperarmcluster2multMatrixSum_plug = lupperarmcluster2multMatrix_fs.findPlug("matrixSum", False)
+                        lupperarmcluster2decomposeInpMatrix_plug = lupperarmcluster2decomposeMatrix_fs.findPlug("inputMatrix", False)
+                        lupperarmcluster2decomposeOtpTrans_plug = lupperarmcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
+                        lupperarmcluster2Trans_plug = lupperarmcluster2_fs.findPlug("translate", False)
+
+                        self.MDG2_mod.renameNode(lupperarmcluster2_multMatrix, "LeftUpperArmCluster2_multMatrix")
+                        self.MDG2_mod.renameNode(lupperarmcluster2_decomposeMatrix,"LeftUpperArmCluster2_decomposeMatrix")
+                        self.MDG2_mod.connect(lupperarmcluster2multMatrixSum_plug, lupperarmcluster2decomposeInpMatrix_plug)
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftForeArm.worldMatrix[0] LeftUpperArmCluster2_multMatrix.matrixIn[0]')
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftUpperArmIkCluster2_grp.parentInverseMatrix[0] LeftUpperArmCluster2_multMatrix.matrixIn[1]')
+                        self.MDG2_mod.connect(lupperarmcluster2decomposeOtpTrans_plug, lupperarmcluster2Trans_plug)
+
+                    elif index == 1:
+                        fklarmstretch_expression.create("Biped_FkLeftHand_ctrl.translateY = Biped_FkLeftForeArm_ctrl.stretchy")
+
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftLowerArmIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.MDG2_mod.connect(larmdecomposeOtpTrans_plug, ikllowerarmgrpTrans_plug)
+                        self.MDG2_mod.connect(larmdecomposeOtpRot_plug, ikllowerarmgrpRot_plug)
+
+                        llowerarmcluster2_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                        llowerarmcluster2_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+
+                        llowerarmcluster2multMatrix_fs = om2.MFnDependencyNode(llowerarmcluster2_multMatrix)
+                        llowerarmcluster2decomposeMatrix_fs = om2.MFnDependencyNode(llowerarmcluster2_decomposeMatrix)
+                        llowerarmcluster2_fs = om2.MFnDependencyNode(grp_armlowerikcluster2)
+
+                        llowerarmcluster2multMatrixSum_plug = llowerarmcluster2multMatrix_fs.findPlug("matrixSum", False)
+                        llowerarmcluster2decomposeInpMatrix_plug = llowerarmcluster2decomposeMatrix_fs.findPlug("inputMatrix", False)
+                        llowerarmcluster2decomposeOtpTrans_plug = llowerarmcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
+                        llowerarmcluster2Trans_plug = llowerarmcluster2_fs.findPlug("translate", False)
+
+                        self.MDG2_mod.renameNode(llowerarmcluster2_multMatrix, "LeftLowerArmCluster2_multMatrix")
+                        self.MDG2_mod.renameNode(llowerarmcluster2_decomposeMatrix,"LeftLowerArmCluster2_decomposeMatrix")
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftHand.worldMatrix[0] LeftLowerArmCluster2_multMatrix.matrixIn[0]')
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftLowerArmIkCluster2_grp.parentInverseMatrix[0] LeftLowerArmCluster2_multMatrix.matrixIn[1]')
+                        self.MDG2_mod.connect(llowerarmcluster2multMatrixSum_plug, llowerarmcluster2decomposeInpMatrix_plug)
+                        self.MDG2_mod.connect(llowerarmcluster2decomposeOtpTrans_plug, llowerarmcluster2Trans_plug)
+
+            elif cmds.objExists("LeftArmIkCluster_grp") and cmds.objExists("IkStretchyLeftJointArm_grp"):
+                self.MDG2_mod.commandToExecute('delete "LeftArmIkCluster_grp"')
+                self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_FkLeftArm_ctrl.stretchy')
+                self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_FkLeftForeArm_ctrl.stretchy')
+                self.MDG2_mod.doIt()
+
+        grp_armupperikcluster1 = om1.MObject()
+        grp_armupperikcluster2 = om1.MObject()
+        obj_stretchyleftarm1 = om1.MObject()
+
+        if self.autostretch.currentIndex() == 1:
+
+            self.MDG2_mod.commandToExecute('addAttr -longName "stretchable" -niceName "Stretchable" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftHandOptions_ctrl')
+            self.MDG2_mod.doIt()
+
+            stretchy_sl_lst1.add("Biped_LeftHandOptions_ctrl")
+            stretchy_sl_lst1.getDependNode(2, obj_stretchyleftarm1)
+
+            if cmds.objExists("IkSplineLeftUpperArm0"):
+                iklupperarm_sl_lst = om1.MSelectionList()
+                iklupperarm_sl_lst.add("IkSplineLeftUpperArm*")
+                iklupperarm_sl_lst.getDependNode(0, obj_root)
+                iklupperarm_sl_lst.getDependNode(iklupperarm_sl_lst.length()-1, obj_endspine)
+
+                iklupperarmgrp_sl_lst = om1.MSelectionList()
+                iklupperarmgrp_sl_lst.add("LeftUpperArmIkCluster1_grp")
+                iklupperarmgrp_sl_lst.add("LeftUpperArmIkCluster2_grp")
+                iklupperarmgrp_sl_lst.getDependNode(0, grp_armupperikcluster1)
+                iklupperarmgrp_sl_lst.getDependNode(1, grp_armupperikcluster2)
+
+                self.MDag_path = om1.MDagPath()
+                rootspine_path = self.MDag_path.getAPathTo(obj_root)
+
+                try:
+                    ikspineiksolver_lst.add("ikSplineSolver*")
+                except:
+                    cmds.createNode("ikSplineSolver")
+
+                self.iklarm_effector = self.IK_Effector.create(obj_endspine)
+                iklarm_effector_path = self.MDag_path.getAPathTo(self.iklarm_effector)
+
+                self.larm_ik = self.IK_Handle.create(rootspine_path, iklarm_effector_path)
+
+                obj_array = om1.MPointArray()
+                obj_lst_mpoint = []
+                obj = om1.MObject()
+                for index in range(iklupperarm_sl_lst.length()):
+                    iklupperarm_sl_lst.getDependNode(index, obj)
+                    obj_path = self.MDag_path.getAPathTo(obj)
+                    obj_tn = om1.MFnTransform(obj_path)
+                    obj_t = obj_tn.translation(om1.MSpace.kWorld)
+                    obj_lst_mpoint.append(om1.MPoint(obj_t))
+                    obj_array.append(obj_lst_mpoint[index])
+
+                self.ikspline_cv_tn = ikspinedag_n.create("transform", "LeftUpperArm_SplineCv")
+                ikspline_cv = self.MNurbs1_cv.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                cmds.parent("LeftUpperArm_SplineCv", "DoNotTouch")
+
+                larmcrv_info = ikspinedg_modifier.createNode("curveInfo")
+                larmstretchpercent = ikspinedg_modifier.createNode("multiplyDivide")
+                larmstretchpow = ikspinedg_modifier.createNode("multiplyDivide")
+                larmstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                larmscalediv = ikspinedg_modifier.createNode("multiplyDivide")
+                likarmstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                blendstretch = ikspinedg_modifier.createNode("blendColors")
+
+                larmcrvinfo_fs = om1.MFnDependencyNode(larmcrv_info)
+                larmstretchpercent_fs = om1.MFnDependencyNode(larmstretchpercent)
+                larmstretchpow_fs = om1.MFnDependencyNode(larmstretchpow)
+                larmstretchdiv_fs = om1.MFnDependencyNode(larmstretchdiv)
+                larmscalediv_fs = om1.MFnDependencyNode(larmscalediv)
+                likarmstretchdiv_fs = om1.MFnDependencyNode(likarmstretchdiv)
+                likarmstretchcluster1_fs = om1.MFnDependencyNode(grp_armupperikcluster1)
+                likarmstretchcluster2_fs = om1.MFnDependencyNode(grp_armupperikcluster2)
+                blendstretch_fs = om1.MFnDependencyNode(blendstretch)
+                larmstretchoption_fs = om1.MFnDependencyNode(obj_stretchyleftarm1)
+
+                larmcrvinfoarc_plug = larmcrvinfo_fs.findPlug("arcLength")
+                larmstretchpercentinp1y_plug = larmstretchpercent_fs.findPlug("input1Y")
+                larmstretchpercentotp_plug = larmstretchpercent_fs.findPlug("outputY")
+                larmstretchpowinp1x_plug = larmstretchpow_fs.findPlug("input1X")
+                larmstretchpowinp1z_plug = larmstretchpow_fs.findPlug("input1Z")
+                larmstretchpowotpx_plug = larmstretchpow_fs.findPlug("outputX")
+                larmstretchpowotpz_plug = larmstretchpow_fs.findPlug("outputZ")
+                larmstretchdivinp2x_plug = larmstretchdiv_fs.findPlug("input2X")
+                larmstretchdivinp2z_plug = larmstretchdiv_fs.findPlug("input2Z")
+                larmstretchdivotox_plug = larmstretchdiv_fs.findPlug("outputX")
+                larmstretchdivotpz_plug = larmstretchdiv_fs.findPlug("outputZ")
+                larmscaledivinp1y_plug = larmscalediv_fs.findPlug("input1Y")
+                larmscaledivinp2y_plug = larmscalediv_fs.findPlug("input2Y")
+                larmscaledivotpy_plug = larmscalediv_fs.findPlug("outputY")
+                likarmstretchdivinp1_plug = likarmstretchdiv_fs.findPlug("input1")
+                likarmstretchdivotp_plug = likarmstretchdiv_fs.findPlug("output")
+                likarmstretchclust1trans_plug = likarmstretchcluster1_fs.findPlug("translate")
+                likarmstretchclust2trans_plug = likarmstretchcluster2_fs.findPlug("translate")
+                blendstretchinp1r_plug = blendstretch_fs.findPlug("color1R")
+                blendstretchinp1g_plug = blendstretch_fs.findPlug("color1G")
+                blendstretchinp1b_plug = blendstretch_fs.findPlug("color1B")
+                blendstretchotpr_plug = blendstretch_fs.findPlug("outputR")
+                blendstretchotpg_plug = blendstretch_fs.findPlug("outputG")
+                blendstretchotpb_plug = blendstretch_fs.findPlug("outputB")
+                blendstretch_plug = blendstretch_fs.findPlug("blender")
+                larmstretchoption_plug = larmstretchoption_fs.findPlug("stretchable")
+
+                objparent = om1.MObject()
+                objchild = om1.MObject()
+                for index in range(iklupperarm_sl_lst.length()):
+                    if index < iklupperarm_sl_lst.length()-1:
+                        iklupperarm_sl_lst.getDependNode(index, objparent)
+                        iklupperarm_sl_lst.getDependNode(index+1, objchild)
+                        larmparentjnt_fs = om1.MFnDependencyNode(objparent)
+                        larmchildjnt_fs = om1.MFnDependencyNode(objchild)
+                        larmjnt_syplug = larmparentjnt_fs.findPlug("scaleY")
+                        larmjnt_sxplug = larmparentjnt_fs.findPlug("scaleX")
+                        larmjnt_szplug = larmparentjnt_fs.findPlug("scaleZ")
+                        larmjnt_sotpplug = larmparentjnt_fs.findPlug("scale")
+                        larmjnt_invsplug = larmchildjnt_fs.findPlug("inverseScale")
+                        ikspinedg_modifier.connect(larmstretchpercentotp_plug, blendstretchinp1g_plug)
+                        ikspinedg_modifier.connect(larmstretchdivotox_plug, blendstretchinp1r_plug)
+                        ikspinedg_modifier.connect(larmstretchdivotpz_plug, blendstretchinp1b_plug)
+                        ikspinedg_modifier.connect(blendstretchotpg_plug, larmjnt_syplug)
+                        ikspinedg_modifier.connect(blendstretchotpr_plug, larmjnt_sxplug)
+                        ikspinedg_modifier.connect(blendstretchotpb_plug, larmjnt_szplug)
+                        ikspinedg_modifier.connect(larmjnt_sotpplug, larmjnt_invsplug)
+
+                ikspinedg_modifier.renameNode(larmcrv_info, "LeftUpperArmSpline_Info")
+                ikspinedg_modifier.renameNode(larmstretchpercent, "LeftUpperArmStretch_Percent")
+                ikspinedg_modifier.renameNode(larmstretchpow, "LeftUpperArmStretch_Power")
+                ikspinedg_modifier.renameNode(larmstretchdiv, "LeftUpperArmStretch_Divide")
+                ikspinedg_modifier.renameNode(ikspline_cv, "LeftUpperArm_SplineCvShape")
+                ikspinedg_modifier.renameNode(self.larm_ik, "LeftUpperArm_Ik")
+                ikspinedg_modifier.renameNode(self.iklarm_effector, "LeftUpperArm_effector")
+                ikspinedg_modifier.renameNode(larmscalediv, "IkLeftUpperArmGlobalScale_Average")
+                ikspinedg_modifier.renameNode(likarmstretchdiv, "LeftUpperArmStretch_Divide2")
+                ikspinedg_modifier.renameNode(blendstretch, "LeftUpperArmStretch_Blend")
+                ikspinedg_modifier.commandToExecute('parent "LeftUpperArm_Ik" "DoNotTouch"')
+                ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperArm_SplineCvShape.worldSpace[0] LeftUpperArm_Ik.inCurve')
+                ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "LeftUpperArmIk_skin" IkCvSplineLeftUpperArm0 IkCvSplineLeftUpperArm1 IkCvSplineLeftUpperArm2 LeftUpperArm_SplineCv')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArm_Ik.dTwistControlEnable" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArm_Ik.dWorldUpType" 4')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArm_Ik.dForwardAxis" 3')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArm_Ik.dWorldUpAxis" 4')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArm_Ik.dWorldUpVectorY" 0')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArm_Ik.dWorldUpVectorEndY" 0')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArm_Ik.dWorldUpVectorZ" -1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArm_Ik.dWorldUpVectorEndZ" -1')
+                ikspinedg_modifier.commandToExecute('connectAttr -force IkCvSplineLeftUpperArm0.worldMatrix[0] LeftUpperArm_Ik.dWorldUpMatrix')
+                ikspinedg_modifier.commandToExecute('connectAttr -force IkCvSplineLeftUpperArm2.worldMatrix[0] LeftUpperArm_Ik.dWorldUpMatrixEnd')
+                ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperArm_SplineCvShape.worldSpace[0] LeftUpperArmSpline_Info.inputCurve')
+                ikspinedg_modifier.connect(larmcrvinfoarc_plug, larmscaledivinp1y_plug)
+                ikspinedg_modifier.connect(masterctrlsy_plug, larmscaledivinp2y_plug)
+                ikspinedg_modifier.connect(larmscaledivotpy_plug, larmstretchpercentinp1y_plug)
+                ikspinedg_modifier.connect(larmstretchpercentotp_plug, larmstretchpowinp1x_plug)
+                ikspinedg_modifier.connect(larmstretchpercentotp_plug, larmstretchpowinp1z_plug)
+                ikspinedg_modifier.connect(larmstretchpowotpx_plug, larmstretchdivinp2x_plug)
+                ikspinedg_modifier.connect(larmstretchpowotpz_plug, larmstretchdivinp2z_plug)
+                ikspinedg_modifier.connect(likarmstretchclust2trans_plug, likarmstretchdivinp1_plug)
+                ikspinedg_modifier.connect(likarmstretchdivotp_plug, likarmstretchclust1trans_plug)
+                ikspinedg_modifier.connect(larmstretchoption_plug, blendstretch_plug)
+                ikspinedg_modifier.commandToExecute('float $leftupperarmstretchinput1Y = `getAttr "LeftUpperArmStretch_Percent.input1Y"`; setAttr "LeftUpperArmStretch_Percent.input2Y" $leftupperarmstretchinput1Y')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Power.input2X" 0.5')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Power.input2Z" 0.5')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Divide.input1X" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Divide.input1Z" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Percent.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Power.operation" 3')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Divide.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "IkLeftUpperArmGlobalScale_Average.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Divide2.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Divide2.input2X" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Divide2.input2Y" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Divide2.input2Z" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "IkNeckGlobalScale_Average.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Blend.color2R" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Blend.color2G" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperArmStretch_Blend.color2B" 1')
+                ikspinedg_modifier.doIt()
+
+                ikspline_solver = self.IK_System.findSolver("ikSplineSolver")
+                self.IK_Handle.setSolver(ikspline_solver)
+
+            grp_armlowerikcluster1 = om1.MObject()
+            grp_armlowerikcluster2 = om1.MObject()
+
+            if cmds.objExists("IkSplineLeftLowerArm0"):
+                ikllowerarm_sl_lst = om1.MSelectionList()
+                ikllowerarm_sl_lst.add("IkSplineLeftLowerArm*")
+                ikllowerarm_sl_lst.getDependNode(0, obj_root)
+                ikllowerarm_sl_lst.getDependNode(ikllowerarm_sl_lst.length()-1, obj_endspine)
+
+                ikllowerarmgrp_sl_lst = om1.MSelectionList()
+                ikllowerarmgrp_sl_lst.add("LeftLowerArmIkCluster1_grp")
+                ikllowerarmgrp_sl_lst.add("LeftLowerArmIkCluster2_grp")
+                ikllowerarmgrp_sl_lst.getDependNode(0, grp_armlowerikcluster1)
+                ikllowerarmgrp_sl_lst.getDependNode(1, grp_armlowerikcluster2)
+
+                rootspine_path = self.MDag_path.getAPathTo(obj_root)
+
+                try:
+                    ikspineiksolver_lst.add("ikSplineSolver*")
+                except:
+                    cmds.createNode("ikSplineSolver")
+
+                self.iklarm_effector = self.IK_Effector.create(obj_endspine)
+                iklarm_effector_path = self.MDag_path.getAPathTo(self.iklarm_effector)
+
+                self.larm_ik = self.IK_Handle.create(rootspine_path, iklarm_effector_path)
+
+                obj_array = om1.MPointArray()
+                obj_lst_mpoint = []
+                obj = om1.MObject()
+                for index in range(ikllowerarm_sl_lst.length()):
+                    ikllowerarm_sl_lst.getDependNode(index, obj)
+                    obj_path = self.MDag_path.getAPathTo(obj)
+                    obj_tn = om1.MFnTransform(obj_path)
+                    obj_t = obj_tn.translation(om1.MSpace.kWorld)
+                    obj_lst_mpoint.append(om1.MPoint(obj_t))
+                    obj_array.append(obj_lst_mpoint[index])
+
+                self.ikspline_cv_tn = ikspinedag_n.create("transform", "LeftLowerArm_SplineCv")
+                ikspline_cv = self.MNurbs1_cv.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                cmds.parent("LeftLowerArm_SplineCv", "DoNotTouch")
+
+                larmcrv_info = ikspinedg_modifier.createNode("curveInfo")
+                larmstretchpercent = ikspinedg_modifier.createNode("multiplyDivide")
+                larmstretchpow = ikspinedg_modifier.createNode("multiplyDivide")
+                larmstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                larmscalediv = ikspinedg_modifier.createNode("multiplyDivide")
+                likarmstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                blendstretch = ikspinedg_modifier.createNode("blendColors")
+
+                larmcrvinfo_fs = om1.MFnDependencyNode(larmcrv_info)
+                larmstretchpercent_fs = om1.MFnDependencyNode(larmstretchpercent)
+                larmstretchpow_fs = om1.MFnDependencyNode(larmstretchpow)
+                larmstretchdiv_fs = om1.MFnDependencyNode(larmstretchdiv)
+                larmscalediv_fs = om1.MFnDependencyNode(larmscalediv)
+                likarmstretchdiv_fs = om1.MFnDependencyNode(likarmstretchdiv)
+                likarmstretchcluster1_fs = om1.MFnDependencyNode(grp_armlowerikcluster1)
+                likarmstretchcluster2_fs = om1.MFnDependencyNode(grp_armlowerikcluster2)
+                blendstretch_fs = om1.MFnDependencyNode(blendstretch)
+
+                larmcrvinfoarc_plug = larmcrvinfo_fs.findPlug("arcLength")
+                larmstretchpercentinp1y_plug = larmstretchpercent_fs.findPlug("input1Y")
+                larmstretchpercentotp_plug = larmstretchpercent_fs.findPlug("outputY")
+                larmstretchpowinp1x_plug = larmstretchpow_fs.findPlug("input1X")
+                larmstretchpowinp1z_plug = larmstretchpow_fs.findPlug("input1Z")
+                larmstretchpowotpx_plug = larmstretchpow_fs.findPlug("outputX")
+                larmstretchpowotpz_plug = larmstretchpow_fs.findPlug("outputZ")
+                larmstretchdivinp2x_plug = larmstretchdiv_fs.findPlug("input2X")
+                larmstretchdivinp2z_plug = larmstretchdiv_fs.findPlug("input2Z")
+                larmstretchdivotox_plug = larmstretchdiv_fs.findPlug("outputX")
+                larmstretchdivotpz_plug = larmstretchdiv_fs.findPlug("outputZ")
+                larmscaledivinp1y_plug = larmscalediv_fs.findPlug("input1Y")
+                larmscaledivinp2y_plug = larmscalediv_fs.findPlug("input2Y")
+                larmscaledivotpy_plug = larmscalediv_fs.findPlug("outputY")
+                likarmstretchdivinp1_plug = likarmstretchdiv_fs.findPlug("input1")
+                likarmstretchdivotp_plug = likarmstretchdiv_fs.findPlug("output")
+                likarmstretchclust1trans_plug = likarmstretchcluster1_fs.findPlug("translate")
+                likarmstretchclust2trans_plug = likarmstretchcluster2_fs.findPlug("translate")
+                blendstretchinp1r_plug = blendstretch_fs.findPlug("color1R")
+                blendstretchinp1g_plug = blendstretch_fs.findPlug("color1G")
+                blendstretchinp1b_plug = blendstretch_fs.findPlug("color1B")
+                blendstretchotpr_plug = blendstretch_fs.findPlug("outputR")
+                blendstretchotpg_plug = blendstretch_fs.findPlug("outputG")
+                blendstretchotpb_plug = blendstretch_fs.findPlug("outputB")
+                blendstretch_plug = blendstretch_fs.findPlug("blender")
+
+                objparent = om1.MObject()
+                objchild = om1.MObject()
+                for index in range(ikllowerarm_sl_lst.length()):
+                    if index < ikllowerarm_sl_lst.length()-1:
+                        ikllowerarm_sl_lst.getDependNode(index, objparent)
+                        ikllowerarm_sl_lst.getDependNode(index+1, objchild)
+                        larmparentjnt_fs = om1.MFnDependencyNode(objparent)
+                        larmchildjnt_fs = om1.MFnDependencyNode(objchild)
+                        larmjnt_syplug = larmparentjnt_fs.findPlug("scaleY")
+                        larmjnt_sxplug = larmparentjnt_fs.findPlug("scaleX")
+                        larmjnt_szplug = larmparentjnt_fs.findPlug("scaleZ")
+                        larmjnt_sotpplug = larmparentjnt_fs.findPlug("scale")
+                        larmjnt_invsplug = larmchildjnt_fs.findPlug("inverseScale")
+                        ikspinedg_modifier.connect(larmstretchpercentotp_plug, blendstretchinp1g_plug)
+                        ikspinedg_modifier.connect(larmstretchdivotox_plug, blendstretchinp1r_plug)
+                        ikspinedg_modifier.connect(larmstretchdivotpz_plug, blendstretchinp1b_plug)
+                        ikspinedg_modifier.connect(blendstretchotpg_plug, larmjnt_syplug)
+                        ikspinedg_modifier.connect(blendstretchotpr_plug, larmjnt_sxplug)
+                        ikspinedg_modifier.connect(blendstretchotpb_plug, larmjnt_szplug)
+                        ikspinedg_modifier.connect(larmjnt_sotpplug, larmjnt_invsplug)
+
+
+                ikspinedg_modifier.renameNode(larmcrv_info, "LeftLowerArmSpline_Info")
+                ikspinedg_modifier.renameNode(larmstretchpercent, "LeftLowerArmStretch_Percent")
+                ikspinedg_modifier.renameNode(larmstretchpow, "LeftLowerArmStretch_Power")
+                ikspinedg_modifier.renameNode(larmstretchdiv, "LeftLowerArmStretch_Divide")
+                ikspinedg_modifier.renameNode(ikspline_cv, "LeftLowerArm_SplineCvShape")
+                ikspinedg_modifier.renameNode(self.larm_ik, "LeftLowerArm_Ik")
+                ikspinedg_modifier.renameNode(self.iklarm_effector, "LeftLowerArm_effector")
+                ikspinedg_modifier.renameNode(larmscalediv, "IkLeftLowerArmGlobalScale_Average")
+                ikspinedg_modifier.renameNode(likarmstretchdiv, "LeftLowerArmStretch_Divide2")
+                ikspinedg_modifier.renameNode(blendstretch, "LeftLowerArmStretch_Blend")
+                ikspinedg_modifier.commandToExecute('parent "LeftLowerArm_Ik" "DoNotTouch"')
+                ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerArm_SplineCvShape.worldSpace[0] LeftLowerArm_Ik.inCurve')
+                ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "LeftLowerArmIk_skin" IkCvSplineLeftLowerArm0 IkCvSplineLeftLowerArm1 IkCvSplineLeftLowerArm2 LeftLowerArm_SplineCv')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArm_Ik.dTwistControlEnable" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArm_Ik.dWorldUpType" 4')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArm_Ik.dForwardAxis" 3')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArm_Ik.dWorldUpAxis" 4')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArm_Ik.dWorldUpVectorY" 0')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArm_Ik.dWorldUpVectorEndY" 0')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArm_Ik.dWorldUpVectorZ" -1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArm_Ik.dWorldUpVectorEndZ" -1')
+                ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineLeftLowerArm0.worldMatrix[0] LeftLowerArm_Ik.dWorldUpMatrix')
+                ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineLeftLowerArm2.worldMatrix[0] LeftLowerArm_Ik.dWorldUpMatrixEnd')
+                ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerArm_SplineCvShape.worldSpace[0] LeftLowerArmSpline_Info.inputCurve')
+                ikspinedg_modifier.connect(larmcrvinfoarc_plug, larmscaledivinp1y_plug)
+                ikspinedg_modifier.connect(masterctrlsy_plug, larmscaledivinp2y_plug)
+                ikspinedg_modifier.connect(larmscaledivotpy_plug, larmstretchpercentinp1y_plug)
+                ikspinedg_modifier.connect(larmstretchpercentotp_plug, larmstretchpowinp1x_plug)
+                ikspinedg_modifier.connect(larmstretchpercentotp_plug, larmstretchpowinp1z_plug)
+                ikspinedg_modifier.connect(larmstretchpowotpx_plug, larmstretchdivinp2x_plug)
+                ikspinedg_modifier.connect(larmstretchpowotpz_plug, larmstretchdivinp2z_plug)
+                ikspinedg_modifier.connect(likarmstretchclust2trans_plug, likarmstretchdivinp1_plug)
+                ikspinedg_modifier.connect(likarmstretchdivotp_plug, likarmstretchclust1trans_plug)
+                ikspinedg_modifier.connect(larmstretchoption_plug, blendstretch_plug)
+                ikspinedg_modifier.commandToExecute('float $leftlowerarmstretchinput1Y = `getAttr "LeftLowerArmStretch_Percent.input1Y"`; setAttr "LeftLowerArmStretch_Percent.input2Y" $leftlowerarmstretchinput1Y')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Power.input2X" 0.5')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Power.input2Z" 0.5')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Divide.input1X" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Divide.input1Z" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Percent.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Power.operation" 3')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Divide.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "IkLeftLowerArmGlobalScale_Average.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Divide2.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Divide2.input2X" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Divide2.input2Y" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Divide2.input2Z" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Blend.color2R" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Blend.color2G" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftLowerArmStretch_Blend.color2B" 1')
+                ikspinedg_modifier.doIt()
+
+                ikspline_solver = self.IK_System.findSolver("ikSplineSolver")
+                self.IK_Handle.setSolver(ikspline_solver)
+
+        stretchy_sl_lst2 = om2.MSelectionList()
+        stretchy_sl_lst2.add("Biped_LeftHandOptions_ctrl")
+        obj_stretchyleftarm2 = stretchy_sl_lst2.getDependNode(0)
+
+        if cmds.objExists("NoFlipLeftHand_Ik") and cmds.objExists("PVLeftHand_Ik"):
+
+            self.MDG2_mod.commandToExecute('addAttr -longName "follow" -niceName "Follow Body" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_IkLeftHand_ctrl')
+            self.MDG2_mod.commandToExecute('parentConstraint -mo -weight 1 Biped_Root_ctrl Biped_IkLeftHandRot_null')
+            self.MDG2_mod.doIt()
+
             lhandik_sl_ls = om2.MSelectionList()
-            lhandik_sl_ls.add("LeftHand_Ik")
-            likhandle_fs = om2.MFnDependencyNode(lhandik_sl_ls.getDependNode(0))
+            lhandik_sl_ls.add("LeftArmIk_grp")
+            lhandik_sl_ls.add("Biped_NoFlipLeftElbow_null")
+            lhandik_sl_ls.add("Biped_IkLeftHand_ctrl")
+            lhandik_sl_ls.add("IkStretchyLeftJointArm_grp")
+            likhandlegrp_fs = om2.MFnDependencyNode(lhandik_sl_ls.getDependNode(0))
+            noflipleftelbownullobj_fs = om2.MFnDependencyNode(lhandik_sl_ls.getDependNode(1))
+            ikarmctrl_fs = om2.MFnDependencyNode(lhandik_sl_ls.getDependNode(2))
             likhand_fs = om2.MFnDependencyNode(iklarm_sl_ls.getDependNode(2))
 
             if self.typeofLHandIK.currentIndex() == 1 or 2:
-                likhandctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                likhandctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                rikhandrot_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                likhandrot_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(likhandctrl_multMatrix, "IkLeftHand_multMatrix")
-                self.ctrl_mod_n.renameNode(likhandctrl_decomposeMatrix, "IkLeftHand_decomposeMatrix")
-                self.ctrl_mod_n.renameNode(rikhandrot_multMatrix, "IkLeftHandRot_multMatrix")
-                self.ctrl_mod_n.renameNode(likhandrot_decomposeMatrix, "IkLeftHandRot_decomposeMatrix")
+                likhandctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                likhandctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                likhandrot_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                likhandrot_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(likhandctrl_multMatrix, "IkLeftHand_multMatrix")
+                self.MDG2_mod.renameNode(likhandctrl_decomposeMatrix, "IkLeftHand_decomposeMatrix")
+                self.MDG2_mod.renameNode(likhandrot_multMatrix, "IkLeftHandRot_multMatrix")
+                self.MDG2_mod.renameNode(likhandrot_decomposeMatrix, "IkLeftHandRot_decomposeMatrix")
 
                 likhandmultMatrix_fs = om2.MFnDependencyNode(likhandctrl_multMatrix)
                 likhanddecomposeMatrix_fs = om2.MFnDependencyNode(likhandctrl_decomposeMatrix)
-                likhandrotmultMatrix_fs = om2.MFnDependencyNode(rikhandrot_multMatrix)
+                likhandrotmultMatrix_fs = om2.MFnDependencyNode(likhandrot_multMatrix)
                 likhandrotdecomposeMatrix_fs = om2.MFnDependencyNode(likhandrot_decomposeMatrix)
 
                 likhandmultMatrixSum_plug = likhandmultMatrix_fs.findPlug("matrixSum", False)
@@ -6591,36 +8151,307 @@ class MainWindow(QtWidgets.QDialog):
                 likhandrotmultMatrixSum_plug = likhandrotmultMatrix_fs.findPlug("matrixSum", False)
                 likhandrotdecomposeInpMatrix_plug = likhandrotdecomposeMatrix_fs.findPlug("inputMatrix", False)
                 likhandrotdecomposeOtpRot_plug = likhandrotdecomposeMatrix_fs.findPlug("outputRotate", False)
-                likhandlejntTrans_plug = likhandle_fs.findPlug("translate", False)
-                likhandlejntRot_plug = likhandle_fs.findPlug("rotate", False)
+                likhandgrpTrans_plug = likhandlegrp_fs.findPlug("translate", False)
+                likhandgrpRot_plug = likhandlegrp_fs.findPlug("rotate", False)
+                ikarmctrlTrans_plug = ikarmctrl_fs.findPlug("translate", False)
+                ikarmctrlRot_plug = ikarmctrl_fs.findPlug("rotate", False)
+                noflipleftelbownullTrans_plug = noflipleftelbownullobj_fs.findPlug("translate", False)
+                noflipleftelbownullRot_plug = noflipleftelbownullobj_fs.findPlug("rotate", False)
                 likhandRot_plug = likhand_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_IkLeftHand_ctrl.worldMatrix[0] IkLeftHand_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.commandToExecute('connectAttr -force LeftHand_Ik.parentInverseMatrix[0] IkLeftHand_multMatrix.matrixIn[1]')
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_IkLeftHand_ctrl.worldMatrix[0] IkLeftHandRot_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.commandToExecute('connectAttr -force IkLeftHand.parentInverseMatrix[0] IkLeftHandRot_multMatrix.matrixIn[1]')
-                self.ctrl_mod_n.connect(likhandmultMatrixSum_plug, likhanddecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(likhanddecomposeOtpTrans_plug, likhandlejntTrans_plug)
-                self.ctrl_mod_n.connect(likhanddecomposeOtpRot_plug, likhandlejntRot_plug)
-                self.ctrl_mod_n.connect(likhandrotmultMatrixSum_plug, likhandrotdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(likhandrotdecomposeOtpRot_plug, likhandRot_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_IkLeftHand_ctrl.worldMatrix[0] IkLeftHand_multMatrix.matrixIn[0]')
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_IkLeftHand_ctrl.worldMatrix[0] IkLeftHandRot_multMatrix.matrixIn[0]')
+                self.MDG2_mod.commandToExecute('connectAttr -force IkLeftHand.parentInverseMatrix[0] IkLeftHandRot_multMatrix.matrixIn[1]')
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_IkLeftHand_ctrl.follow Biped_IkLeftHandRot_null_parentConstraint1.Biped_Root_ctrlW0')
+                self.MDG2_mod.connect(likhandmultMatrixSum_plug, likhanddecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(likhanddecomposeOtpTrans_plug, likhandgrpTrans_plug)
+                self.MDG2_mod.connect(likhanddecomposeOtpRot_plug, likhandgrpRot_plug)
+                self.MDG2_mod.connect(likhandrotmultMatrixSum_plug, likhandrotdecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(ikarmctrlTrans_plug, noflipleftelbownullTrans_plug)
+                self.MDG2_mod.connect(ikarmctrlRot_plug, noflipleftelbownullRot_plug)
+                self.MDG2_mod.connect(likhandrotdecomposeOtpRot_plug, likhandRot_plug)
+                self.MDG2_mod.commandToExecute('parent NoFlipLeftHand_Ik LeftArmIk_grp')
+                self.MDG2_mod.commandToExecute('parent PVLeftHand_Ik LeftArmIk_grp')
+                self.MDG2_mod.commandToExecute('poleVectorConstraint Biped_NoFlipLeftElbow_ctrl NoFlipLeftHand_Ik')
+                self.MDG2_mod.commandToExecute('poleVectorConstraint Biped_PVLeftElbow_ctrl PVLeftHand_Ik')
+                self.MDG2_mod.commandToExecute('setAttr "NoFlipLeftHand_Ik.twist" -90')
 
+                if self.autostretch.currentIndex() == 1:
+                    likarmdistloc = om2.MFnDagNode()
+
+                    likarmdistloc1_tn = likarmdistloc.create("transform", "distloc_L_arm1", lhandik_sl_ls.getDependNode(3))
+                    likarmdistloc1_ln = likarmdistloc.create("locator", "L_arm1_Shape", likarmdistloc1_tn)
+                    likhanddistloc1_tn = likarmdistloc.create("transform", "distloc_L_hand1")
+                    likhanddistloc1_ln = likarmdistloc.create("locator", "L_hand1_Shape", likhanddistloc1_tn)
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension1" "IkLeftArmDistance_Info"')
+                    self.MDG2_mod.doIt()
+
+                    larmnull_transform_t = larmnull_transform.translation(om2.MSpace.kTransform)
+                    likupperarmdistloc_transform = om2.MFnTransform(likarmdistloc1_tn)
+                    likupperarmdistloc_transform.setTranslation(larmnull_transform_t, om2.MSpace.kTransform)
+
+                    IkLeftArmDistance_sl_ls = om2.MSelectionList()
+                    IkLeftArmDistance_sl_ls.add("IkLeftArmDistance_InfoShape")
+
+                    likhandDist_fs = om2.MFnDependencyNode(likhanddistloc1_tn)
+                    likarmjntDist_fs = om2.MFnDependencyNode(IkLeftArmDistance_sl_ls.getDependNode(0))
+
+                    likarmjntDistPoint2_plug = likarmjntDist_fs.findPlug("endPoint", False)
+                    likhandDistOtpTrans_plug = likhandDist_fs.findPlug("translate", False)
+
+                    self.MDG2_mod.commandToExecute('connectAttr -force L_arm1_Shape.worldPosition[0] IkLeftArmDistance_InfoShape.startPoint')
+                    self.MDG2_mod.connect(likhandDistOtpTrans_plug, likarmjntDistPoint2_plug)
+                    self.MDG2_mod.connect(likhanddecomposeOtpTrans_plug, likhandDistOtpTrans_plug)
+                    self.MDG2_mod.commandToExecute('float $noflipikleftforearmtranslateY = `getAttr "IkNoFlipLeftForeArm.translateY"`; float $noflipiklefthandtranslateY = `getAttr "IkNoFlipLeftHand.translateY"`; float $totalnoflipikleftarmtranslateY = $noflipikleftforearmtranslateY + $noflipiklefthandtranslateY; setDrivenKeyframe -currentDriver IkLeftArmDistance_InfoShape.distance -driverValue $totalnoflipikleftarmtranslateY -attribute "translateY" -value $noflipikleftforearmtranslateY IkNoFlipLeftForeArm;')
+                    self.MDG2_mod.commandToExecute('float $noflipikleftforearmtranslateY = `getAttr "IkNoFlipLeftForeArm.translateY"`; float $noflipiklefthandtranslateY = `getAttr "IkNoFlipLeftHand.translateY"`; float $totalnoflipikleftarmtranslateY = $noflipikleftforearmtranslateY + $noflipiklefthandtranslateY; setDrivenKeyframe -currentDriver IkLeftArmDistance_InfoShape.distance -driverValue ($totalnoflipikleftarmtranslateY*2) -attribute "translateY" -value ($noflipikleftforearmtranslateY*2) IkNoFlipLeftForeArm;')
+                    self.MDG2_mod.commandToExecute('float $noflipikleftforearmtranslateY = `getAttr "IkNoFlipLeftForeArm.translateY"`; float $noflipiklefthandtranslateY = `getAttr "IkNoFlipLeftHand.translateY"`; float $totalnoflipikleftarmtranslateY = $noflipikleftforearmtranslateY + $noflipiklefthandtranslateY; setDrivenKeyframe -currentDriver IkLeftArmDistance_InfoShape.distance -driverValue $totalnoflipikleftarmtranslateY -attribute "translateY" -value $noflipiklefthandtranslateY IkNoFlipLeftHand;')
+                    self.MDG2_mod.commandToExecute('float $noflipikleftforearmtranslateY = `getAttr "IkNoFlipLeftForeArm.translateY"`; float $noflipiklefthandtranslateY = `getAttr "IkNoFlipLeftHand.translateY"`; float $totalnoflipikleftarmtranslateY = $noflipikleftforearmtranslateY + $noflipiklefthandtranslateY; setDrivenKeyframe -currentDriver IkLeftArmDistance_InfoShape.distance -driverValue ($totalnoflipikleftarmtranslateY*2) -attribute "translateY" -value ($noflipiklefthandtranslateY*2) IkNoFlipLeftHand;')
+                    self.MDG2_mod.commandToExecute('float $pvikleftforearmtranslateY = `getAttr "IkPVLeftForeArm.translateY"`; float $pviklefthandtranslateY = `getAttr "IkPVLeftHand.translateY"`; float $totalpvikleftarmtranslateY = $pvikleftforearmtranslateY + $pviklefthandtranslateY; setDrivenKeyframe -currentDriver IkLeftArmDistance_InfoShape.distance -driverValue $totalpvikleftarmtranslateY -attribute "translateY" -value $pvikleftforearmtranslateY IkPVLeftForeArm;')
+                    self.MDG2_mod.commandToExecute('float $pvikleftforearmtranslateY = `getAttr "IkPVLeftForeArm.translateY"`; float $pviklefthandtranslateY = `getAttr "IkPVLeftHand.translateY"`; float $totalpvikleftarmtranslateY = $pvikleftforearmtranslateY + $pviklefthandtranslateY; setDrivenKeyframe -currentDriver IkLeftArmDistance_InfoShape.distance -driverValue ($totalpvikleftarmtranslateY*2) -attribute "translateY" -value ($pvikleftforearmtranslateY*2) IkPVLeftForeArm;')
+                    self.MDG2_mod.commandToExecute('float $pvikleftforearmtranslateY = `getAttr "IkPVLeftForeArm.translateY"`; float $pviklefthandtranslateY = `getAttr "IkPVLeftHand.translateY"`; float $totalpvikleftarmtranslateY = $pvikleftforearmtranslateY + $pviklefthandtranslateY; setDrivenKeyframe -currentDriver IkLeftArmDistance_InfoShape.distance -driverValue $totalpvikleftarmtranslateY -attribute "translateY" -value $pviklefthandtranslateY IkPVLeftHand;')
+                    self.MDG2_mod.commandToExecute('float $pvikleftforearmtranslateY = `getAttr "IkPVLeftForeArm.translateY"`; float $pviklefthandtranslateY = `getAttr "IkPVLeftHand.translateY"`; float $totalpvikleftarmtranslateY = $pvikleftforearmtranslateY + $pviklefthandtranslateY; setDrivenKeyframe -currentDriver IkLeftArmDistance_InfoShape.distance -driverValue ($totalpvikleftarmtranslateY*2) -attribute "translateY" -value ($pviklefthandtranslateY*2) IkPVLeftHand;')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkNoFlipLeftForeArm; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkPVLeftForeArm; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkNoFlipLeftHand; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkPVLeftHand; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('parent "IkLeftArmDistance_Info" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "distloc_L_hand1" "DoNotTouch"')
+
+                    self.MDG2_mod.commandToExecute('addAttr -longName "elbowsnap" -niceName "Elbow Snap" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_PVLeftElbow_ctrl')
+
+                    likarmdistloc2_tn = likarmdistloc.create("transform", "distloc_L_uparm2", lhandik_sl_ls.getDependNode(3))
+                    likarmdistloc2_ln = likarmdistloc.create("locator", "L_uparm2_Shape", likarmdistloc2_tn)
+                    likelbowdistloc_tn = likarmdistloc.create("transform", "distloc_L_legelbow")
+                    likelbowdistloc_ln = likarmdistloc.create("locator", "L_legelbow_Shape", likelbowdistloc_tn)
+                    likhanddistloc2_tn = likarmdistloc.create("transform", "distloc_L_leghand2")
+                    likhanddistloc2_ln = likarmdistloc.create("locator", "L_leghand2_Shape", likhanddistloc2_tn)
+                    pvleftelbowctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    likpvupperarmtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    likpvlowerarmtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    likpvupperarmstretchblendnode = self.MDG2_mod.createNode("blendColors")
+                    likpvlowerarmstretchblendnode = self.MDG2_mod.createNode("blendColors")
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.renameNode(pvleftelbowctrl_decomposeMatrix, "PVLeftElbow_decomposeMatrix")
+                    self.MDG2_mod.renameNode(likpvupperarmtransblendnode, "PVLeftUpperArmTrans_blend")
+                    self.MDG2_mod.renameNode(likpvlowerarmtransblendnode, "PVLeftLowerArmTrans_blend")
+                    self.MDG2_mod.renameNode(likpvupperarmstretchblendnode, "PVLeftUpperArmStretch_blend")
+                    self.MDG2_mod.renameNode(likpvlowerarmstretchblendnode, "PVLeftLowerArmStretch_blend")
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension1" "LeftUpperArmDistance_Info"')
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension2" "LeftLowerArmDistance_Info"')
+                    self.MDG2_mod.doIt()
+
+                    likupperarmdistloc2_transform = om2.MFnTransform(likarmdistloc2_tn)
+                    likupperarmdistloc2_transform.setTranslation(larmnull_transform_t, om2.MSpace.kTransform)
+
+                    IkLeftArmDistance_sl_ls.add("LeftUpperArmDistance_InfoShape")
+                    IkLeftArmDistance_sl_ls.add("LeftLowerArmDistance_InfoShape")
+                    IkLeftArmDistance_sl_ls.add("IkPVLeftForeArm_translateY")
+                    IkLeftArmDistance_sl_ls.add("IkPVLeftHand_translateY")
+                    IkLeftArmDistance_sl_ls.add("Biped_PVLeftElbow_ctrl")
+                    IkLeftArmDistance_sl_ls.add("IkNoFlipLeftForeArm_translateY")
+                    IkLeftArmDistance_sl_ls.add("IkNoFlipLeftHand_translateY")
+
+                    likelbowDist_fs = om2.MFnDependencyNode(likelbowdistloc_tn)
+                    likhandDist_fs = om2.MFnDependencyNode(likhanddistloc2_tn)
+                    likupperarmjntDist_fs = om2.MFnDependencyNode(IkLeftArmDistance_sl_ls.getDependNode(1))
+                    liklowerarmjntDist_fs = om2.MFnDependencyNode(IkLeftArmDistance_sl_ls.getDependNode(2))
+                    pvleftelbowkey_fs = om2.MFnDependencyNode(IkLeftArmDistance_sl_ls.getDependNode(3))
+                    pvlefthandkey_fs = om2.MFnDependencyNode(IkLeftArmDistance_sl_ls.getDependNode(4))
+                    pvleftelbowctrlDecomposeMatrix_fs = om2.MFnDependencyNode(pvleftelbowctrl_decomposeMatrix)
+                    likpvupperarmtransblendnode_fs = om2.MFnDependencyNode(likpvupperarmtransblendnode)
+                    likpvlowerarmtransblendnode_fs = om2.MFnDependencyNode(likpvlowerarmtransblendnode)
+                    pvleftelbowctrl_fs = om2.MFnDependencyNode(IkLeftArmDistance_sl_ls.getDependNode(5))
+                    pvleftelbowjnt_fs = om2.MFnDependencyNode(pviklarm_sl_ls.getDependNode(1))
+                    pvlefthandjnt_fs = om2.MFnDependencyNode(pviklarm_sl_ls.getDependNode(2))
+                    likupperarmstretchblendnode_fs = om2.MFnDependencyNode(likpvupperarmstretchblendnode)
+                    liklowerarmstretchblendnode_fs = om2.MFnDependencyNode(likpvlowerarmstretchblendnode)
+                    lefthandoption_fs = om2.MFnDependencyNode(obj_stretchyleftarm2)
+
+                    likupperarmjntDistPoint2_plug = likupperarmjntDist_fs.findPlug("endPoint", False)
+                    liklowerarmjntDistPoint1_plug = liklowerarmjntDist_fs.findPlug("startPoint", False)
+                    liklowerarmjntDistPoint2_plug = liklowerarmjntDist_fs.findPlug("endPoint", False)
+                    likelbowDistOtpTrans_plug = likelbowDist_fs.findPlug("translate", False)
+                    likhandDistOtpTrans_plug = likhandDist_fs.findPlug("translate", False)
+                    pvleftelbowctrlDecomposeMatrixOtpTrans_plug = pvleftelbowctrlDecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    pvleftelbowkeyotp_plug = pvleftelbowkey_fs.findPlug("output", False)
+                    pvlefthandkeyotp_plug = pvlefthandkey_fs.findPlug("output", False)
+                    likpvupperarmtransblendnodeinp1g_plug = likpvupperarmtransblendnode_fs.findPlug("color1G", False)
+                    likpvupperarmtransblendnodeinp2g_plug = likpvupperarmtransblendnode_fs.findPlug("color2G", False)
+                    likpvupperarmtransblendnodeotp_plug = likpvupperarmtransblendnode_fs.findPlug("outputG", False)
+                    likpvupperarmtransblendnodeblender_plug = likpvupperarmtransblendnode_fs.findPlug("blender", False)
+                    likpvlowerarmtransblendnodeinp1g_plug = likpvlowerarmtransblendnode_fs.findPlug("color1G", False)
+                    likpvlowerarmtransblendnodeinp2g_plug = likpvlowerarmtransblendnode_fs.findPlug("color2G", False)
+                    likpvlowerarmtransblendnodeotp_plug = likpvlowerarmtransblendnode_fs.findPlug("outputG", False)
+                    likpvlowerarmtransblendnodeblender_plug = likpvlowerarmtransblendnode_fs.findPlug("blender", False)
+                    pvleftelbowctrl_fs_plug = pvleftelbowctrl_fs.findPlug("elbowsnap", False)
+                    likpvupperarmstretchblendnodeinp1g_plug = likupperarmstretchblendnode_fs.findPlug("color1G", False)
+                    likpvupperarmstretchblendnodeotp_plug = likupperarmstretchblendnode_fs.findPlug("outputG", False)
+                    likpvupperarmstretchblendnodeblender_plug = likupperarmstretchblendnode_fs.findPlug("blender", False)
+                    likpvlowerarmstretchblendnodeinp1g_plug = liklowerarmstretchblendnode_fs.findPlug("color1G", False)
+                    likpvlowerarmstretchblendnodeotp_plug = liklowerarmstretchblendnode_fs.findPlug("outputG", False)
+                    likpvlowerarmstretchblendnodeblender_plug = liklowerarmstretchblendnode_fs.findPlug("blender", False)
+                    iklefthandstretch_plug = lefthandoption_fs.findPlug("stretchable", False)
+                    pvleftelbowjntTrans_plug = pvleftelbowjnt_fs.findPlug("translateY", False)
+                    pvlefthandjntTrans_plug = pvlefthandjnt_fs.findPlug("translateY", False)
+
+                    self.MDG2_mod.commandToExecute('connectAttr -force L_uparm2_Shape.worldPosition[0] LeftUpperArmDistance_InfoShape.startPoint')
+                    self.MDG2_mod.commandToExecute('connectAttr -force Biped_PVLeftElbow_ctrl.worldMatrix[0] PVLeftElbow_decomposeMatrix.inputMatrix')
+                    self.MDG2_mod.connect(likelbowDistOtpTrans_plug, likupperarmjntDistPoint2_plug)
+                    self.MDG2_mod.connect(likelbowDistOtpTrans_plug, liklowerarmjntDistPoint1_plug)
+                    self.MDG2_mod.connect(likhandDistOtpTrans_plug, liklowerarmjntDistPoint2_plug)
+                    self.MDG2_mod.connect(likhanddecomposeOtpTrans_plug, likhandDistOtpTrans_plug)
+                    self.MDG2_mod.connect(pvleftelbowctrlDecomposeMatrixOtpTrans_plug, likelbowDistOtpTrans_plug)
+
+                    self.MDG2_mod.disconnect(pvleftelbowkeyotp_plug, pvleftelbowjntTrans_plug)
+                    self.MDG2_mod.disconnect(pvlefthandkeyotp_plug, pvlefthandjntTrans_plug)
+                    self.MDG2_mod.connect(pvleftelbowkeyotp_plug, likpvupperarmtransblendnodeinp2g_plug)
+                    self.MDG2_mod.connect(pvlefthandkeyotp_plug, likpvlowerarmtransblendnodeinp2g_plug)
+                    self.MDG2_mod.connect(pvleftelbowctrl_fs_plug, likpvupperarmtransblendnodeblender_plug)
+                    self.MDG2_mod.connect(pvleftelbowctrl_fs_plug, likpvlowerarmtransblendnodeblender_plug)
+                    self.MDG2_mod.connect(likpvupperarmtransblendnodeotp_plug, likpvupperarmstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(likpvlowerarmtransblendnodeotp_plug, likpvlowerarmstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(likpvupperarmstretchblendnodeotp_plug, pvleftelbowjntTrans_plug)
+                    self.MDG2_mod.connect(likpvlowerarmstretchblendnodeotp_plug, pvlefthandjntTrans_plug)
+                    self.MDG2_mod.connect(iklefthandstretch_plug, likpvupperarmstretchblendnodeblender_plug)
+                    self.MDG2_mod.connect(iklefthandstretch_plug, likpvlowerarmstretchblendnodeblender_plug)
+                    self.MDG2_mod.commandToExecute('float $pvikleftforearmtranslateY = `getAttr "PVLeftUpperArmStretch_blend.color1G"`; setAttr "PVLeftUpperArmStretch_blend.color2G" $pvikleftforearmtranslateY;')
+                    self.MDG2_mod.commandToExecute('float $pviklefthandtranslateY = `getAttr "PVLeftLowerArmStretch_blend.color1G"`; setAttr "PVLeftLowerArmStretch_blend.color2G" $pviklefthandtranslateY;')
+                    self.MDG2_mod.commandToExecute('parent "distloc_L_legelbow" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "distloc_L_leghand2" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "LeftUpperArmDistance_Info" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "LeftLowerArmDistance_Info" "DoNotTouch"')
+
+                    self.MDG2_mod.commandToExecute('addAttr -longName "forearmlength" -niceName "AutoElbow ForeArm Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkLeftHand_ctrl')
+                    self.MDG2_mod.commandToExecute('addAttr -longName "wristlength" -niceName "AutoElbow Wrist Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkLeftHand_ctrl')
+                    self.MDG2_mod.doIt()
+
+                    likautokneeupperlegnode = self.MDG2_mod.createNode("multiplyDivide")
+                    likautokneelowerlegnode = self.MDG2_mod.createNode("multiplyDivide")
+                    liknoflipupperarmtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    liknofliplowerarmtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    self.MDG2_mod.renameNode(likautokneeupperlegnode, "NoFlipLeftForeArmTrans_multiply")
+                    self.MDG2_mod.renameNode(likautokneelowerlegnode, "NoFlipLeftHandTrans_multiply")
+                    self.MDG2_mod.renameNode(liknoflipupperarmtransblendnode, "NoFlipLeftUpperArmStretch_blend")
+                    self.MDG2_mod.renameNode(liknofliplowerarmtransblendnode, "NoFlipLeftLowerArmStretch_blend")
+
+                    likautoelbowupperleg_fs = om2.MFnDependencyNode(likautokneeupperlegnode)
+                    likautoelbowlowerleg_fs = om2.MFnDependencyNode(likautokneelowerlegnode)
+                    noflipleftelbowkey_fs = om2.MFnDependencyNode(IkLeftArmDistance_sl_ls.getDependNode(6))
+                    nofliplefthandkey_fs = om2.MFnDependencyNode(IkLeftArmDistance_sl_ls.getDependNode(7))
+                    nofliplefelbowjntTrans_fs = om2.MFnDependencyNode(noflipiklarm_sl_ls.getDependNode(1))
+                    nofliplefthandjntTrans_fs = om2.MFnDependencyNode(noflipiklarm_sl_ls.getDependNode(2))
+                    liknoflipupperarmstretchblendnode_fs = om2.MFnDependencyNode(liknoflipupperarmtransblendnode)
+                    liknofliplowerarmstretchblendnode_fs = om2.MFnDependencyNode(liknofliplowerarmtransblendnode)
+
+                    ikautoelbowupperarmInp1Y_plug = likautoelbowupperleg_fs.findPlug("input1Y", False)
+                    ikautoelbowupperarmInp2Y_plug = likautoelbowupperleg_fs.findPlug("input2Y", False)
+                    likautoelbowupperarmOtp_plug = likautoelbowupperleg_fs.findPlug("outputY", False)
+                    ikautoelbowlowerarmInp1Y_plug = likautoelbowlowerleg_fs.findPlug("input1Y", False)
+                    ikautoelbowlowerarmInp2Y_plug = likautoelbowlowerleg_fs.findPlug("input2Y", False)
+                    likautoelbowlowerarmOtp_plug = likautoelbowlowerleg_fs.findPlug("outputY", False)
+                    noflipleftelbowkeyotp_plug = noflipleftelbowkey_fs.findPlug("output", False)
+                    nofliplefthandkeyotp_plug = nofliplefthandkey_fs.findPlug("output", False)
+                    noflipleftelbowjnttty_plug = nofliplefelbowjntTrans_fs.findPlug("translateY", False)
+                    nofliplefthandjntty_plug = nofliplefthandjntTrans_fs.findPlug("translateY", False)
+                    likctrlelbowupperarm_plug = ikarmctrl_fs.findPlug("forearmlength", False)
+                    likctrlelbowlowerarm_plug = ikarmctrl_fs.findPlug("wristlength", False)
+                    liknoflipupperarmstretchblendnodeinp1g_plug = liknoflipupperarmstretchblendnode_fs.findPlug("color1G", False)
+                    liknoflipupperarmstretchblendnodeotp_plug = liknoflipupperarmstretchblendnode_fs.findPlug("outputG", False)
+                    liknoflipupperarmstretchblendnodeblender_plug = liknoflipupperarmstretchblendnode_fs.findPlug("blender", False)
+                    liknofliplowerarmstretchblendnodeinp1g_plug = liknofliplowerarmstretchblendnode_fs.findPlug("color1G", False)
+                    liknofliplowerarmstretchblendnodeotp_plug = liknofliplowerarmstretchblendnode_fs.findPlug("outputG", False)
+                    liknofliplowerarmstretchblendnodeblender_plug = liknofliplowerarmstretchblendnode_fs.findPlug("blender", False)
+
+                    self.MDG2_mod.disconnect(noflipleftelbowkeyotp_plug, noflipleftelbowjnttty_plug)
+                    self.MDG2_mod.disconnect(nofliplefthandkeyotp_plug, nofliplefthandjntty_plug)
+                    self.MDG2_mod.connect(likctrlelbowupperarm_plug, ikautoelbowupperarmInp1Y_plug)
+                    self.MDG2_mod.connect(noflipleftelbowkeyotp_plug, ikautoelbowupperarmInp2Y_plug)
+                    self.MDG2_mod.connect(likctrlelbowlowerarm_plug, ikautoelbowlowerarmInp1Y_plug)
+                    self.MDG2_mod.connect(nofliplefthandkeyotp_plug, ikautoelbowlowerarmInp2Y_plug)
+                    self.MDG2_mod.connect(likautoelbowupperarmOtp_plug, liknoflipupperarmstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(likautoelbowlowerarmOtp_plug, liknofliplowerarmstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(liknoflipupperarmstretchblendnodeotp_plug, noflipleftelbowjnttty_plug)
+                    self.MDG2_mod.connect(liknofliplowerarmstretchblendnodeotp_plug, nofliplefthandjntty_plug)
+                    self.MDG2_mod.connect(iklefthandstretch_plug, liknoflipupperarmstretchblendnodeblender_plug)
+                    self.MDG2_mod.connect(iklefthandstretch_plug, liknofliplowerarmstretchblendnodeblender_plug)
+                    self.MDG2_mod.commandToExecute('float $noflipikleftforearmtranslateY = `getAttr "NoFlipLeftUpperArmStretch_blend.color1G"`; setAttr "NoFlipLeftUpperArmStretch_blend.color2G" $noflipikleftforearmtranslateY;')
+                    self.MDG2_mod.commandToExecute('float $noflipiklefthandtranslateY = `getAttr "NoFlipLeftLowerArmStretch_blend.color1G"`; setAttr "NoFlipLeftLowerArmStretch_blend.color2G" $noflipiklefthandtranslateY;')
+                    self.MDG2_mod.commandToExecute('setAttr "NoFlipLeftForeArmTrans_multiply.operation" 1')
+                    self.MDG2_mod.commandToExecute('setAttr "NoFlipLeftHandTrans_multiply.operation" 1')
+
+                    leftarmlobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    noflipleftlegglobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    noflipleftfootlobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    self.MDG2_mod.renameNode(leftarmlobalscalenode, "IKLeftArmGlobalScale_Average")
+                    self.MDG2_mod.renameNode(noflipleftlegglobalscalenode, "IKNoFlipLeftForeArmGlobalScale_Average")
+                    self.MDG2_mod.renameNode(noflipleftfootlobalscalenode, "IKNoFlipLeftHandGlobalScale_Average")
+
+                    leftarmglobalscale_fs = om2.MFnDependencyNode(leftarmlobalscalenode)
+                    noflipleftarmglobalscale_fs = om2.MFnDependencyNode(noflipleftlegglobalscalenode)
+                    nofliplefthandlobalscale_fs = om2.MFnDependencyNode(noflipleftfootlobalscalenode)
+                    masterlctrl_fs = om2.MFnDependencyNode(obj_masterctrl2)
+
+                    likupperarmjntDist_plug = likupperarmjntDist_fs.findPlug("distance", False)
+                    liklowerarmjntDist_plug = liklowerarmjntDist_fs.findPlug("distance", False)
+                    likarmjntDist_plug = likarmjntDist_fs.findPlug("distance", False)
+                    masterlctrlsy_plug = masterlctrl_fs.findPlug("scaleY", False)
+                    leftarmglobalscaleInp1Y_plug = leftarmglobalscale_fs.findPlug("input1Y", False)
+                    leftarmglobalscaleInp2Y_plug = leftarmglobalscale_fs.findPlug("input2Y", False)
+                    leftarmglobalscaleOtpY_plug = leftarmglobalscale_fs.findPlug("outputY", False)
+                    noflipleftarmglobalscaleInp1Y_plug = noflipleftarmglobalscale_fs.findPlug("input1Y", False)
+                    noflipleftarmglobalscaleInp2Y_plug = noflipleftarmglobalscale_fs.findPlug("input2Y", False)
+                    noflipleftarmglobalscaleOtpY_plug = noflipleftarmglobalscale_fs.findPlug("outputY", False)
+                    nofliplefthandlobalscaleInp1Y_plug = nofliplefthandlobalscale_fs.findPlug("input1Y", False)
+                    nofliplefthandlobalscaleInp2Y_plug = nofliplefthandlobalscale_fs.findPlug("input2Y", False)
+                    nofliplefthandlobalscaleOtpY_plug = nofliplefthandlobalscale_fs.findPlug("outputY", False)
+                    noflipleftelbowkeyinp_plug = noflipleftelbowkey_fs.findPlug("input", False)
+                    nofliplefthandkeyinp_plug = nofliplefthandkey_fs.findPlug("input", False)
+                    pvleftelbowkeyinp_plug = pvleftelbowkey_fs.findPlug("input", False)
+                    pvlefthandkeyinp_plug = pvlefthandkey_fs.findPlug("input", False)
+
+                    self.MDG2_mod.disconnect(likarmjntDist_plug, noflipleftelbowkeyinp_plug)
+                    self.MDG2_mod.disconnect(likarmjntDist_plug, nofliplefthandkeyinp_plug)
+                    self.MDG2_mod.disconnect(likarmjntDist_plug, pvleftelbowkeyinp_plug)
+                    self.MDG2_mod.disconnect(likarmjntDist_plug, pvlefthandkeyinp_plug)
+                    self.MDG2_mod.connect(liklowerarmjntDist_plug, nofliplefthandlobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(likupperarmjntDist_plug, noflipleftarmglobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(liklowerarmjntDist_plug, nofliplefthandlobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, noflipleftarmglobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, nofliplefthandlobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(noflipleftarmglobalscaleOtpY_plug, likpvupperarmtransblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(nofliplefthandlobalscaleOtpY_plug, likpvlowerarmtransblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(likarmjntDist_plug, leftarmglobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, leftarmglobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(leftarmglobalscaleOtpY_plug, noflipleftelbowkeyinp_plug)
+                    self.MDG2_mod.connect(leftarmglobalscaleOtpY_plug, nofliplefthandkeyinp_plug)
+                    self.MDG2_mod.connect(leftarmglobalscaleOtpY_plug, pvleftelbowkeyinp_plug)
+                    self.MDG2_mod.connect(leftarmglobalscaleOtpY_plug, pvlefthandkeyinp_plug)
+                    self.MDG2_mod.commandToExecute('setAttr "IKNoFlipLeftForeArmGlobalScale_Average.operation" 2')
+                    self.MDG2_mod.commandToExecute('setAttr "IKNoFlipLeftHandGlobalScale_Average.operation" 2')
+                    self.MDG2_mod.commandToExecute('setAttr "IKLeftArmGlobalScale_Average.operation" 2')
+
+                # else:
+                #     self.MDG2_mod.commandToExecute('delete "IkStretchyLeftJointArm_grp"')
+                #     self.MDG2_mod.commandToExecute('delete "LeftArmIkCluster_grp"')
         else:
-            self.ctrl_mod_n.commandToExecute('delete "Biped_IkLeftHand_null"')
-            self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_LeftHandOptions_ctrl.fkik')
-            self.ctrl_mod_n.commandToExecute('setAttr "IkLeftArm.visibility" 0')
+            self.MDG2_mod.commandToExecute('delete "Biped_IkLeftHand_null"')
+            self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_LeftHandOptions_ctrl.fkik')
+            self.MDG2_mod.commandToExecute('setAttr "IkLeftArm.visibility" 0')
 
         lfinger_sl_ls = om2.MSelectionList()
         lfinger_sl_ls.add("LeftFinger*")
+
         for index in range(lfinger_sl_ls.length()):
             jnt_obj = lfinger_sl_ls.getDependNode(index)
             jnt_string = lfinger_sl_ls.getSelectionStrings(index)
 
             if jnt_obj.hasFn(om2.MFn.kJoint):
-                lfingerctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                lfingerctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(lfingerctrl_multMatrix, str(jnt_string)[2:][:-3]+"_multMatrix")
-                self.ctrl_mod_n.renameNode(lfingerctrl_decomposeMatrix, str(jnt_string)[2:][:-3]+"_decomposeMatrix")
+                lfingerctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                lfingerctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(lfingerctrl_multMatrix, str(jnt_string)[2:][:-3] + "_multMatrix")
+                self.MDG2_mod.renameNode(lfingerctrl_decomposeMatrix, str(jnt_string)[2:][:-3] + "_decomposeMatrix")
 
                 lfingermultMatrix_fs = om2.MFnDependencyNode(lfingerctrl_multMatrix)
                 lfingerdecomposeMatrix_fs = om2.MFnDependencyNode(lfingerctrl_decomposeMatrix)
@@ -6633,27 +8464,98 @@ class MainWindow(QtWidgets.QDialog):
                 lfingerjntTrans_plug = lfingerjnt_fs.findPlug("translate", False)
                 lfingerjntRot_plug = lfingerjnt_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.connect(lfingermultMatrixSum_plug, lfingerdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(lfingerdecomposeOtpTrans_plug, lfingerjntTrans_plug)
-                self.ctrl_mod_n.connect(lfingerdecomposeOtpRot_plug, lfingerjntRot_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.connect(lfingermultMatrixSum_plug, lfingerdecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(lfingerdecomposeOtpTrans_plug, lfingerjntTrans_plug)
+                self.MDG2_mod.connect(lfingerdecomposeOtpRot_plug, lfingerjntRot_plug)
                 if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
 
                 if cmds.objExists("Biped_{0}4_ctrl".format(str(jnt_string)[3:][:-4])):
-                    self.ctrl_mod_n.commandToExecute('setAttr "Biped_{0}4_ctrl.visibility" 0'.format(str(jnt_string)[3:][:-4]))
+                    self.MDG2_mod.commandToExecute('setAttr "Biped_{0}4_ctrl.visibility" 0'.format(str(jnt_string)[3:][:-4]))
+
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_LeftFingerOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "spread" -niceName "Spread" -attributeType double -keyable true -defaultValue 0 Biped_LeftFingerOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "relax" -niceName "Relax" -attributeType double -minValue -10 -maxValue 10 -keyable true -defaultValue 0 Biped_LeftFingerOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_LeftThumbOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_LeftIndexOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_LeftMiddleOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_LeftRingOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_LeftPinkyOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_LeftThumbOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_LeftIndexOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_LeftMiddleOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_LeftRingOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_LeftPinkyOptions_ctrl')
+        self.MDG2_mod.doIt()
+
+        lfingercurl_sl_ls = om2.MSelectionList()
+        lfingercurl_sl_ls.add("Biped_LeftFinger*_curl")
+
+        self.MDG2_mod.commandToExecute('float $leftfingeroptionsspread = `getAttr "Biped_LeftFingerOptions_ctrl.spread"`; float $leftfingerthumbrotateZ = `getAttr "Biped_LeftFingerThumb1_globalcurl.rotateZ"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.spread -driverValue $leftfingeroptionsspread -attribute "rotateZ" -value $leftfingerthumbrotateZ Biped_LeftFingerThumb1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 20.0; float $leftfingeroptionsspread = `getAttr "Biped_LeftFingerOptions_ctrl.spread"`; float $leftfingerthumbrotateZ = `getAttr "Biped_LeftFingerThumb1_globalcurl.rotateZ"`; float $totalleftfingeroptionsspread = $leftfingeroptionsspread + $add1; float $totalleftthumbrotateZ = $leftfingerthumbrotateZ + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.spread -driverValue $totalleftfingeroptionsspread -attribute "rotateZ" -value $totalleftthumbrotateZ Biped_LeftFingerThumb1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $leftfingeroptionsspread = `getAttr "Biped_LeftFingerOptions_ctrl.spread"`; float $leftfingerindexrotateZ = `getAttr "Biped_LeftFingerIndex1_globalcurl.rotateZ"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.spread -driverValue $leftfingeroptionsspread -attribute "rotateZ" -value $leftfingerindexrotateZ Biped_LeftFingerIndex1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 10.0; float $leftfingeroptionsspread = `getAttr "Biped_LeftFingerOptions_ctrl.spread"`; float $leftfingerindexrotateZ = `getAttr "Biped_LeftFingerIndex1_globalcurl.rotateZ"`; float $totalleftfingeroptionsspread = $leftfingeroptionsspread + $add1; float $totalleftindexrotateZ = $leftfingerindexrotateZ + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.spread -driverValue $totalleftfingeroptionsspread -attribute "rotateZ" -value $totalleftindexrotateZ Biped_LeftFingerIndex1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $leftfingeroptionsspread = `getAttr "Biped_LeftFingerOptions_ctrl.spread"`; float $leftfingermiddlerotateZ = `getAttr "Biped_LeftFingerMiddle1_globalcurl.rotateZ"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.spread -driverValue $leftfingeroptionsspread -attribute "rotateZ" -value $leftfingermiddlerotateZ Biped_LeftFingerMiddle1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 2.0; float $leftfingeroptionsspread = `getAttr "Biped_LeftFingerOptions_ctrl.spread"`; float $leftfingermiddlerotateZ = `getAttr "Biped_LeftFingerMiddle1_globalcurl.rotateZ"`; float $totalleftfingeroptionsspread = $leftfingeroptionsspread + $add1; float $totalleftmiddlerotateZ = $leftfingermiddlerotateZ + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.spread -driverValue $totalleftfingeroptionsspread -attribute "rotateZ" -value $totalleftmiddlerotateZ Biped_LeftFingerMiddle1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $leftfingeroptionsspread = `getAttr "Biped_LeftFingerOptions_ctrl.spread"`; float $leftfingerringrotateZ = `getAttr "Biped_LeftFingerRing1_globalcurl.rotateZ"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.spread -driverValue $leftfingeroptionsspread -attribute "rotateZ" -value $leftfingerringrotateZ Biped_LeftFingerRing1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = -8.0; float $leftfingeroptionsspread = `getAttr "Biped_LeftFingerOptions_ctrl.spread"`; float $leftfingerringrotateZ = `getAttr "Biped_LeftFingerRing1_globalcurl.rotateZ"`; float $totalleftfingeroptionsspread = $leftfingeroptionsspread + $add1; float $totalleftringrotateZ = $leftfingerringrotateZ + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.spread -driverValue $totalleftfingeroptionsspread -attribute "rotateZ" -value $totalleftringrotateZ Biped_LeftFingerRing1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $leftfingeroptionsspread = `getAttr "Biped_LeftFingerOptions_ctrl.spread"`; float $leftfingerpinkyrotateZ = `getAttr "Biped_LeftFingerPinky1_globalcurl.rotateZ"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.spread -driverValue $leftfingeroptionsspread -attribute "rotateZ" -value $leftfingerpinkyrotateZ Biped_LeftFingerPinky1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = -15.0; float $leftfingeroptionsspread = `getAttr "Biped_LeftFingerOptions_ctrl.spread"`; float $leftfingerpinkyrotateZ = `getAttr "Biped_LeftFingerPinky1_globalcurl.rotateZ"`; float $totalleftfingeroptionsspread = $leftfingeroptionsspread + $add1; float $totalleftpinkyrotateZ = $leftfingerpinkyrotateZ + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.spread -driverValue $totalleftfingeroptionsspread -attribute "rotateZ" -value $totalleftpinkyrotateZ Biped_LeftFingerPinky1_globalcurl;')
+
+        for index in range(lfingercurl_sl_ls.length()):
+            lfingercurl_obj = lfingercurl_sl_ls.getDependNode(index)
+            lfingercurl_string = lfingercurl_sl_ls.getSelectionStrings(index)
+
+            if lfingercurl_obj.hasFn(om2.MFn.kTransform):
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_Left{0}Options_ctrl.curl Biped_LeftFinger{1}_curl.rotateX'.format(str(lfingercurl_string)[19:][:-9], str(lfingercurl_string)[19:][:-8]))
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_Left{0}Options_ctrl.lean Biped_LeftFinger{1}_curl.rotateZ'.format(str(lfingercurl_string)[19:][:-9], str(lfingercurl_string)[19:][:-8]))
+                # self.MDG2_mod.commandToExecute('connectAttr -force Biped_LeftFingerOptions_ctrl.curl Biped_LeftFinger{1}_globalcurl.rotateX'.format(str(lfingercurl_string)[19:][:-9], str(lfingercurl_string)[19:][:-8]))
+
+            for index in range(1,5):
+                self.MDG2_mod.commandToExecute('float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingerindexrotateX = `getAttr "Biped_LeftFingerIndex{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $leftfingeroptionscurl -attribute "rotateX" -value $leftfingerindexrotateX Biped_LeftFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 90.0; float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingerindexrotateX = `getAttr "Biped_LeftFingerIndex{0}_globalcurl.rotateX"`; float $totalleftfingeroptionscurl = $leftfingeroptionscurl + $add1; float $totalleftindexrotateX = $leftfingerindexrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $totalleftfingeroptionscurl -attribute "rotateX" -value $totalleftindexrotateX Biped_LeftFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = -90.0; float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingerindexrotateX = `getAttr "Biped_LeftFingerIndex{0}_globalcurl.rotateX"`; float $totalleftfingeroptionscurl = $leftfingeroptionscurl + $add1; float $totalleftindexrotateX = $leftfingerindexrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $totalleftfingeroptionscurl -attribute "rotateX" -value $totalleftindexrotateX Biped_LeftFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingermiddlerotateX = `getAttr "Biped_LeftFingerMiddle{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $leftfingeroptionscurl -attribute "rotateX" -value $leftfingermiddlerotateX Biped_LeftFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 90.0; float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingermiddlerotateX = `getAttr "Biped_LeftFingerMiddle{0}_globalcurl.rotateX"`; float $totalleftfingeroptionscurl = $leftfingeroptionscurl + $add1; float $totalleftmiddlerotateX = $leftfingermiddlerotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $totalleftfingeroptionscurl -attribute "rotateX" -value $totalleftmiddlerotateX Biped_LeftFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = -90.0; float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingermiddlerotateX = `getAttr "Biped_LeftFingerMiddle{0}_globalcurl.rotateX"`; float $totalleftfingeroptionscurl = $leftfingeroptionscurl + $add1; float $totalleftmiddlerotateX = $leftfingermiddlerotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $totalleftfingeroptionscurl -attribute "rotateX" -value $totalleftmiddlerotateX Biped_LeftFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingerringrotateX = `getAttr "Biped_LeftFingerRing{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $leftfingeroptionscurl -attribute "rotateX" -value $leftfingerringrotateX Biped_LeftFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 90.0; float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingerringrotateX = `getAttr "Biped_LeftFingerRing{0}_globalcurl.rotateX"`; float $totalleftfingeroptionscurl = $leftfingeroptionscurl + $add1; float $totalleftringrotateX = $leftfingerringrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $totalleftfingeroptionscurl -attribute "rotateX" -value $totalleftringrotateX Biped_LeftFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = -90.0; float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingerringrotateX = `getAttr "Biped_LeftFingerRing{0}_globalcurl.rotateX"`; float $totalleftfingeroptionscurl = $leftfingeroptionscurl + $add1; float $totalleftringrotateX = $leftfingerringrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $totalleftfingeroptionscurl -attribute "rotateX" -value $totalleftringrotateX Biped_LeftFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingerpinkyrotateX = `getAttr "Biped_LeftFingerPinky{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $leftfingeroptionscurl -attribute "rotateX" -value $leftfingerpinkyrotateX Biped_LeftFingerPinky{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 90.0; float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingerpinkyrotateX = `getAttr "Biped_LeftFingerPinky{0}_globalcurl.rotateX"`; float $totalleftfingeroptionscurl = $leftfingeroptionscurl + $add1; float $totalleftpinkyrotateX = $leftfingerpinkyrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $totalleftfingeroptionscurl -attribute "rotateX" -value $totalleftpinkyrotateX Biped_LeftFingerPinky{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = -90.0; float $leftfingeroptionscurl = `getAttr "Biped_LeftFingerOptions_ctrl.curl"`; float $leftfingerpinkyrotateX = `getAttr "Biped_LeftFingerPinky{0}_globalcurl.rotateX"`; float $totalleftfingeroptionscurl = $leftfingeroptionscurl + $add1; float $totalleftpinkyrotateX = $leftfingerpinkyrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.curl -driverValue $totalleftfingeroptionscurl -attribute "rotateX" -value $totalleftpinkyrotateX Biped_LeftFingerPinky{0}_globalcurl;'.format(index))
+
+                self.MDG2_mod.commandToExecute('float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingerindexrotateX = `getAttr "Biped_LeftFingerIndex{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $leftfingeroptionsrelax -attribute "rotateX" -value $leftfingerindexrotateX Biped_LeftFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 15.0; float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingerindexrotateX = `getAttr "Biped_LeftFingerIndex{0}_globalcurl.rotateX"`; float $totalleftfingeroptionsrelax = $leftfingeroptionsrelax + $add1; float $totalleftindexrotateX = $leftfingerindexrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $totalleftfingeroptionsrelax -attribute "rotateX" -value $totalleftindexrotateX Biped_LeftFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = 5.0; float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingerindexrotateX = `getAttr "Biped_LeftFingerIndex{0}_globalcurl.rotateX"`; float $totalleftfingeroptionsrelax = $leftfingeroptionsrelax + $add1; float $totalleftindexrotateX = $leftfingerindexrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $totalleftfingeroptionsrelax -attribute "rotateX" -value $totalleftindexrotateX Biped_LeftFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingermiddlerotateX = `getAttr "Biped_LeftFingerMiddle{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $leftfingeroptionsrelax -attribute "rotateX" -value $leftfingermiddlerotateX Biped_LeftFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 10.0; float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingermiddlerotateX = `getAttr "Biped_LeftFingerMiddle{0}_globalcurl.rotateX"`; float $totalleftfingeroptionsrelax = $leftfingeroptionsrelax + $add1; float $totalleftmiddlerotateX = $leftfingermiddlerotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $totalleftfingeroptionsrelax -attribute "rotateX" -value $totalleftmiddlerotateX Biped_LeftFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = 8.0; float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingermiddlerotateX = `getAttr "Biped_LeftFingerMiddle{0}_globalcurl.rotateX"`; float $totalleftfingeroptionsrelax = $leftfingeroptionsrelax + $add1; float $totalleftmiddlerotateX = $leftfingermiddlerotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $totalleftfingeroptionsrelax -attribute "rotateX" -value $totalleftmiddlerotateX Biped_LeftFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingerringrotateX = `getAttr "Biped_LeftFingerRing{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $leftfingeroptionsrelax -attribute "rotateX" -value $leftfingerringrotateX Biped_LeftFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 8.0; float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingerringrotateX = `getAttr "Biped_LeftFingerRing{0}_globalcurl.rotateX"`; float $totalleftfingeroptionsrelax = $leftfingeroptionsrelax + $add1; float $totalleftringrotateX = $leftfingerringrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $totalleftfingeroptionsrelax -attribute "rotateX" -value $totalleftringrotateX Biped_LeftFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = 10.0; float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingerringrotateX = `getAttr "Biped_LeftFingerRing{0}_globalcurl.rotateX"`; float $totalleftfingeroptionsrelax = $leftfingeroptionsrelax + $add1; float $totalleftringrotateX = $leftfingerringrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $totalleftfingeroptionsrelax -attribute "rotateX" -value $totalleftringrotateX Biped_LeftFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingerpinkyrotateX = `getAttr "Biped_LeftFingerPinky{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $leftfingeroptionsrelax -attribute "rotateX" -value $leftfingerpinkyrotateX Biped_LeftFingerPinky{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 5.0; float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingerpinkyrotateX = `getAttr "Biped_LeftFingerPinky{0}_globalcurl.rotateX"`; float $totalleftfingeroptionsrelax = $leftfingeroptionsrelax + $add1; float $totalleftpinkyrotateX = $leftfingerpinkyrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $totalleftfingeroptionsrelax -attribute "rotateX" -value $totalleftpinkyrotateX Biped_LeftFingerPinky{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = 15.0; float $leftfingeroptionsrelax = `getAttr "Biped_LeftFingerOptions_ctrl.relax"`; float $leftfingerpinkyrotateX = `getAttr "Biped_LeftFingerPinky{0}_globalcurl.rotateX"`; float $totalleftfingeroptionsrelax = $leftfingeroptionsrelax + $add1; float $totalleftpinkyrotateX = $leftfingerpinkyrotateX + $add2; setDrivenKeyframe -currentDriver Biped_LeftFingerOptions_ctrl.relax -driverValue $totalleftfingeroptionsrelax -attribute "rotateX" -value $totalleftpinkyrotateX Biped_LeftFingerPinky{0}_globalcurl;'.format(index))
+
+                self.MDG2_mod.commandToExecute('selectKey Biped_LeftFingerThumb{0}_globalcurl; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative -preInfinite cycleRelative'.format(index))
+                self.MDG2_mod.commandToExecute('selectKey Biped_LeftFingerIndex{0}_globalcurl; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative -preInfinite cycleRelative'.format(index))
+                self.MDG2_mod.commandToExecute('selectKey Biped_LeftFingerMiddle{0}_globalcurl; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative -preInfinite cycleRelative'.format(index))
+                self.MDG2_mod.commandToExecute('selectKey Biped_LeftFingerRing{0}_globalcurl; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative -preInfinite cycleRelative'.format(index))
+                self.MDG2_mod.commandToExecute('selectKey Biped_LeftFingerPinky{0}_globalcurl; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative -preInfinite cycleRelative'.format(index))
 
         lfingergrp_sl_ls = om2.MSelectionList()
         lfingergrp_sl_ls.add("Biped_LeftFingers_null")
         grp_obj = lfingergrp_sl_ls.getDependNode(0)
 
-        lfingergrp_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-        lfingergrp_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-        self.ctrl_mod_n.renameNode(lfingergrp_multMatrix, "LeftFingers_multMatrix")
-        self.ctrl_mod_n.renameNode(lfingergrp_decomposeMatrix, "LeftFingers_decomposeMatrix")
+        lfingergrp_multMatrix = self.MDG2_mod.createNode("multMatrix")
+        lfingergrp_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+        self.MDG2_mod.renameNode(lfingergrp_multMatrix, "LeftFingers_multMatrix")
+        self.MDG2_mod.renameNode(lfingergrp_decomposeMatrix, "LeftFingers_decomposeMatrix")
 
         lfingergrpmultMatrix_fs = om2.MFnDependencyNode(lfingergrp_multMatrix)
         lfingergrpdecomposeMatrix_fs = om2.MFnDependencyNode(lfingergrp_decomposeMatrix)
@@ -6666,11 +8568,11 @@ class MainWindow(QtWidgets.QDialog):
         lfingergrpjntTrans_plug = lfingergrp_fs.findPlug("translate", False)
         lfingergrpjntRot_plug = lfingergrp_fs.findPlug("rotate", False)
 
-        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftHand.worldMatrix[0] LeftFingers_multMatrix.matrixIn[0]')
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_LeftFingers_null.parentInverseMatrix[0] LeftFingers_multMatrix.matrixIn[1]')
-        self.ctrl_mod_n.connect(lfingergrpmultMatrixSum_plug, lfingergrpdecomposeInpMatrix_plug)
-        self.ctrl_mod_n.connect(lfingergrpdecomposeOtpTrans_plug, lfingergrpjntTrans_plug)
-        self.ctrl_mod_n.connect(lfingergrpdecomposeOtpRot_plug, lfingergrpjntRot_plug)
+        self.MDG2_mod.commandToExecute('connectAttr -force LeftHand.worldMatrix[0] LeftFingers_multMatrix.matrixIn[0]')
+        self.MDG2_mod.commandToExecute('connectAttr -force Biped_LeftFingers_null.parentInverseMatrix[0] LeftFingers_multMatrix.matrixIn[1]')
+        self.MDG2_mod.connect(lfingergrpmultMatrixSum_plug, lfingergrpdecomposeInpMatrix_plug)
+        self.MDG2_mod.connect(lfingergrpdecomposeOtpTrans_plug, lfingergrpjntTrans_plug)
+        self.MDG2_mod.connect(lfingergrpdecomposeOtpRot_plug, lfingergrpjntRot_plug)
 
         iklleg_sl_ls = om2.MSelectionList()
         iklleg_sl_ls.add("IkLeftUpLeg")
@@ -6696,11 +8598,11 @@ class MainWindow(QtWidgets.QDialog):
         fklleggrp_obj = llegoptions_sl_ls.getDependNode(1)
         lleggrp_obj = llegoptions_sl_ls.getDependNode(2)
 
-        self.ctrl_mod_n.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkLeftUpLeg_ctrl')
-        self.ctrl_mod_n.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkLeftLeg_ctrl')
-        self.ctrl_mod_n.commandToExecute('addAttr -longName "fkik" -niceName "Fk/Ik" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftFootOptions_ctrl')
-        self.ctrl_mod_n.commandToExecute('addAttr -longName "kneeswitch" -niceName "Auto/Manual Knee" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftFootOptions_ctrl')
-        self.ctrl_mod_n.doIt()
+        self.MDG2_mod.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkLeftUpLeg_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkLeftLeg_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "fkik" -niceName "Fk/Ik" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftFootOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "kneeswitch" -niceName "Auto/Manual Knee" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftFootOptions_ctrl')
+        self.MDG2_mod.doIt()
 
         llegoptions_fs = om2.MFnDependencyNode(llegoptions_obj)
         llegoptionsfkik_plug = llegoptions_fs.findPlug("fkik", False)
@@ -6717,10 +8619,10 @@ class MainWindow(QtWidgets.QDialog):
             bindjnt_string = lleg_sl_ls.getSelectionStrings(index)
 
             if jnt_obj.hasFn(om2.MFn.kJoint):
-                llegctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                llegctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(llegctrl_multMatrix, str(jnt_string)[2:][:-3]+"_multMatrix")
-                self.ctrl_mod_n.renameNode(llegctrl_decomposeMatrix, str(jnt_string)[2:][:-3]+"_decomposeMatrix")
+                llegctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                llegctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(llegctrl_multMatrix, str(jnt_string)[2:][:-3] + "_multMatrix")
+                self.MDG2_mod.renameNode(llegctrl_decomposeMatrix, str(jnt_string)[2:][:-3] + "_decomposeMatrix")
 
                 llegmultMatrix_fs = om2.MFnDependencyNode(llegctrl_multMatrix)
                 llegdecomposeMatrix_fs = om2.MFnDependencyNode(llegctrl_decomposeMatrix)
@@ -6733,16 +8635,16 @@ class MainWindow(QtWidgets.QDialog):
                 llegjntTrans_plug = llegjnt_fs.findPlug("translate", False)
                 llegjntRot_plug = llegjnt_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.connect(llegmultMatrixSum_plug, llegdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(llegdecomposeOtpTrans_plug, llegjntTrans_plug)
-                self.ctrl_mod_n.connect(llegdecomposeOtpRot_plug, llegjntRot_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.connect(llegmultMatrixSum_plug, llegdecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(llegdecomposeOtpTrans_plug, llegjntTrans_plug)
+                self.MDG2_mod.connect(llegdecomposeOtpRot_plug, llegjntRot_plug)
 
                 if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
 
             if bindjnt_obj.hasFn(om2.MFn.kJoint):
                 if cmds.getAttr("{0}.jointOrientX".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(bindjnt_string)[3:][:-3])) != 0:
@@ -6767,12 +8669,12 @@ class MainWindow(QtWidgets.QDialog):
                 fklegjointrototp_plug = fklegjoint_fs.findPlug("rotate", False)
 
                 if cmds.objExists("NoFlipLeftLeg_Ik") and cmds.objExists("PVLeftLeg_Ik"):
-                    legrotblendnode = self.ctrl_mod_n.createNode("blendColors")
-                    legtransblendnode = self.ctrl_mod_n.createNode("blendColors")
-                    legjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                    self.ctrl_mod_n.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
-                    self.ctrl_mod_n.renameNode(legrotblendnode, str(bindjnt_string)[2:][:-3]+"Rot_blend")
-                    self.ctrl_mod_n.renameNode(legtransblendnode, str(bindjnt_string)[2:][:-3]+"Trans_blend")
+                    legrotblendnode = self.MDG2_mod.createNode("blendColors")
+                    legtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    legjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    self.MDG2_mod.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3] + "Blend_decomposeMatrix")
+                    self.MDG2_mod.renameNode(legrotblendnode, str(bindjnt_string)[2:][:-3] + "Rot_blend")
+                    self.MDG2_mod.renameNode(legtransblendnode, str(bindjnt_string)[2:][:-3] + "Trans_blend")
 
                     legrotblendnode_fs = om2.MFnDependencyNode(legrotblendnode)
                     legtransblendnode_fs = om2.MFnDependencyNode(legtransblendnode)
@@ -6792,15 +8694,15 @@ class MainWindow(QtWidgets.QDialog):
                     legtransblendnodeblender_plug = legtransblendnode_fs.findPlug("blender", False)
                     iklegjointotp_plug = iklegjoint_fs.findPlug("matrix", False)
 
-                    self.ctrl_mod_n.connect(iklegjointotp_plug, legdecomposeInpMatrix_plug)
-                    self.ctrl_mod_n.connect(legdecomposeOtpRot_plug, legrotblendnodeinp1_plug)
-                    self.ctrl_mod_n.connect(legdecomposeOtpTrans_plug, legtransblendnodeinp1_plug)
-                    self.ctrl_mod_n.connect(fklegjointrototp_plug, legrotblendnodeinp2_plug)
-                    self.ctrl_mod_n.connect(fklegjointtransotp_plug, legtransblendnodeinp2_plug)
-                    self.ctrl_mod_n.connect(legrotblendnodeotp_plug, legjointrotinp_plug)
-                    self.ctrl_mod_n.connect(legtransblendnodeotp_plug, legjointtransinp_plug)
-                    self.ctrl_mod_n.connect(llegoptionsfkik_plug, legrotblendnodeblender_plug)
-                    self.ctrl_mod_n.connect(llegoptionsfkik_plug, legtransblendnodeblender_plug)
+                    self.MDG2_mod.connect(iklegjointotp_plug, legdecomposeInpMatrix_plug)
+                    self.MDG2_mod.connect(legdecomposeOtpRot_plug, legrotblendnodeinp1_plug)
+                    self.MDG2_mod.connect(legdecomposeOtpTrans_plug, legtransblendnodeinp1_plug)
+                    self.MDG2_mod.connect(fklegjointrototp_plug, legrotblendnodeinp2_plug)
+                    self.MDG2_mod.connect(fklegjointtransotp_plug, legtransblendnodeinp2_plug)
+                    self.MDG2_mod.connect(legrotblendnodeotp_plug, legjointrotinp_plug)
+                    self.MDG2_mod.connect(legtransblendnodeotp_plug, legjointtransinp_plug)
+                    self.MDG2_mod.connect(llegoptionsfkik_plug, legrotblendnodeblender_plug)
+                    self.MDG2_mod.connect(llegoptionsfkik_plug, legtransblendnodeblender_plug)
 
                     if index < 3:
                         noflipjnt_obj = noflipiklleg_sl_ls.getDependNode(index)
@@ -6809,14 +8711,14 @@ class MainWindow(QtWidgets.QDialog):
                         pvjnt_obj = pviklleg_sl_ls.getDependNode(index)
                         pvjnt_string = pviklleg_sl_ls.getSelectionStrings(index)
 
-                        legrotblendnode = self.ctrl_mod_n.createNode("blendColors")
-                        legtransblendnode = self.ctrl_mod_n.createNode("blendColors")
-                        nofliplegjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                        pvlegjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                        self.ctrl_mod_n.renameNode(nofliplegjoint_decomposeMatrix, str(noflipjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
-                        self.ctrl_mod_n.renameNode(pvlegjoint_decomposeMatrix, str(pvjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
-                        self.ctrl_mod_n.renameNode(legrotblendnode, str(bindjnt_string)[2:][:-3]+"Rot_kneeblend")
-                        self.ctrl_mod_n.renameNode(legtransblendnode, str(bindjnt_string)[2:][:-3]+"Trans_kneeblend")
+                        legrotblendnode = self.MDG2_mod.createNode("blendColors")
+                        legtransblendnode = self.MDG2_mod.createNode("blendColors")
+                        nofliplegjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                        pvlegjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                        self.MDG2_mod.renameNode(nofliplegjoint_decomposeMatrix, str(noflipjnt_string)[2:][:-3] + "Blend_decomposeMatrix")
+                        self.MDG2_mod.renameNode(pvlegjoint_decomposeMatrix, str(pvjnt_string)[2:][:-3] + "Blend_decomposeMatrix")
+                        self.MDG2_mod.renameNode(legrotblendnode, str(bindjnt_string)[2:][:-3] + "Rot_kneeblend")
+                        self.MDG2_mod.renameNode(legtransblendnode, str(bindjnt_string)[2:][:-3] + "Trans_kneeblend")
 
                         legrotblendnode_fs = om2.MFnDependencyNode(legrotblendnode)
                         legtransblendnode_fs = om2.MFnDependencyNode(legtransblendnode)
@@ -6844,20 +8746,20 @@ class MainWindow(QtWidgets.QDialog):
                         iklegjointinpTrans_plug = iklegjoint_fs.findPlug("translate", False)
                         iklegjointinpRot_plug = iklegjoint_fs.findPlug("jointOrient", False)
 
-                        self.ctrl_mod_n.connect(noflipiklegjointotp_plug, nofliplegdecomposeInpMatrix_plug)
-                        self.ctrl_mod_n.connect(pviklegjointotp_plug, pvlegdecomposeInpMatrix_plug)
-                        self.ctrl_mod_n.connect(pvlegdecomposeOtpRot_plug, legrotblendnodeinp1_plug)
-                        self.ctrl_mod_n.connect(pvlegdecomposeOtpTrans_plug, legtransblendnodeinp1_plug)
-                        self.ctrl_mod_n.connect(nofliplegdecomposeOtpRot_plug, legrotblendnodeinp2_plug)
-                        self.ctrl_mod_n.connect(nofliplegdecomposeOtpTrans_plug, legtransblendnodeinp2_plug)
-                        self.ctrl_mod_n.connect(legrotblendnodeotp_plug, iklegjointinpRot_plug)
-                        self.ctrl_mod_n.connect(legtransblendnodeotp_plug, iklegjointinpTrans_plug)
-                        self.ctrl_mod_n.connect(llegoptionskneeswitch_plug, legrotblendnodeblender_plug)
-                        self.ctrl_mod_n.connect(llegoptionskneeswitch_plug, legtransblendnodeblender_plug)
+                        self.MDG2_mod.connect(noflipiklegjointotp_plug, nofliplegdecomposeInpMatrix_plug)
+                        self.MDG2_mod.connect(pviklegjointotp_plug, pvlegdecomposeInpMatrix_plug)
+                        self.MDG2_mod.connect(pvlegdecomposeOtpRot_plug, legrotblendnodeinp1_plug)
+                        self.MDG2_mod.connect(pvlegdecomposeOtpTrans_plug, legtransblendnodeinp1_plug)
+                        self.MDG2_mod.connect(nofliplegdecomposeOtpRot_plug, legrotblendnodeinp2_plug)
+                        self.MDG2_mod.connect(nofliplegdecomposeOtpTrans_plug, legtransblendnodeinp2_plug)
+                        self.MDG2_mod.connect(legrotblendnodeotp_plug, iklegjointinpRot_plug)
+                        self.MDG2_mod.connect(legtransblendnodeotp_plug, iklegjointinpTrans_plug)
+                        self.MDG2_mod.connect(llegoptionskneeswitch_plug, legrotblendnodeblender_plug)
+                        self.MDG2_mod.connect(llegoptionskneeswitch_plug, legtransblendnodeblender_plug)
 
                 else:
-                    self.ctrl_mod_n.connect(fklegjointtransotp_plug, legjointtransinp_plug)
-                    self.ctrl_mod_n.connect(fklegjointrototp_plug, legjointrotinp_plug)
+                    self.MDG2_mod.connect(fklegjointtransotp_plug, legjointtransinp_plug)
+                    self.MDG2_mod.connect(fklegjointrototp_plug, legjointrotinp_plug)
 
             if self.autostretch.currentIndex() == 1:
                 if index < 2:
@@ -6871,8 +8773,8 @@ class MainWindow(QtWidgets.QDialog):
                     grp_leglowerikcluster = iklleggrp_sl_lst.getDependNode(2)
                     grp_leglowerikcluster2 = iklleggrp_sl_lst.getDependNode(3)
 
-                    llegjoint_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                    legjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                    llegjoint_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                    legjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
 
                     llegmultMatrix_fs = om2.MFnDependencyNode(llegjoint_multMatrix)
                     llegdecomposeMatrix_fs = om2.MFnDependencyNode(legjoint_decomposeMatrix)
@@ -6888,10 +8790,10 @@ class MainWindow(QtWidgets.QDialog):
                     ikllowerleggrpTrans_plug = ikllowerleggrp_fs.findPlug("translate", False)
                     ikllowerleggrpRot_plug = ikllowerleggrp_fs.findPlug("rotate", False)
 
-                    self.ctrl_mod_n.renameNode(llegjoint_multMatrix, str(bindjnt_string)[2:][:-3]+"_multMatrix")
-                    self.ctrl_mod_n.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"_decomposeMatrix")
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(bindjnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.connect(llegmultMatrixSum_plug, llegdecomposeInpMatrix_plug)
+                    self.MDG2_mod.renameNode(llegjoint_multMatrix, str(bindjnt_string)[2:][:-3] + "_multMatrix")
+                    self.MDG2_mod.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3] + "_decomposeMatrix")
+                    self.MDG2_mod.commandToExecute('connectAttr -force {0}.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(bindjnt_string)[3:][:-3]))
+                    self.MDG2_mod.connect(llegmultMatrixSum_plug, llegdecomposeInpMatrix_plug)
 
                     fkllegstretch_expression = om1.MFnExpression()
 
@@ -6899,12 +8801,12 @@ class MainWindow(QtWidgets.QDialog):
                         fkllegstretch_expression.create("Biped_FkLeftLeg_ctrl.translateY = Biped_FkLeftUpLeg_ctrl.stretchy")
                         fkllegstretch_expression.create("Biped_FkLeftLeg_ctrl.translateZ = Biped_FkLeftLeg_ctrl.translateY/10")
 
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftUpperLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
-                        self.ctrl_mod_n.connect(llegdecomposeOtpTrans_plug, iklupperleggrpTrans_plug)
-                        self.ctrl_mod_n.connect(llegdecomposeOtpRot_plug, iklupperleggrpRot_plug)
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftUpperLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.MDG2_mod.connect(llegdecomposeOtpTrans_plug, iklupperleggrpTrans_plug)
+                        self.MDG2_mod.connect(llegdecomposeOtpRot_plug, iklupperleggrpRot_plug)
 
-                        lupperlegcluster2_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                        lupperlegcluster2_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                        lupperlegcluster2_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                        lupperlegcluster2_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
 
                         lupperlegcluster2multMatrix_fs = om2.MFnDependencyNode(lupperlegcluster2_multMatrix)
                         lupperlegcluster2decomposeMatrix_fs = om2.MFnDependencyNode(lupperlegcluster2_decomposeMatrix)
@@ -6915,23 +8817,23 @@ class MainWindow(QtWidgets.QDialog):
                         lupperlegcluster2decomposeOtpTrans_plug = lupperlegcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
                         lupperlegcluster2Trans_plug = lupperlegcluster2_fs.findPlug("translate", False)
 
-                        self.ctrl_mod_n.renameNode(lupperlegcluster2_multMatrix, "LeftUpperLegCluster2_multMatrix")
-                        self.ctrl_mod_n.renameNode(lupperlegcluster2_decomposeMatrix,"LeftUpperLegCluster2_decomposeMatrix")
-                        self.ctrl_mod_n.connect(lupperlegcluster2multMatrixSum_plug, lupperlegcluster2decomposeInpMatrix_plug)
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftLeg.worldMatrix[0] LeftUpperLegCluster2_multMatrix.matrixIn[0]')
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftUpperLegIkCluster2_grp.parentInverseMatrix[0] LeftUpperLegCluster2_multMatrix.matrixIn[1]')
-                        self.ctrl_mod_n.connect(lupperlegcluster2decomposeOtpTrans_plug, lupperlegcluster2Trans_plug)
+                        self.MDG2_mod.renameNode(lupperlegcluster2_multMatrix, "LeftUpperLegCluster2_multMatrix")
+                        self.MDG2_mod.renameNode(lupperlegcluster2_decomposeMatrix, "LeftUpperLegCluster2_decomposeMatrix")
+                        self.MDG2_mod.connect(lupperlegcluster2multMatrixSum_plug, lupperlegcluster2decomposeInpMatrix_plug)
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftLeg.worldMatrix[0] LeftUpperLegCluster2_multMatrix.matrixIn[0]')
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftUpperLegIkCluster2_grp.parentInverseMatrix[0] LeftUpperLegCluster2_multMatrix.matrixIn[1]')
+                        self.MDG2_mod.connect(lupperlegcluster2decomposeOtpTrans_plug, lupperlegcluster2Trans_plug)
 
                     elif index == 1:
                         fkllegstretch_expression.create("Biped_FkLeftFoot_ctrl.translateY = Biped_FkLeftLeg_ctrl.stretchy")
                         fkllegstretch_expression.create("Biped_FkLeftFoot_ctrl.translateZ = Biped_FkLeftFoot_ctrl.translateY*(-1.5)")
 
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftLowerLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
-                        self.ctrl_mod_n.connect(llegdecomposeOtpTrans_plug, ikllowerleggrpTrans_plug)
-                        self.ctrl_mod_n.connect(llegdecomposeOtpRot_plug, ikllowerleggrpRot_plug)
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftLowerLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.MDG2_mod.connect(llegdecomposeOtpTrans_plug, ikllowerleggrpTrans_plug)
+                        self.MDG2_mod.connect(llegdecomposeOtpRot_plug, ikllowerleggrpRot_plug)
 
-                        llowerlegcluster2_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                        llowerlegcluster2_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                        llowerlegcluster2_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                        llowerlegcluster2_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
 
                         llowerlegcluster2multMatrix_fs = om2.MFnDependencyNode(llowerlegcluster2_multMatrix)
                         llowerlegcluster2decomposeMatrix_fs = om2.MFnDependencyNode(llowerlegcluster2_decomposeMatrix)
@@ -6942,18 +8844,18 @@ class MainWindow(QtWidgets.QDialog):
                         llowerlegcluster2decomposeOtpTrans_plug = llowerlegcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
                         llowerlegcluster2Trans_plug = llowerlegcluster2_fs.findPlug("translate", False)
 
-                        self.ctrl_mod_n.renameNode(llowerlegcluster2_multMatrix, "LeftLowerLegCluster2_multMatrix")
-                        self.ctrl_mod_n.renameNode(llowerlegcluster2_decomposeMatrix,"LeftLowerLegCluster2_decomposeMatrix")
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftFoot.worldMatrix[0] LeftLowerLegCluster2_multMatrix.matrixIn[0]')
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force LeftLowerLegIkCluster2_grp.parentInverseMatrix[0] LeftLowerLegCluster2_multMatrix.matrixIn[1]')
-                        self.ctrl_mod_n.connect(llowerlegcluster2multMatrixSum_plug, llowerlegcluster2decomposeInpMatrix_plug)
-                        self.ctrl_mod_n.connect(llowerlegcluster2decomposeOtpTrans_plug, llowerlegcluster2Trans_plug)
+                        self.MDG2_mod.renameNode(llowerlegcluster2_multMatrix, "LeftLowerLegCluster2_multMatrix")
+                        self.MDG2_mod.renameNode(llowerlegcluster2_decomposeMatrix, "LeftLowerLegCluster2_decomposeMatrix")
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftFoot.worldMatrix[0] LeftLowerLegCluster2_multMatrix.matrixIn[0]')
+                        self.MDG2_mod.commandToExecute('connectAttr -force LeftLowerLegIkCluster2_grp.parentInverseMatrix[0] LeftLowerLegCluster2_multMatrix.matrixIn[1]')
+                        self.MDG2_mod.connect(llowerlegcluster2multMatrixSum_plug, llowerlegcluster2decomposeInpMatrix_plug)
+                        self.MDG2_mod.connect(llowerlegcluster2decomposeOtpTrans_plug, llowerlegcluster2Trans_plug)
 
             elif cmds.objExists("LeftLegIkCluster_grp") and cmds.objExists("IkStretchyLeftJointLeg_grp"):
-                self.ctrl_mod_n.commandToExecute('delete "LeftLegIkCluster_grp"')
-                self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_FkLeftUpLeg_ctrl.stretchy')
-                self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_FkLeftLeg_ctrl.stretchy')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('delete "LeftLegIkCluster_grp"')
+                self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_FkLeftUpLeg_ctrl.stretchy')
+                self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_FkLeftLeg_ctrl.stretchy')
+                self.MDG2_mod.doIt()
 
         fklleggrp_fs = om2.MFnDependencyNode(fklleggrp_obj)
         lleggrp_fs = om2.MFnDependencyNode(lleggrp_obj)
@@ -6961,13 +8863,21 @@ class MainWindow(QtWidgets.QDialog):
         fklleggrpScal_plug = fklleggrp_fs.findPlug("scale", False)
         lleggrpScal_plug = lleggrp_fs.findPlug("scale", False)
 
-        self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, fklleggrpScal_plug)
-        self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, lleggrpScal_plug)
+        self.MDG2_mod.connect(masterdecomposeOtpScale_plug, fklleggrpScal_plug)
+        self.MDG2_mod.connect(masterdecomposeOtpScale_plug, lleggrpScal_plug)
 
         grp_legupperikcluster1 = om1.MObject()
         grp_legupperikcluster2 = om1.MObject()
+        obj_stretchyleftleg1 = om1.MObject()
 
         if self.autostretch.currentIndex() == 1:
+
+            self.MDG2_mod.commandToExecute('addAttr -longName "stretchable" -niceName "Stretchable" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftFootOptions_ctrl')
+            self.MDG2_mod.doIt()
+
+            stretchy_sl_lst1.add("Biped_LeftFootOptions_ctrl")
+            stretchy_sl_lst1.getDependNode(3, obj_stretchyleftleg1)
+
             if cmds.objExists("IkSplineLeftUpperLeg0"):
                 iklupperleg_sl_lst = om1.MSelectionList()
                 iklupperleg_sl_lst.add("IkSplineLeftUpperLeg*")
@@ -6980,32 +8890,32 @@ class MainWindow(QtWidgets.QDialog):
                 iklupperleggrp_sl_lst.getDependNode(0, grp_legupperikcluster1)
                 iklupperleggrp_sl_lst.getDependNode(1, grp_legupperikcluster2)
 
-                lleg_pathnode = om1.MDagPath()
-                rootspine_path = lleg_pathnode.getAPathTo(obj_root)
+                self.MDag_path = om1.MDagPath()
+                rootspine_path = self.MDag_path.getAPathTo(obj_root)
 
                 try:
                     ikspineiksolver_lst.add("ikSplineSolver*")
                 except:
                     cmds.createNode("ikSplineSolver")
 
-                self.iklleg_effector = ik_effector.create(obj_endspine)
-                iklleg_effector_path = lleg_pathnode.getAPathTo(self.iklleg_effector)
+                self.iklleg_effector = self.IK_Effector.create(obj_endspine)
+                iklleg_effector_path = self.MDag_path.getAPathTo(self.iklleg_effector)
 
-                self.lleg_ik = ik_handle.create(rootspine_path, iklleg_effector_path)
+                self.lleg_ik = self.IK_Handle.create(rootspine_path, iklleg_effector_path)
 
                 obj_array = om1.MPointArray()
                 obj_lst_mpoint = []
                 obj = om1.MObject()
                 for index in range(iklupperleg_sl_lst.length()):
                     iklupperleg_sl_lst.getDependNode(index, obj)
-                    obj_path = ikspineobj_path_n.getAPathTo(obj)
+                    obj_path = self.MDag_path.getAPathTo(obj)
                     obj_tn = om1.MFnTransform(obj_path)
                     obj_t = obj_tn.translation(om1.MSpace.kWorld)
                     obj_lst_mpoint.append(om1.MPoint(obj_t))
                     obj_array.append(obj_lst_mpoint[index])
 
                 self.ikspline_cv_tn = ikspinedag_n.create("transform", "LeftUpperLeg_SplineCv")
-                ikspline_cv = ikspline_cv_n.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                ikspline_cv = self.MNurbs1_cv.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
                 cmds.parent("LeftUpperLeg_SplineCv", "DoNotTouch")
 
                 llegcrv_info = ikspinedg_modifier.createNode("curveInfo")
@@ -7014,8 +8924,7 @@ class MainWindow(QtWidgets.QDialog):
                 llegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
                 llegscalediv = ikspinedg_modifier.createNode("multiplyDivide")
                 liklegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
-                # liklegstretchsub = ikspinedg_modifier.createNode("plusMinusAverage")
-                # liklegstretchsum = ikspinedg_modifier.createNode("plusMinusAverage")
+                blendstretch = ikspinedg_modifier.createNode("blendColors")
 
                 llegcrvinfo_fs = om1.MFnDependencyNode(llegcrv_info)
                 llegstretchpercent_fs = om1.MFnDependencyNode(llegstretchpercent)
@@ -7023,10 +8932,10 @@ class MainWindow(QtWidgets.QDialog):
                 llegstretchdiv_fs = om1.MFnDependencyNode(llegstretchdiv)
                 llegscalediv_fs = om1.MFnDependencyNode(llegscalediv)
                 liklegstretchdiv_fs = om1.MFnDependencyNode(liklegstretchdiv)
-                # liklegstretchsub_fs = om1.MFnDependencyNode(liklegstretchsub)
-                # liklegstretchsum_fs = om1.MFnDependencyNode(liklegstretchsum)
                 liklegstretchcluster1_fs = om1.MFnDependencyNode(grp_legupperikcluster1)
                 liklegstretchcluster2_fs = om1.MFnDependencyNode(grp_legupperikcluster2)
+                blendstretch_fs = om1.MFnDependencyNode(blendstretch)
+                llegstretchoption_fs = om1.MFnDependencyNode(obj_stretchyleftleg1)
 
                 llegcrvinfoarc_plug = llegcrvinfo_fs.findPlug("arcLength")
                 llegstretchpercentinp1y_plug = llegstretchpercent_fs.findPlug("input1Y")
@@ -7042,12 +8951,18 @@ class MainWindow(QtWidgets.QDialog):
                 llegscaledivinp1y_plug = llegscalediv_fs.findPlug("input1Y")
                 llegscaledivinp2y_plug = llegscalediv_fs.findPlug("input2Y")
                 llegscaledivotpy_plug = llegscalediv_fs.findPlug("outputY")
-                # liklegstretchsubotp_plug = liklegstretchsub_fs.findPlug("output3D")
                 liklegstretchdivinp1_plug = liklegstretchdiv_fs.findPlug("input1")
                 liklegstretchdivotp_plug = liklegstretchdiv_fs.findPlug("output")
-                # liklegstretchsumotp_plug = liklegstretchsum_fs.findPlug("output3D")
                 liklegstretchclust1trans_plug = liklegstretchcluster1_fs.findPlug("translate")
                 liklegstretchclust2trans_plug = liklegstretchcluster2_fs.findPlug("translate")
+                blendstretchinp1r_plug = blendstretch_fs.findPlug("color1R")
+                blendstretchinp1g_plug = blendstretch_fs.findPlug("color1G")
+                blendstretchinp1b_plug = blendstretch_fs.findPlug("color1B")
+                blendstretchotpr_plug = blendstretch_fs.findPlug("outputR")
+                blendstretchotpg_plug = blendstretch_fs.findPlug("outputG")
+                blendstretchotpb_plug = blendstretch_fs.findPlug("outputB")
+                blendstretch_plug = blendstretch_fs.findPlug("blender")
+                llegstretchoption_plug = llegstretchoption_fs.findPlug("stretchable")
 
                 objparent = om1.MObject()
                 objchild = om1.MObject()
@@ -7062,11 +8977,13 @@ class MainWindow(QtWidgets.QDialog):
                         llegjnt_szplug = llegparentjnt_fs.findPlug("scaleZ")
                         llegjnt_sotpplug = llegparentjnt_fs.findPlug("scale")
                         llegjnt_invsplug = llegchildjnt_fs.findPlug("inverseScale")
-                        ikspinedg_modifier.connect(llegstretchpercentotp_plug, llegjnt_syplug)
-                        ikspinedg_modifier.connect(llegstretchdivotox_plug, llegjnt_sxplug)
-                        ikspinedg_modifier.connect(llegstretchdivotpz_plug, llegjnt_szplug)
+                        ikspinedg_modifier.connect(llegstretchpercentotp_plug, blendstretchinp1g_plug)
+                        ikspinedg_modifier.connect(llegstretchdivotox_plug, blendstretchinp1r_plug)
+                        ikspinedg_modifier.connect(llegstretchdivotpz_plug, blendstretchinp1b_plug)
+                        ikspinedg_modifier.connect(blendstretchotpg_plug, llegjnt_syplug)
+                        ikspinedg_modifier.connect(blendstretchotpr_plug, llegjnt_sxplug)
+                        ikspinedg_modifier.connect(blendstretchotpb_plug, llegjnt_szplug)
                         ikspinedg_modifier.connect(llegjnt_sotpplug, llegjnt_invsplug)
-
 
                 ikspinedg_modifier.renameNode(llegcrv_info, "LeftUpperLegSpline_Info")
                 ikspinedg_modifier.renameNode(llegstretchpercent, "LeftUpperLegStretch_Percent")
@@ -7077,8 +8994,7 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.renameNode(self.iklleg_effector, "LeftUpperLeg_effector")
                 ikspinedg_modifier.renameNode(llegscalediv, "IkLeftUpperLegGlobalScale_Average")
                 ikspinedg_modifier.renameNode(liklegstretchdiv, "LeftUpperLegStretch_Divide2")
-                # ikspinedg_modifier.renameNode(liklegstretchsub, "LeftUpperLegStretch_Sub")
-                # ikspinedg_modifier.renameNode(liklegstretchsum, "LeftUpperLegStretch_Sum")
+                ikspinedg_modifier.renameNode(blendstretch, "LeftUpperLegStretch_Blend")
                 ikspinedg_modifier.commandToExecute('parent "LeftUpperLeg_Ik" "DoNotTouch"')
                 ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLeg_SplineCvShape.worldSpace[0] LeftUpperLeg_Ik.inCurve')
                 ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "LeftUpperLegIk_skin" IkCvSplineLeftUpperLeg0 IkCvSplineLeftUpperLeg1 IkCvSplineLeftUpperLeg2 LeftUpperLeg_SplineCv')
@@ -7093,10 +9009,6 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.commandToExecute('connectAttr -force IkCvSplineLeftUpperLeg0.worldMatrix[0] LeftUpperLeg_Ik.dWorldUpMatrix')
                 ikspinedg_modifier.commandToExecute('connectAttr -force IkCvSplineLeftUpperLeg2.worldMatrix[0] LeftUpperLeg_Ik.dWorldUpMatrixEnd')
                 ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLeg_SplineCvShape.worldSpace[0] LeftUpperLegSpline_Info.inputCurve')
-                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegIkCluster1_grp.translate LeftUpperLegStretch_Sub.input3D[0]')
-                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegIkCluster2_grp.translate LeftUpperLegStretch_Sub.input3D[1]')
-                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegIkCluster2_grp.translate LeftUpperLegStretch_Sum.input3D[0]')
-                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegStretch_Divide2.output LeftUpperLegStretch_Sum.input3D[1]')
                 ikspinedg_modifier.connect(llegcrvinfoarc_plug, llegscaledivinp1y_plug)
                 ikspinedg_modifier.connect(masterctrlsy_plug, llegscaledivinp2y_plug)
                 ikspinedg_modifier.connect(llegscaledivotpy_plug, llegstretchpercentinp1y_plug)
@@ -7106,6 +9018,7 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.connect(llegstretchpowotpz_plug, llegstretchdivinp2z_plug)
                 ikspinedg_modifier.connect(liklegstretchclust2trans_plug, liklegstretchdivinp1_plug)
                 ikspinedg_modifier.connect(liklegstretchdivotp_plug, liklegstretchclust1trans_plug)
+                ikspinedg_modifier.connect(llegstretchoption_plug, blendstretch_plug)
                 ikspinedg_modifier.commandToExecute('float $leftupperlegstretchinput1Y = `getAttr "LeftUpperLegStretch_Percent.input1Y"`; setAttr "LeftUpperLegStretch_Percent.input2Y" $leftupperlegstretchinput1Y')
                 ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Power.input2X" 0.5')
                 ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Power.input2Z" 0.5')
@@ -7116,16 +9029,16 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Divide.operation" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "IkLeftUpperLegGlobalScale_Average.operation" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Divide2.operation" 2')
-                # ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Sum.operation" 1')
-                # ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Sub.operation" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Divide2.input2X" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Divide2.input2Y" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Divide2.input2Z" 2')
-                # ikspinedg_modifier.connect(liklegstretchsumotp_plug, liklegstretchclust1trans_plug)
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Blend.color2R" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Blend.color2G" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Blend.color2B" 1')
                 ikspinedg_modifier.doIt()
 
-                ikspline_solver = ik_system.findSolver("ikSplineSolver")
-                ik_handle.setSolver(ikspline_solver)
+                ikspline_solver = self.IK_System.findSolver("ikSplineSolver")
+                self.IK_Handle.setSolver(ikspline_solver)
 
                 grp_leglowerikcluster1 = om1.MObject()
                 grp_leglowerikcluster2 = om1.MObject()
@@ -7142,32 +9055,31 @@ class MainWindow(QtWidgets.QDialog):
                     ikllowerleggrp_sl_lst.getDependNode(0, grp_leglowerikcluster1)
                     ikllowerleggrp_sl_lst.getDependNode(1, grp_leglowerikcluster2)
 
-                    lleg_pathnode = om1.MDagPath()
-                    rootspine_path = lleg_pathnode.getAPathTo(obj_root)
+                    rootspine_path = self.MDag_path.getAPathTo(obj_root)
 
                     try:
                         ikspineiksolver_lst.add("ikSplineSolver*")
                     except:
                         cmds.createNode("ikSplineSolver")
 
-                    self.iklleg_effector = ik_effector.create(obj_endspine)
-                    iklleg_effector_path = lleg_pathnode.getAPathTo(self.iklleg_effector)
+                    self.iklleg_effector = self.IK_Effector.create(obj_endspine)
+                    iklleg_effector_path = self.MDag_path.getAPathTo(self.iklleg_effector)
 
-                    self.lleg_ik = ik_handle.create(rootspine_path, iklleg_effector_path)
+                    self.lleg_ik = self.IK_Handle.create(rootspine_path, iklleg_effector_path)
 
                     obj_array = om1.MPointArray()
                     obj_lst_mpoint = []
                     obj = om1.MObject()
                     for index in range(ikllowerleg_sl_lst.length()):
                         ikllowerleg_sl_lst.getDependNode(index, obj)
-                        obj_path = ikspineobj_path_n.getAPathTo(obj)
+                        obj_path = self.MDag_path.getAPathTo(obj)
                         obj_tn = om1.MFnTransform(obj_path)
                         obj_t = obj_tn.translation(om1.MSpace.kWorld)
                         obj_lst_mpoint.append(om1.MPoint(obj_t))
                         obj_array.append(obj_lst_mpoint[index])
 
                     self.ikspline_cv_tn = ikspinedag_n.create("transform", "LeftLowerLeg_SplineCv")
-                    ikspline_cv = ikspline_cv_n.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                    ikspline_cv = self.MNurbs1_cv.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
                     cmds.parent("LeftLowerLeg_SplineCv", "DoNotTouch")
 
                     llegcrv_info = ikspinedg_modifier.createNode("curveInfo")
@@ -7176,8 +9088,7 @@ class MainWindow(QtWidgets.QDialog):
                     llegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
                     llegscalediv = ikspinedg_modifier.createNode("multiplyDivide")
                     liklegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
-                    # liklegstretchsub = ikspinedg_modifier.createNode("plusMinusAverage")
-                    # liklegstretchsum = ikspinedg_modifier.createNode("plusMinusAverage")
+                    blendstretch = ikspinedg_modifier.createNode("blendColors")
 
                     llegcrvinfo_fs = om1.MFnDependencyNode(llegcrv_info)
                     llegstretchpercent_fs = om1.MFnDependencyNode(llegstretchpercent)
@@ -7185,10 +9096,9 @@ class MainWindow(QtWidgets.QDialog):
                     llegstretchdiv_fs = om1.MFnDependencyNode(llegstretchdiv)
                     llegscalediv_fs = om1.MFnDependencyNode(llegscalediv)
                     liklegstretchdiv_fs = om1.MFnDependencyNode(liklegstretchdiv)
-                    # liklegstretchsub_fs = om1.MFnDependencyNode(liklegstretchsub)
-                    # liklegstretchsum_fs = om1.MFnDependencyNode(liklegstretchsum)
                     liklegstretchcluster1_fs = om1.MFnDependencyNode(grp_leglowerikcluster1)
                     liklegstretchcluster2_fs = om1.MFnDependencyNode(grp_leglowerikcluster2)
+                    blendstretch_fs = om1.MFnDependencyNode(blendstretch)
 
                     llegcrvinfoarc_plug = llegcrvinfo_fs.findPlug("arcLength")
                     llegstretchpercentinp1y_plug = llegstretchpercent_fs.findPlug("input1Y")
@@ -7204,12 +9114,17 @@ class MainWindow(QtWidgets.QDialog):
                     llegscaledivinp1y_plug = llegscalediv_fs.findPlug("input1Y")
                     llegscaledivinp2y_plug = llegscalediv_fs.findPlug("input2Y")
                     llegscaledivotpy_plug = llegscalediv_fs.findPlug("outputY")
-                    # liklegstretchsubotp_plug = liklegstretchsub_fs.findPlug("output3D")
                     liklegstretchdivinp1_plug = liklegstretchdiv_fs.findPlug("input1")
                     liklegstretchdivotp_plug = liklegstretchdiv_fs.findPlug("output")
-                    # liklegstretchsumotp_plug = liklegstretchsum_fs.findPlug("output3D")
                     liklegstretchclust1trans_plug = liklegstretchcluster1_fs.findPlug("translate")
                     liklegstretchclust2trans_plug = liklegstretchcluster2_fs.findPlug("translate")
+                    blendstretchinp1r_plug = blendstretch_fs.findPlug("color1R")
+                    blendstretchinp1g_plug = blendstretch_fs.findPlug("color1G")
+                    blendstretchinp1b_plug = blendstretch_fs.findPlug("color1B")
+                    blendstretchotpr_plug = blendstretch_fs.findPlug("outputR")
+                    blendstretchotpg_plug = blendstretch_fs.findPlug("outputG")
+                    blendstretchotpb_plug = blendstretch_fs.findPlug("outputB")
+                    blendstretch_plug = blendstretch_fs.findPlug("blender")
 
                     objparent = om1.MObject()
                     objchild = om1.MObject()
@@ -7224,11 +9139,13 @@ class MainWindow(QtWidgets.QDialog):
                             llegjnt_szplug = llegparentjnt_fs.findPlug("scaleZ")
                             llegjnt_sotpplug = llegparentjnt_fs.findPlug("scale")
                             llegjnt_invsplug = llegchildjnt_fs.findPlug("inverseScale")
-                            ikspinedg_modifier.connect(llegstretchpercentotp_plug, llegjnt_syplug)
-                            ikspinedg_modifier.connect(llegstretchdivotox_plug, llegjnt_sxplug)
-                            ikspinedg_modifier.connect(llegstretchdivotpz_plug, llegjnt_szplug)
+                            ikspinedg_modifier.connect(llegstretchpercentotp_plug, blendstretchinp1g_plug)
+                            ikspinedg_modifier.connect(llegstretchdivotox_plug, blendstretchinp1r_plug)
+                            ikspinedg_modifier.connect(llegstretchdivotpz_plug, blendstretchinp1b_plug)
+                            ikspinedg_modifier.connect(blendstretchotpg_plug, llegjnt_syplug)
+                            ikspinedg_modifier.connect(blendstretchotpr_plug, llegjnt_sxplug)
+                            ikspinedg_modifier.connect(blendstretchotpb_plug, llegjnt_szplug)
                             ikspinedg_modifier.connect(llegjnt_sotpplug, llegjnt_invsplug)
-
 
                     ikspinedg_modifier.renameNode(llegcrv_info, "LeftLowerLegSpline_Info")
                     ikspinedg_modifier.renameNode(llegstretchpercent, "LeftLowerLegStretch_Percent")
@@ -7239,8 +9156,7 @@ class MainWindow(QtWidgets.QDialog):
                     ikspinedg_modifier.renameNode(self.iklleg_effector, "LeftLowerLeg_effector")
                     ikspinedg_modifier.renameNode(llegscalediv, "IkLeftLowerLegGlobalScale_Average")
                     ikspinedg_modifier.renameNode(liklegstretchdiv, "LeftLowerLegStretch_Divide2")
-                    # ikspinedg_modifier.renameNode(liklegstretchsub, "LeftLowerLegStretch_Sub")
-                    # ikspinedg_modifier.renameNode(liklegstretchsum, "LeftLowerLegStretch_Sum")
+                    ikspinedg_modifier.renameNode(blendstretch, "LeftLowerLegStretch_Blend")
                     ikspinedg_modifier.commandToExecute('parent "LeftLowerLeg_Ik" "DoNotTouch"')
                     ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLeg_SplineCvShape.worldSpace[0] LeftLowerLeg_Ik.inCurve')
                     ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "LeftLowerLegIk_skin" IkCvSplineLeftLowerLeg0 IkCvSplineLeftLowerLeg1 IkCvSplineLeftLowerLeg2 LeftLowerLeg_SplineCv')
@@ -7255,10 +9171,6 @@ class MainWindow(QtWidgets.QDialog):
                     ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineLeftLowerLeg0.worldMatrix[0] LeftLowerLeg_Ik.dWorldUpMatrix')
                     ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineLeftLowerLeg2.worldMatrix[0] LeftLowerLeg_Ik.dWorldUpMatrixEnd')
                     ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLeg_SplineCvShape.worldSpace[0] LeftLowerLegSpline_Info.inputCurve')
-                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster_grp.translate LeftLowerLegStretch_Sub.input3D[0]')
-                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster2_grp.translate LeftLowerLegStretch_Sub.input3D[1]')
-                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster2_grp.translate LeftLowerLegStretch_Sum.input3D[0]')
-                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegStretch_Divide2.output LeftLowerLegStretch_Sum.input3D[1]')
                     ikspinedg_modifier.connect(llegcrvinfoarc_plug, llegscaledivinp1y_plug)
                     ikspinedg_modifier.connect(masterctrlsy_plug, llegscaledivinp2y_plug)
                     ikspinedg_modifier.connect(llegscaledivotpy_plug, llegstretchpercentinp1y_plug)
@@ -7268,6 +9180,7 @@ class MainWindow(QtWidgets.QDialog):
                     ikspinedg_modifier.connect(llegstretchpowotpz_plug, llegstretchdivinp2z_plug)
                     ikspinedg_modifier.connect(liklegstretchclust2trans_plug, liklegstretchdivinp1_plug)
                     ikspinedg_modifier.connect(liklegstretchdivotp_plug, liklegstretchclust1trans_plug)
+                    ikspinedg_modifier.connect(llegstretchoption_plug, blendstretch_plug)
                     ikspinedg_modifier.commandToExecute('float $leftlowerlegstretchinput1Y = `getAttr "LeftLowerLegStretch_Percent.input1Y"`; setAttr "LeftLowerLegStretch_Percent.input2Y" $leftlowerlegstretchinput1Y')
                     ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Power.input2X" 0.5')
                     ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Power.input2Z" 0.5')
@@ -7281,12 +9194,23 @@ class MainWindow(QtWidgets.QDialog):
                     ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Divide2.input2X" 2')
                     ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Divide2.input2Y" 2')
                     ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Divide2.input2Z" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Blend.color2R" 1')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Blend.color2G" 1')
+                    ikspinedg_modifier.commandToExecute('setAttr "LeftLowerLegStretch_Blend.color2B" 1')
                     ikspinedg_modifier.doIt()
 
-                    ikspline_solver = ik_system.findSolver("ikSplineSolver")
-                    ik_handle.setSolver(ikspline_solver)
+                    ikspline_solver = self.IK_System.findSolver("ikSplineSolver")
+                    self.IK_Handle.setSolver(ikspline_solver)
+
+        stretchy_sl_lst2.add("Biped_LeftFootOptions_ctrl")
+        obj_stretchyleftleg2 = stretchy_sl_lst2.getDependNode(1)
 
         if cmds.objExists("NoFlipLeftLeg_Ik") and cmds.objExists("PVLeftLeg_Ik"):
+
+            self.MDG2_mod.commandToExecute('addAttr -longName "follow" -niceName "Follow Body" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+            self.MDG2_mod.commandToExecute('parentConstraint -mo -weight 1 Biped_Root_ctrl Biped_IkLeftFootRot_null')
+            self.MDG2_mod.doIt()
+
             llegik_sl_ls = om2.MSelectionList()
             llegik_sl_ls.add("LeftLegIk_grp")
             llegik_sl_ls.add("Biped_NoFlipLeftKnee_null")
@@ -7299,10 +9223,10 @@ class MainWindow(QtWidgets.QDialog):
             ikleftjointleggrp_fs = om2.MFnDependencyNode(llegik_sl_ls.getDependNode(3))
 
             if self.typeofLLegIK.currentIndex() == 1 or 2:
-                liklegctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                liklegctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(liklegctrl_multMatrix, "IkLeftLegCtrl_multMatrix")
-                self.ctrl_mod_n.renameNode(liklegctrl_decomposeMatrix, "IkLeftLegCtrl_decomposeMatrix")
+                liklegctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                liklegctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(liklegctrl_multMatrix, "IkLeftLegCtrl_multMatrix")
+                self.MDG2_mod.renameNode(liklegctrl_decomposeMatrix, "IkLeftLegCtrl_decomposeMatrix")
 
                 liklegmultMatrix_fs = om2.MFnDependencyNode(liklegctrl_multMatrix)
                 liklegdecomposeMatrix_fs = om2.MFnDependencyNode(liklegctrl_decomposeMatrix)
@@ -7319,17 +9243,17 @@ class MainWindow(QtWidgets.QDialog):
                 iklegctrlRot_plug = iklegctrl_fs.findPlug("rotate", False)
                 liklegjntScal_plug = likleggrpobj_fs.findPlug("scale", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_IkLeftFoot_ctrl.worldMatrix[0] IkLeftLegCtrl_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.commandToExecute('parent LeftReverseFootHeel LeftLegIk_grp')
-                self.ctrl_mod_n.commandToExecute('poleVectorConstraint Biped_NoFlipLeftKnee_ctrl NoFlipLeftLeg_Ik')
-                self.ctrl_mod_n.commandToExecute('poleVectorConstraint Biped_PVLeftKnee_ctrl PVLeftLeg_Ik')
-                self.ctrl_mod_n.commandToExecute('setAttr "NoFlipLeftLeg_Ik.twist" 90')
-                self.ctrl_mod_n.connect(liklegmultMatrixSum_plug, liklegdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(liklegdecomposeOtpTrans_plug, likleggrpTrans_plug)
-                self.ctrl_mod_n.connect(liklegdecomposeOtpRot_plug, likleggrpRot_plug)
-                self.ctrl_mod_n.connect(iklegctrlTrans_plug, noflipleftkneenullTrans_plug)
-                self.ctrl_mod_n.connect(iklegctrlRot_plug, noflipleftkneenullRot_plug)
-                self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, liklegjntScal_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_IkLeftFoot_ctrl.worldMatrix[0] IkLeftLegCtrl_multMatrix.matrixIn[0]')
+                self.MDG2_mod.commandToExecute('parent LeftReverseFootHeel LeftLegIk_grp')
+                self.MDG2_mod.commandToExecute('poleVectorConstraint Biped_NoFlipLeftKnee_ctrl NoFlipLeftLeg_Ik')
+                self.MDG2_mod.commandToExecute('poleVectorConstraint Biped_PVLeftKnee_ctrl PVLeftLeg_Ik')
+                self.MDG2_mod.commandToExecute('setAttr "NoFlipLeftLeg_Ik.twist" 90')
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_IkLeftFoot_ctrl.follow Biped_IkLeftFootRot_null_parentConstraint1.Biped_Root_ctrlW0')
+                self.MDG2_mod.connect(liklegmultMatrixSum_plug, liklegdecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(liklegdecomposeOtpTrans_plug, likleggrpTrans_plug)
+                self.MDG2_mod.connect(iklegctrlTrans_plug, noflipleftkneenullTrans_plug)
+                self.MDG2_mod.connect(iklegctrlRot_plug, noflipleftkneenullRot_plug)
+                self.MDG2_mod.connect(masterdecomposeOtpScale_plug, liklegjntScal_plug)
 
                 if self.autostretch.currentIndex() == 1:
                     liklegdistloc = om2.MFnDagNode()
@@ -7338,9 +9262,9 @@ class MainWindow(QtWidgets.QDialog):
                     likupperlegdistloc_ln = liklegdistloc.create("locator", "L_upleg1_Shape", likupperlegdistloc1_tn)
                     likfootlegdistloc1_tn = liklegdistloc.create("transform", "distloc_L_legfoot1")
                     likfootlegdistloc_ln = liklegdistloc.create("locator", "L_foot1_Shape", likfootlegdistloc1_tn)
-                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
-                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension1" "IkLeftLegDistance_Info"')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension1" "IkLeftLegDistance_Info"')
+                    self.MDG2_mod.doIt()
 
                     luplegnull_transform_t = luplegnull_transform.translation(om2.MSpace.kTransform)
                     likupperlegdistloc_transform = om2.MFnTransform(likupperlegdistloc1_tn)
@@ -7355,25 +9279,25 @@ class MainWindow(QtWidgets.QDialog):
                     liklegjntDistPoint2_plug = liklegjntDist_fs.findPlug("endPoint", False)
                     likfootlegDistOtpTrans_plug = likfootlegDist_fs.findPlug("translate", False)
 
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force L_upleg1_Shape.worldPosition[0] IkLeftLegDistance_InfoShape.startPoint')
-                    self.ctrl_mod_n.connect(likfootlegDistOtpTrans_plug, liklegjntDistPoint2_plug)
-                    self.ctrl_mod_n.connect(liklegdecomposeOtpTrans_plug, likfootlegDistOtpTrans_plug)
-                    self.ctrl_mod_n.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalnoflipikleftlegtranslateY -attribute "translateY" -value $noflipikleftlegtranslateY IkNoFlipLeftLeg;')
-                    self.ctrl_mod_n.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalnoflipikleftlegtranslateY*2) -attribute "translateY" -value ($noflipikleftlegtranslateY*2) IkNoFlipLeftLeg;')
-                    self.ctrl_mod_n.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalnoflipikleftlegtranslateY -attribute "translateY" -value $noflipikleftfoottranslateY IkNoFlipLeftFoot;')
-                    self.ctrl_mod_n.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalnoflipikleftlegtranslateY*2) -attribute "translateY" -value ($noflipikleftfoottranslateY*2) IkNoFlipLeftFoot;')
-                    self.ctrl_mod_n.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalpvikleftlegtranslateY -attribute "translateY" -value $pvikleftlegtranslateY IkPVLeftLeg;')
-                    self.ctrl_mod_n.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalpvikleftlegtranslateY*2) -attribute "translateY" -value ($pvikleftlegtranslateY*2) IkPVLeftLeg;')
-                    self.ctrl_mod_n.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalpvikleftlegtranslateY -attribute "translateY" -value $pvikleftfoottranslateY IkPVLeftFoot;')
-                    self.ctrl_mod_n.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalpvikleftlegtranslateY*2) -attribute "translateY" -value ($pvikleftfoottranslateY*2) IkPVLeftFoot;')
-                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkNoFlipLeftLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
-                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkPVLeftLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
-                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkNoFlipLeftFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
-                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkPVLeftFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
-                    self.ctrl_mod_n.commandToExecute('parent "IkLeftLegDistance_Info" "DoNotTouch"')
-                    self.ctrl_mod_n.commandToExecute('parent "distloc_L_legfoot1" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('connectAttr -force L_upleg1_Shape.worldPosition[0] IkLeftLegDistance_InfoShape.startPoint')
+                    self.MDG2_mod.connect(likfootlegDistOtpTrans_plug, liklegjntDistPoint2_plug)
+                    self.MDG2_mod.connect(liklegdecomposeOtpTrans_plug, likfootlegDistOtpTrans_plug)
+                    self.MDG2_mod.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalnoflipikleftlegtranslateY -attribute "translateY" -value $noflipikleftlegtranslateY IkNoFlipLeftLeg;')
+                    self.MDG2_mod.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalnoflipikleftlegtranslateY*2) -attribute "translateY" -value ($noflipikleftlegtranslateY*2) IkNoFlipLeftLeg;')
+                    self.MDG2_mod.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalnoflipikleftlegtranslateY -attribute "translateY" -value $noflipikleftfoottranslateY IkNoFlipLeftFoot;')
+                    self.MDG2_mod.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "IkNoFlipLeftLeg.translateY"`; float $noflipikleftfoottranslateY = `getAttr "IkNoFlipLeftFoot.translateY"`; float $totalnoflipikleftlegtranslateY = $noflipikleftlegtranslateY + $noflipikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalnoflipikleftlegtranslateY*2) -attribute "translateY" -value ($noflipikleftfoottranslateY*2) IkNoFlipLeftFoot;')
+                    self.MDG2_mod.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalpvikleftlegtranslateY -attribute "translateY" -value $pvikleftlegtranslateY IkPVLeftLeg;')
+                    self.MDG2_mod.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalpvikleftlegtranslateY*2) -attribute "translateY" -value ($pvikleftlegtranslateY*2) IkPVLeftLeg;')
+                    self.MDG2_mod.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue $totalpvikleftlegtranslateY -attribute "translateY" -value $pvikleftfoottranslateY IkPVLeftFoot;')
+                    self.MDG2_mod.commandToExecute('float $pvikleftlegtranslateY = `getAttr "IkPVLeftLeg.translateY"`; float $pvikleftfoottranslateY = `getAttr "IkPVLeftFoot.translateY"`; float $totalpvikleftlegtranslateY = $pvikleftlegtranslateY + $pvikleftfoottranslateY; setDrivenKeyframe -currentDriver IkLeftLegDistance_InfoShape.distance -driverValue ($totalpvikleftlegtranslateY*2) -attribute "translateY" -value ($pvikleftfoottranslateY*2) IkPVLeftFoot;')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkNoFlipLeftLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkPVLeftLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkNoFlipLeftFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkPVLeftFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('parent "IkLeftLegDistance_Info" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "distloc_L_legfoot1" "DoNotTouch"')
 
-                    self.ctrl_mod_n.commandToExecute('addAttr -longName "kneesnap" -niceName "Knee Snap" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_PVLeftKnee_ctrl')
+                    self.MDG2_mod.commandToExecute('addAttr -longName "kneesnap" -niceName "Knee Snap" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_PVLeftKnee_ctrl')
 
                     likupperlegdistloc2_tn = liklegdistloc.create("transform", "distloc_L_upleg2", llegik_sl_ls.getDependNode(4))
                     likupperlegdistloc_ln = liklegdistloc.create("locator", "L_upleg2_Shape", likupperlegdistloc2_tn)
@@ -7381,17 +9305,21 @@ class MainWindow(QtWidgets.QDialog):
                     likkneedistloc_ln = liklegdistloc.create("locator", "L_legknee_Shape", likkneedistloc_tn)
                     likfootlegdistloc2_tn = liklegdistloc.create("transform", "distloc_L_legfoot2")
                     likfootlegdistloc_ln = liklegdistloc.create("locator", "L_legfoot2_Shape", likfootlegdistloc2_tn)
-                    pvleftkneectrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                    likpvuppertransblendnode = self.ctrl_mod_n.createNode("blendColors")
-                    likpvlowertransblendnode = self.ctrl_mod_n.createNode("blendColors")
-                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
-                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
-                    self.ctrl_mod_n.renameNode(pvleftkneectrl_decomposeMatrix, "PVLeftKnee_decomposeMatrix")
-                    self.ctrl_mod_n.renameNode(likpvuppertransblendnode, "PVLeftUpperLegTrans_blend")
-                    self.ctrl_mod_n.renameNode(likpvlowertransblendnode, "PVLeftLowerLegTrans_blend")
-                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension1" "LeftUpperLegDistance_Info"')
-                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension2" "LeftLowerLegDistance_Info"')
-                    self.ctrl_mod_n.doIt()
+                    pvleftkneectrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    likpvupperlegtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    likpvlowerlegtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    likpvupperlegstretchblendnode = self.MDG2_mod.createNode("blendColors")
+                    likpvlowerlegstretchblendnode = self.MDG2_mod.createNode("blendColors")
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.renameNode(pvleftkneectrl_decomposeMatrix, "PVLeftKnee_decomposeMatrix")
+                    self.MDG2_mod.renameNode(likpvupperlegtransblendnode, "PVLeftUpperLegTrans_blend")
+                    self.MDG2_mod.renameNode(likpvlowerlegtransblendnode, "PVLeftLowerLegTrans_blend")
+                    self.MDG2_mod.renameNode(likpvupperlegstretchblendnode, "PVLeftUpperLegStretch_blend")
+                    self.MDG2_mod.renameNode(likpvlowerlegstretchblendnode, "PVLeftLowerLegStretch_blend")
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension1" "LeftUpperLegDistance_Info"')
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension2" "LeftLowerLegDistance_Info"')
+                    self.MDG2_mod.doIt()
 
                     likupperlegdistloc2_transform = om2.MFnTransform(likupperlegdistloc2_tn)
                     likupperlegdistloc2_transform.setTranslation(luplegnull_transform_t, om2.MSpace.kTransform)
@@ -7411,11 +9339,14 @@ class MainWindow(QtWidgets.QDialog):
                     pvleftkneekey_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(3))
                     pvleftfootkey_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(4))
                     pvleftkneectrlDecomposeMatrix_fs = om2.MFnDependencyNode(pvleftkneectrl_decomposeMatrix)
-                    likpvuppertransblendnode_fs = om2.MFnDependencyNode(likpvuppertransblendnode)
-                    likpvlowertransblendnode_fs = om2.MFnDependencyNode(likpvlowertransblendnode)
+                    likpvuppertransblendnode_fs = om2.MFnDependencyNode(likpvupperlegtransblendnode)
+                    likpvlowertransblendnode_fs = om2.MFnDependencyNode(likpvlowerlegtransblendnode)
                     pvleftkneectrl_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(5))
                     pvlefkneejnt_fs = om2.MFnDependencyNode(pviklleg_sl_ls.getDependNode(1))
                     pvleftfootjnt_fs = om2.MFnDependencyNode(pviklleg_sl_ls.getDependNode(2))
+                    likupperlegstretchblendnode_fs = om2.MFnDependencyNode(likpvupperlegstretchblendnode)
+                    liklowerlegstretchblendnode_fs = om2.MFnDependencyNode(likpvlowerlegstretchblendnode)
+                    leftlegoption_fs = om2.MFnDependencyNode(obj_stretchyleftleg2)
 
                     likupperlegjntDistPoint2_plug = likupperlegjntDist_fs.findPlug("endPoint", False)
                     liklowerlegjntDistPoint1_plug = liklowerlegjntDist_fs.findPlug("startPoint", False)
@@ -7434,45 +9365,64 @@ class MainWindow(QtWidgets.QDialog):
                     likpvlowertransblendnodeotp_plug = likpvlowertransblendnode_fs.findPlug("outputG", False)
                     likpvlowertransblendnodeblender_plug = likpvlowertransblendnode_fs.findPlug("blender", False)
                     pvleftkneectrl_fs_plug = pvleftkneectrl_fs.findPlug("kneesnap", False)
-                    pvlefkneejntTrans_plug = pvlefkneejnt_fs.findPlug("translateY", False)
+                    likpvupperlegstretchblendnodeinp1g_plug = likupperlegstretchblendnode_fs.findPlug("color1G", False)
+                    likpvupperlegstretchblendnodeotp_plug = likupperlegstretchblendnode_fs.findPlug("outputG", False)
+                    likpvupperlegstretchblendnodeblender_plug = likupperlegstretchblendnode_fs.findPlug("blender", False)
+                    likpvlowerlegstretchblendnodeinp1g_plug = liklowerlegstretchblendnode_fs.findPlug("color1G", False)
+                    likpvlowerlegstretchblendnodeotp_plug = liklowerlegstretchblendnode_fs.findPlug("outputG", False)
+                    likpvlowerlegstretchblendnodeblender_plug = liklowerlegstretchblendnode_fs.findPlug("blender", False)
+                    ikleftlegstretch_plug = leftlegoption_fs.findPlug("stretchable", False)
+                    pvleftkneejntTrans_plug = pvlefkneejnt_fs.findPlug("translateY", False)
                     pvleftfootjntTrans_plug = pvleftfootjnt_fs.findPlug("translateY", False)
 
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force L_upleg2_Shape.worldPosition[0] LeftUpperLegDistance_InfoShape.startPoint')
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_PVLeftKnee_ctrl.worldMatrix[0] PVLeftKnee_decomposeMatrix.inputMatrix')
-                    self.ctrl_mod_n.connect(likkneeDistOtpTrans_plug, likupperlegjntDistPoint2_plug)
-                    self.ctrl_mod_n.connect(likkneeDistOtpTrans_plug, liklowerlegjntDistPoint1_plug)
-                    self.ctrl_mod_n.connect(likfootlegDistOtpTrans_plug, liklowerlegjntDistPoint2_plug)
-                    self.ctrl_mod_n.connect(liklegdecomposeOtpTrans_plug, likfootlegDistOtpTrans_plug)
-                    self.ctrl_mod_n.connect(pvleftkneectrlDecomposeMatrixOtpTrans_plug, likkneeDistOtpTrans_plug)
+                    self.MDG2_mod.commandToExecute('connectAttr -force L_upleg2_Shape.worldPosition[0] LeftUpperLegDistance_InfoShape.startPoint')
+                    self.MDG2_mod.commandToExecute('connectAttr -force Biped_PVLeftKnee_ctrl.worldMatrix[0] PVLeftKnee_decomposeMatrix.inputMatrix')
+                    self.MDG2_mod.connect(likkneeDistOtpTrans_plug, likupperlegjntDistPoint2_plug)
+                    self.MDG2_mod.connect(likkneeDistOtpTrans_plug, liklowerlegjntDistPoint1_plug)
+                    self.MDG2_mod.connect(likfootlegDistOtpTrans_plug, liklowerlegjntDistPoint2_plug)
+                    self.MDG2_mod.connect(liklegdecomposeOtpTrans_plug, likfootlegDistOtpTrans_plug)
+                    self.MDG2_mod.connect(pvleftkneectrlDecomposeMatrixOtpTrans_plug, likkneeDistOtpTrans_plug)
 
-                    self.ctrl_mod_n.disconnect(pvleftkneekeyotp_plug, pvlefkneejntTrans_plug)
-                    self.ctrl_mod_n.disconnect(pvleftfootkeyotp_plug, pvleftfootjntTrans_plug)
-                    self.ctrl_mod_n.connect(pvleftkneekeyotp_plug, likpvuppertransblendnodeinp2g_plug)
-                    self.ctrl_mod_n.connect(pvleftfootkeyotp_plug, likpvlowertransblendnodeinp2g_plug)
-                    self.ctrl_mod_n.connect(pvleftkneectrl_fs_plug, likpvuppertransblendnodeblender_plug)
-                    self.ctrl_mod_n.connect(pvleftkneectrl_fs_plug, likpvlowertransblendnodeblender_plug)
-                    self.ctrl_mod_n.connect(likpvuppertransblendnodeotp_plug, pvlefkneejntTrans_plug)
-                    self.ctrl_mod_n.connect(likpvlowertransblendnodeotp_plug, pvleftfootjntTrans_plug)
-                    self.ctrl_mod_n.commandToExecute('parent "distloc_L_legknee" "DoNotTouch"')
-                    self.ctrl_mod_n.commandToExecute('parent "distloc_L_legfoot2" "DoNotTouch"')
-                    self.ctrl_mod_n.commandToExecute('parent "LeftUpperLegDistance_Info" "DoNotTouch"')
-                    self.ctrl_mod_n.commandToExecute('parent "LeftLowerLegDistance_Info" "DoNotTouch"')
+                    self.MDG2_mod.disconnect(pvleftkneekeyotp_plug, pvleftkneejntTrans_plug)
+                    self.MDG2_mod.disconnect(pvleftfootkeyotp_plug, pvleftfootjntTrans_plug)
+                    self.MDG2_mod.connect(pvleftkneekeyotp_plug, likpvuppertransblendnodeinp2g_plug)
+                    self.MDG2_mod.connect(pvleftfootkeyotp_plug, likpvlowertransblendnodeinp2g_plug)
+                    self.MDG2_mod.connect(pvleftkneectrl_fs_plug, likpvuppertransblendnodeblender_plug)
+                    self.MDG2_mod.connect(pvleftkneectrl_fs_plug, likpvlowertransblendnodeblender_plug)
+                    self.MDG2_mod.connect(likpvuppertransblendnodeotp_plug, likpvupperlegstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(likpvlowertransblendnodeotp_plug, likpvlowerlegstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(likpvupperlegstretchblendnodeotp_plug, pvleftkneejntTrans_plug)
+                    self.MDG2_mod.connect(likpvlowerlegstretchblendnodeotp_plug, pvleftfootjntTrans_plug)
+                    self.MDG2_mod.connect(ikleftlegstretch_plug, likpvupperlegstretchblendnodeblender_plug)
+                    self.MDG2_mod.connect(ikleftlegstretch_plug, likpvlowerlegstretchblendnodeblender_plug)
+                    self.MDG2_mod.commandToExecute('float $pvikleftlegtranslateY = `getAttr "PVLeftUpperLegStretch_blend.color1G"`; setAttr "PVLeftUpperLegStretch_blend.color2G" $pvikleftlegtranslateY;')
+                    self.MDG2_mod.commandToExecute('float $pvikleftfoottranslateY = `getAttr "PVLeftLowerLegStretch_blend.color1G"`; setAttr "PVLeftLowerLegStretch_blend.color2G" $pvikleftfoottranslateY;')
+                    self.MDG2_mod.commandToExecute('parent "distloc_L_legknee" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "distloc_L_legfoot2" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "LeftUpperLegDistance_Info" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "LeftLowerLegDistance_Info" "DoNotTouch"')
 
-                    self.ctrl_mod_n.commandToExecute('addAttr -longName "thighlength" -niceName "AutoKnee Thigh Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkLeftFoot_ctrl')
-                    self.ctrl_mod_n.commandToExecute('addAttr -longName "calflength" -niceName "AutoKnee Calf Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkLeftFoot_ctrl')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.commandToExecute('addAttr -longName "thighlength" -niceName "AutoKnee Thigh Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkLeftFoot_ctrl')
+                    self.MDG2_mod.commandToExecute('addAttr -longName "calflength" -niceName "AutoKnee Calf Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkLeftFoot_ctrl')
+                    self.MDG2_mod.doIt()
 
-                    likautokneeupperlegnode = self.ctrl_mod_n.createNode("multiplyDivide")
-                    likautokneelowerlegnode = self.ctrl_mod_n.createNode("multiplyDivide")
-                    self.ctrl_mod_n.renameNode(likautokneeupperlegnode, "NoFlipLeftLegTrans_multiply")
-                    self.ctrl_mod_n.renameNode(likautokneelowerlegnode, "NoFlipLeftFootTrans_multiply")
+                    rikautokneeupperlegnode = self.MDG2_mod.createNode("multiplyDivide")
+                    rikautokneelowerlegnode = self.MDG2_mod.createNode("multiplyDivide")
+                    liknoflipupperlegtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    liknofliplowerlegtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    self.MDG2_mod.renameNode(rikautokneeupperlegnode, "NoFlipLeftLegTrans_multiply")
+                    self.MDG2_mod.renameNode(rikautokneelowerlegnode, "NoFlipLeftFootTrans_multiply")
+                    self.MDG2_mod.renameNode(liknoflipupperlegtransblendnode, "NoFlipLeftUpperLegStretch_blend")
+                    self.MDG2_mod.renameNode(liknofliplowerlegtransblendnode, "NoFlipLeftLowerLegStretch_blend")
 
-                    likautokneeupperleg_fs = om2.MFnDependencyNode(likautokneeupperlegnode)
-                    likautokneelowerleg_fs = om2.MFnDependencyNode(likautokneelowerlegnode)
+                    likautokneeupperleg_fs = om2.MFnDependencyNode(rikautokneeupperlegnode)
+                    likautokneelowerleg_fs = om2.MFnDependencyNode(rikautokneelowerlegnode)
                     noflipleftkneekey_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(6))
                     noflipleftfootkey_fs = om2.MFnDependencyNode(IkLeftLegDistance_sl_ls.getDependNode(7))
                     nofliplefkneejntTrans_fs = om2.MFnDependencyNode(noflipiklleg_sl_ls.getDependNode(1))
                     noflipleftfootjntTrans_fs = om2.MFnDependencyNode(noflipiklleg_sl_ls.getDependNode(2))
+                    liknoflipupperlegstretchblendnode_fs = om2.MFnDependencyNode(liknoflipupperlegtransblendnode)
+                    liknofliplowerlegstretchblendnode_fs = om2.MFnDependencyNode(liknofliplowerlegtransblendnode)
 
                     ikautokneeupperlegInp1Y_plug = likautokneeupperleg_fs.findPlug("input1Y", False)
                     ikautokneeupperlegInp2Y_plug = likautokneeupperleg_fs.findPlug("input2Y", False)
@@ -7486,28 +9436,40 @@ class MainWindow(QtWidgets.QDialog):
                     noflipleftfootjntty_plug = noflipleftfootjntTrans_fs.findPlug("translateY", False)
                     iklegctrlkneeupperleg_plug = iklegctrl_fs.findPlug("thighlength", False)
                     iklegctrlkneelowerleg_plug = iklegctrl_fs.findPlug("calflength", False)
+                    liknoflipupperlegstretchblendnodeinp1g_plug = liknoflipupperlegstretchblendnode_fs.findPlug("color1G", False)
+                    liknoflipupperlegstretchblendnodeotp_plug = liknoflipupperlegstretchblendnode_fs.findPlug("outputG", False)
+                    liknoflipupperlegstretchblendnodeblender_plug = liknoflipupperlegstretchblendnode_fs.findPlug("blender", False)
+                    liknofliplowerlegstretchblendnodeinp1g_plug = liknofliplowerlegstretchblendnode_fs.findPlug("color1G", False)
+                    liknofliplowerlegstretchblendnodeotp_plug = liknofliplowerlegstretchblendnode_fs.findPlug("outputG", False)
+                    liknofliplowerlegstretchblendnodeblender_plug = liknofliplowerlegstretchblendnode_fs.findPlug("blender", False)
 
-                    self.ctrl_mod_n.disconnect(noflipleftkneekeyotp_plug, nofliplefkneejnttty_plug)
-                    self.ctrl_mod_n.disconnect(noflipleftfootkeyotp_plug, noflipleftfootjntty_plug)
-                    self.ctrl_mod_n.connect(iklegctrlkneeupperleg_plug, ikautokneeupperlegInp1Y_plug)
-                    self.ctrl_mod_n.connect(noflipleftkneekeyotp_plug, ikautokneeupperlegInp2Y_plug)
-                    self.ctrl_mod_n.connect(iklegctrlkneelowerleg_plug, ikautokneelowerlegInp1Y_plug)
-                    self.ctrl_mod_n.connect(noflipleftfootkeyotp_plug, ikautokneelowerlegInp2Y_plug)
-                    self.ctrl_mod_n.connect(ikautokneeupperlegOtp_plug, nofliplefkneejnttty_plug)
-                    self.ctrl_mod_n.connect(ikautokneelowerlegOtp_plug, noflipleftfootjntty_plug)
-                    self.ctrl_mod_n.commandToExecute('setAttr "NoFlipLeftLegTrans_multiply.operation" 1')
-                    self.ctrl_mod_n.commandToExecute('setAttr "NoFlipLeftFootTrans_multiply.operation" 1')
+                    self.MDG2_mod.disconnect(noflipleftkneekeyotp_plug, nofliplefkneejnttty_plug)
+                    self.MDG2_mod.disconnect(noflipleftfootkeyotp_plug, noflipleftfootjntty_plug)
+                    self.MDG2_mod.connect(iklegctrlkneeupperleg_plug, ikautokneeupperlegInp1Y_plug)
+                    self.MDG2_mod.connect(noflipleftkneekeyotp_plug, ikautokneeupperlegInp2Y_plug)
+                    self.MDG2_mod.connect(iklegctrlkneelowerleg_plug, ikautokneelowerlegInp1Y_plug)
+                    self.MDG2_mod.connect(noflipleftfootkeyotp_plug, ikautokneelowerlegInp2Y_plug)
+                    self.MDG2_mod.connect(ikautokneeupperlegOtp_plug, liknoflipupperlegstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(ikautokneelowerlegOtp_plug, liknofliplowerlegstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(liknoflipupperlegstretchblendnodeotp_plug, nofliplefkneejnttty_plug)
+                    self.MDG2_mod.connect(liknofliplowerlegstretchblendnodeotp_plug, noflipleftfootjntty_plug)
+                    self.MDG2_mod.connect(ikleftlegstretch_plug, liknoflipupperlegstretchblendnodeblender_plug)
+                    self.MDG2_mod.connect(ikleftlegstretch_plug, liknofliplowerlegstretchblendnodeblender_plug)
+                    self.MDG2_mod.commandToExecute('float $noflipikleftlegtranslateY = `getAttr "NoFlipLeftUpperLegStretch_blend.color1G"`; setAttr "NoFlipLeftUpperLegStretch_blend.color2G" $noflipikleftlegtranslateY;')
+                    self.MDG2_mod.commandToExecute('float $noflipikleftfoottranslateY = `getAttr "NoFlipLeftLowerLegStretch_blend.color1G"`; setAttr "NoFlipLeftLowerLegStretch_blend.color2G" $noflipikleftfoottranslateY;')
+                    self.MDG2_mod.commandToExecute('setAttr "NoFlipLeftLegTrans_multiply.operation" 1')
+                    self.MDG2_mod.commandToExecute('setAttr "NoFlipLeftFootTrans_multiply.operation" 1')
 
-                    leftlegglobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
-                    noflipleftlegglobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
-                    noflipleftfootlobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
-                    self.ctrl_mod_n.renameNode(leftlegglobalscalenode, "IKLeftLegGlobalScale_Average")
-                    self.ctrl_mod_n.renameNode(noflipleftlegglobalscalenode, "IKNoFlipLeftLegGlobalScale_Average")
-                    self.ctrl_mod_n.renameNode(noflipleftfootlobalscalenode, "IKNoFlipLeftFootGlobalScale_Average")
+                    rightlegglobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    nofliprightlegglobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    nofliprightfootlobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    self.MDG2_mod.renameNode(rightlegglobalscalenode, "IKLeftLegGlobalScale_Average")
+                    self.MDG2_mod.renameNode(nofliprightlegglobalscalenode, "IKNoFlipLeftLegGlobalScale_Average")
+                    self.MDG2_mod.renameNode(nofliprightfootlobalscalenode, "IKNoFlipLeftFootGlobalScale_Average")
 
-                    leftlegglobalscale_fs = om2.MFnDependencyNode(leftlegglobalscalenode)
-                    noflipleftlegglobalscale_fs = om2.MFnDependencyNode(noflipleftlegglobalscalenode)
-                    noflipleftfootlobalscale_fs = om2.MFnDependencyNode(noflipleftfootlobalscalenode)
+                    leftlegglobalscale_fs = om2.MFnDependencyNode(rightlegglobalscalenode)
+                    noflipleftlegglobalscale_fs = om2.MFnDependencyNode(nofliprightlegglobalscalenode)
+                    noflipleftfootlobalscale_fs = om2.MFnDependencyNode(nofliprightfootlobalscalenode)
                     masterlctrl_fs = om2.MFnDependencyNode(obj_masterctrl2)
 
                     likupperlegjntDist_plug = likupperlegjntDist_fs.findPlug("distance", False)
@@ -7529,42 +9491,46 @@ class MainWindow(QtWidgets.QDialog):
                     pvleftfootkeyinp_plug = pvleftfootkey_fs.findPlug("input", False)
                     ikleftjointleggrps_plug = ikleftjointleggrp_fs.findPlug("scale", False)
 
-                    self.ctrl_mod_n.disconnect(liklegjntDist_plug, noflipleftkneekeyinp_plug)
-                    self.ctrl_mod_n.disconnect(liklegjntDist_plug, noflipleftfootkeyinp_plug)
-                    self.ctrl_mod_n.disconnect(liklegjntDist_plug, pvleftkneekeyinp_plug)
-                    self.ctrl_mod_n.disconnect(liklegjntDist_plug, pvleftfootkeyinp_plug)
-                    self.ctrl_mod_n.connect(liklowerlegjntDist_plug, noflipleftfootlobalscaleInp1Y_plug)
-                    self.ctrl_mod_n.connect(likupperlegjntDist_plug, noflipleftlegglobalscaleInp1Y_plug)
-                    self.ctrl_mod_n.connect(liklowerlegjntDist_plug, noflipleftfootlobalscaleInp1Y_plug)
-                    self.ctrl_mod_n.connect(masterlctrlsy_plug, noflipleftlegglobalscaleInp2Y_plug)
-                    self.ctrl_mod_n.connect(masterlctrlsy_plug, noflipleftfootlobalscaleInp2Y_plug)
-                    self.ctrl_mod_n.connect(noflipleftlegglobalscaleOtpY_plug, likpvuppertransblendnodeinp1g_plug)
-                    self.ctrl_mod_n.connect(noflipleftfootlobalscaleOtpY_plug, likpvlowertransblendnodeinp1g_plug)
-                    self.ctrl_mod_n.connect(liklegjntDist_plug, leftlegglobalscaleInp1Y_plug)
-                    self.ctrl_mod_n.connect(masterlctrlsy_plug, leftlegglobalscaleInp2Y_plug)
-                    self.ctrl_mod_n.connect(leftlegglobalscaleOtpY_plug, noflipleftkneekeyinp_plug)
-                    self.ctrl_mod_n.connect(leftlegglobalscaleOtpY_plug, noflipleftfootkeyinp_plug)
-                    self.ctrl_mod_n.connect(leftlegglobalscaleOtpY_plug, pvleftkneekeyinp_plug)
-                    self.ctrl_mod_n.connect(leftlegglobalscaleOtpY_plug, pvleftfootkeyinp_plug)
-                    self.ctrl_mod_n.commandToExecute('setAttr "IKNoFlipLeftLegGlobalScale_Average.operation" 2')
-                    self.ctrl_mod_n.commandToExecute('setAttr "IKNoFlipLeftFootGlobalScale_Average.operation" 2')
-                    self.ctrl_mod_n.commandToExecute('setAttr "IKLeftLegGlobalScale_Average.operation" 2')
-                    self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, ikleftjointleggrps_plug)
+                    self.MDG2_mod.disconnect(liklegjntDist_plug, noflipleftkneekeyinp_plug)
+                    self.MDG2_mod.disconnect(liklegjntDist_plug, noflipleftfootkeyinp_plug)
+                    self.MDG2_mod.disconnect(liklegjntDist_plug, pvleftkneekeyinp_plug)
+                    self.MDG2_mod.disconnect(liklegjntDist_plug, pvleftfootkeyinp_plug)
+                    self.MDG2_mod.connect(liklowerlegjntDist_plug, noflipleftfootlobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(likupperlegjntDist_plug, noflipleftlegglobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(liklowerlegjntDist_plug, noflipleftfootlobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, noflipleftlegglobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, noflipleftfootlobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(noflipleftlegglobalscaleOtpY_plug, likpvuppertransblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(noflipleftfootlobalscaleOtpY_plug, likpvlowertransblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(liklegjntDist_plug, leftlegglobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, leftlegglobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(leftlegglobalscaleOtpY_plug, noflipleftkneekeyinp_plug)
+                    self.MDG2_mod.connect(leftlegglobalscaleOtpY_plug, noflipleftfootkeyinp_plug)
+                    self.MDG2_mod.connect(leftlegglobalscaleOtpY_plug, pvleftkneekeyinp_plug)
+                    self.MDG2_mod.connect(leftlegglobalscaleOtpY_plug, pvleftfootkeyinp_plug)
+                    self.MDG2_mod.commandToExecute('setAttr "IKNoFlipLeftLegGlobalScale_Average.operation" 2')
+                    self.MDG2_mod.commandToExecute('setAttr "IKNoFlipLeftFootGlobalScale_Average.operation" 2')
+                    self.MDG2_mod.commandToExecute('setAttr "IKLeftLegGlobalScale_Average.operation" 2')
+                    self.MDG2_mod.connect(masterdecomposeOtpScale_plug, ikleftjointleggrps_plug)
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "footrollswitch" -niceName "Auto/Manual Foot Roll" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftFootOptions_ctrl')
+                # else:
+                #     self.MDG2_mod.commandToExecute('delete "IkStretchyLeftJointLeg_grp"')
+                #     self.MDG2_mod.commandToExecute('delete "LeftLegIkCluster_grp"')
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "autoroll" -niceName "Auto Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "roll" -niceName "Roll" -attributeType double -minValue -90 -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "bendlimitangle" -niceName "Bend Limit Angle" -attributeType double -keyable true -defaultValue 45 Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "toestraightangle" -niceName "Toe Straight Angle" -attributeType double -keyable true -defaultValue 70 Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "manualroll" -niceName "Manual Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "heelroll" -niceName "Heel Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('addAttr -longName "footrollswitch" -niceName "Auto/Manual Foot Roll" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_LeftFootOptions_ctrl')
 
-                likheelclampnode = self.ctrl_mod_n.createNode("clamp")
-                self.ctrl_mod_n.renameNode(likheelclampnode, "LeftHeel_rotclamp")
-                likheelblendernode = self.ctrl_mod_n.createNode("blendColors")
-                self.ctrl_mod_n.renameNode(likheelblendernode, "LeftHeel_blend")
+                self.MDG2_mod.commandToExecute('addAttr -longName "autoroll" -niceName "Auto Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "roll" -niceName "Roll" -attributeType double -minValue -90 -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "bendlimitangle" -niceName "Bend Limit Angle" -attributeType double -keyable true -defaultValue 45 Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "toestraightangle" -niceName "Toe Straight Angle" -attributeType double -keyable true -defaultValue 70 Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "manualroll" -niceName "Manual Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "heelroll" -niceName "Heel Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.doIt()
+
+                likheelclampnode = self.MDG2_mod.createNode("clamp")
+                self.MDG2_mod.renameNode(likheelclampnode, "LeftHeel_rotclamp")
+                likheelblendernode = self.MDG2_mod.createNode("blendColors")
+                self.MDG2_mod.renameNode(likheelblendernode, "LeftHeel_blend")
                 leg_reverse_sl_ls = om2.MSelectionList()
                 leg_reverse_sl_ls.add("LeftReverseFootHeel")
                 reverse_heel_obj = leg_reverse_sl_ls.getDependNode(0)
@@ -7584,28 +9550,28 @@ class MainWindow(QtWidgets.QDialog):
                 likheelblendOtpR_plug = likheelblender_fs.findPlug("outputR", False)
                 likheelclampInpX_plug = reverseheel_fs.findPlug("rotateX", False)
 
-                self.ctrl_mod_n.connect(llegoptionsfootrollswitch_plug, likheelblender_plug)
-                self.ctrl_mod_n.connect(iklegctrlRoll_plug, likheelclampInpR_plug)
-                self.ctrl_mod_n.connect(likheelclampOtpR_plug, likheelblendCol2R_plug)
-                self.ctrl_mod_n.connect(iklegctrlHeelRoll_plug, likheelblendCol1R_plug)
-                self.ctrl_mod_n.connect(likheelblendOtpR_plug, likheelclampInpX_plug)
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftHeel_rotclamp.minR" -90')
+                self.MDG2_mod.connect(llegoptionsfootrollswitch_plug, likheelblender_plug)
+                self.MDG2_mod.connect(iklegctrlRoll_plug, likheelclampInpR_plug)
+                self.MDG2_mod.connect(likheelclampOtpR_plug, likheelblendCol2R_plug)
+                self.MDG2_mod.connect(iklegctrlHeelRoll_plug, likheelblendCol1R_plug)
+                self.MDG2_mod.connect(likheelblendOtpR_plug, likheelclampInpX_plug)
+                self.MDG2_mod.commandToExecute('setAttr "LeftHeel_rotclamp.minR" -90')
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "footroll" -niceName "Foot Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('addAttr -longName "footroll" -niceName "Foot Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.doIt()
 
-                likballclampnode = self.ctrl_mod_n.createNode("clamp")
-                self.ctrl_mod_n.renameNode(likballclampnode, "LeftBall_rotclamp")
-                likballrangenode = self.ctrl_mod_n.createNode("setRange")
-                self.ctrl_mod_n.renameNode(likballrangenode, "LeftBall_range")
-                likballblendernode = self.ctrl_mod_n.createNode("blendColors")
-                self.ctrl_mod_n.renameNode(likballblendernode, "LeftBall_blend")
-                likballminusnode = self.ctrl_mod_n.createNode("plusMinusAverage")
-                self.ctrl_mod_n.renameNode(likballminusnode, "LeftBall_minus")
-                likballmultnode = self.ctrl_mod_n.createNode("multiplyDivide")
-                self.ctrl_mod_n.renameNode(likballmultnode, "LeftBall_percetmult")
-                likballrollmultnode = self.ctrl_mod_n.createNode("multiplyDivide")
-                self.ctrl_mod_n.renameNode(likballrollmultnode, "LeftBall_rollmult")
+                likballclampnode = self.MDG2_mod.createNode("clamp")
+                self.MDG2_mod.renameNode(likballclampnode, "LeftBall_rotclamp")
+                likballrangenode = self.MDG2_mod.createNode("setRange")
+                self.MDG2_mod.renameNode(likballrangenode, "LeftBall_range")
+                likballblendernode = self.MDG2_mod.createNode("blendColors")
+                self.MDG2_mod.renameNode(likballblendernode, "LeftBall_blend")
+                likballminusnode = self.MDG2_mod.createNode("plusMinusAverage")
+                self.MDG2_mod.renameNode(likballminusnode, "LeftBall_minus")
+                likballmultnode = self.MDG2_mod.createNode("multiplyDivide")
+                self.MDG2_mod.renameNode(likballmultnode, "LeftBall_percetmult")
+                likballrollmultnode = self.MDG2_mod.createNode("multiplyDivide")
+                self.MDG2_mod.renameNode(likballrollmultnode, "LeftBall_rollmult")
                 leg_reverse_sl_ls.add("LeftReverseFootToe")
                 reverse_toe_obj = leg_reverse_sl_ls.getDependNode(1)
 
@@ -7639,37 +9605,37 @@ class MainWindow(QtWidgets.QDialog):
                 likballblendOtpR_plug = likballblender_fs.findPlug("outputR", False)
                 likballclampRotX_plug = reversetoe_fs.findPlug("rotateX", False)
 
-                self.ctrl_mod_n.connect(llegoptionsfootrollswitch_plug, likballblender_plug)
-                self.ctrl_mod_n.connect(iklegctrlRoll_plug, likballclampInpR_plug)
-                self.ctrl_mod_n.connect(iklegctrlBendLimit_plug, likballclampMaxR_plug)
-                self.ctrl_mod_n.connect(likballclampInpR_plug, likballrangeValueX_plug)
-                self.ctrl_mod_n.connect(likballclampMinR_plug, likballrangeOldMinX_plug)
-                self.ctrl_mod_n.connect(likballclampMaxR_plug, likballrangeOldMaxX_plug)
-                self.ctrl_mod_n.connect(likballrangeOutValueX_plug, likballmultInp1X_plug)
-                self.ctrl_mod_n.connect(likballsubOtp1D_plug, likballmultInp2X_plug)
-                self.ctrl_mod_n.connect(likballmultOtpX_plug, likballrollmultInp1X_plug)
-                self.ctrl_mod_n.connect(iklegctrlRoll_plug, likballrollmultInp2X_plug)
-                self.ctrl_mod_n.connect(likballrollmultOtpX_plug, likballblendCol2R_plug)
-                self.ctrl_mod_n.connect(iklegctrlBallRoll_plug, likballblendCol1R_plug)
-                self.ctrl_mod_n.connect(likballblendOtpR_plug, likballclampRotX_plug)
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_range.minX" 0')
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_range.maxX" 1')
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_minus.input1D[0]" 1')
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_minus.operation" 2')
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_percetmult.operation" 1')
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftBall_rollmult.operation" 1')
+                self.MDG2_mod.connect(llegoptionsfootrollswitch_plug, likballblender_plug)
+                self.MDG2_mod.connect(iklegctrlRoll_plug, likballclampInpR_plug)
+                self.MDG2_mod.connect(iklegctrlBendLimit_plug, likballclampMaxR_plug)
+                self.MDG2_mod.connect(likballclampInpR_plug, likballrangeValueX_plug)
+                self.MDG2_mod.connect(likballclampMinR_plug, likballrangeOldMinX_plug)
+                self.MDG2_mod.connect(likballclampMaxR_plug, likballrangeOldMaxX_plug)
+                self.MDG2_mod.connect(likballrangeOutValueX_plug, likballmultInp1X_plug)
+                self.MDG2_mod.connect(likballsubOtp1D_plug, likballmultInp2X_plug)
+                self.MDG2_mod.connect(likballmultOtpX_plug, likballrollmultInp1X_plug)
+                self.MDG2_mod.connect(iklegctrlRoll_plug, likballrollmultInp2X_plug)
+                self.MDG2_mod.connect(likballrollmultOtpX_plug, likballblendCol2R_plug)
+                self.MDG2_mod.connect(iklegctrlBallRoll_plug, likballblendCol1R_plug)
+                self.MDG2_mod.connect(likballblendOtpR_plug, likballclampRotX_plug)
+                self.MDG2_mod.commandToExecute('setAttr "LeftBall_range.minX" 0')
+                self.MDG2_mod.commandToExecute('setAttr "LeftBall_range.maxX" 1')
+                self.MDG2_mod.commandToExecute('setAttr "LeftBall_minus.input1D[0]" 1')
+                self.MDG2_mod.commandToExecute('setAttr "LeftBall_minus.operation" 2')
+                self.MDG2_mod.commandToExecute('setAttr "LeftBall_percetmult.operation" 1')
+                self.MDG2_mod.commandToExecute('setAttr "LeftBall_rollmult.operation" 1')
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "toeroll" -niceName "Toe Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('addAttr -longName "toeroll" -niceName "Toe Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.doIt()
 
-                liktoeclampnode = self.ctrl_mod_n.createNode("clamp")
-                self.ctrl_mod_n.renameNode(liktoeclampnode, "LeftToe_rotclamp")
-                liktoeblendernode = self.ctrl_mod_n.createNode("blendColors")
-                self.ctrl_mod_n.renameNode(liktoeblendernode, "LeftToe_blend")
-                liktoerangernode = self.ctrl_mod_n.createNode("setRange")
-                self.ctrl_mod_n.renameNode(liktoerangernode, "LeftToe_range")
-                liktoemultnode = self.ctrl_mod_n.createNode("multiplyDivide")
-                self.ctrl_mod_n.renameNode(liktoemultnode, "LeftToe_percetmultiply")
+                liktoeclampnode = self.MDG2_mod.createNode("clamp")
+                self.MDG2_mod.renameNode(liktoeclampnode, "LeftToe_rotclamp")
+                liktoeblendernode = self.MDG2_mod.createNode("blendColors")
+                self.MDG2_mod.renameNode(liktoeblendernode, "LeftToe_blend")
+                liktoerangernode = self.MDG2_mod.createNode("setRange")
+                self.MDG2_mod.renameNode(liktoerangernode, "LeftToe_range")
+                liktoemultnode = self.MDG2_mod.createNode("multiplyDivide")
+                self.MDG2_mod.renameNode(liktoemultnode, "LeftToe_percetmultiply")
                 leg_reverse_sl_ls.add("LeftReverseFootToeEnd")
                 reverse_toeend_obj = leg_reverse_sl_ls.getDependNode(2)
 
@@ -7697,31 +9663,31 @@ class MainWindow(QtWidgets.QDialog):
                 liktoeblendOtpR_plug = liktoeblender_fs.findPlug("outputR", False)
                 liktoeclampRotX_plug = reversetoeend_fs.findPlug("rotateX", False)
 
-                self.ctrl_mod_n.connect(llegoptionsfootrollswitch_plug, liktoeblender_plug)
-                self.ctrl_mod_n.connect(iklegctrlRoll_plug, liktoeclampInpR_plug)
-                self.ctrl_mod_n.connect(iklegctrlBendLimit_plug, liktoeclampMinR_plug)
-                self.ctrl_mod_n.connect(iklegctrlStraightLimit_plug, liktoeclampMaxR_plug)
-                self.ctrl_mod_n.connect(liktoeclampInpR_plug, liktoerangeValueX_plug)
-                self.ctrl_mod_n.connect(liktoeclampMinR_plug, liktoerangeOldMinX_plug)
-                self.ctrl_mod_n.connect(liktoeclampMaxR_plug, liktoerangeOldMaxX_plug)
-                self.ctrl_mod_n.connect(liktoerangeoOutValX_plug, liktoemultInp1X_plug)
-                self.ctrl_mod_n.connect(liktoeclampInpR_plug, liktoemultInp2X_plug)
-                self.ctrl_mod_n.connect(liktoemultOtpX_plug, liktoeblendCol2R_plug)
-                self.ctrl_mod_n.commandToExecute('connectAttr -force LeftToe_range.outValueX LeftBall_minus.input1D[1]')
-                self.ctrl_mod_n.connect(iklegctrlToeRoll_plug, liktoeblendCol1R_plug)
-                self.ctrl_mod_n.connect(liktoeblendOtpR_plug, liktoeclampRotX_plug)
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftToe_range.minX" 0')
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftToe_range.maxX" 1')
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftToe_percetmultiply.operation" 1')
+                self.MDG2_mod.connect(llegoptionsfootrollswitch_plug, liktoeblender_plug)
+                self.MDG2_mod.connect(iklegctrlRoll_plug, liktoeclampInpR_plug)
+                self.MDG2_mod.connect(iklegctrlBendLimit_plug, liktoeclampMinR_plug)
+                self.MDG2_mod.connect(iklegctrlStraightLimit_plug, liktoeclampMaxR_plug)
+                self.MDG2_mod.connect(liktoeclampInpR_plug, liktoerangeValueX_plug)
+                self.MDG2_mod.connect(liktoeclampMinR_plug, liktoerangeOldMinX_plug)
+                self.MDG2_mod.connect(liktoeclampMaxR_plug, liktoerangeOldMaxX_plug)
+                self.MDG2_mod.connect(liktoerangeoOutValX_plug, liktoemultInp1X_plug)
+                self.MDG2_mod.connect(liktoeclampInpR_plug, liktoemultInp2X_plug)
+                self.MDG2_mod.connect(liktoemultOtpX_plug, liktoeblendCol2R_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force LeftToe_range.outValueX LeftBall_minus.input1D[1]')
+                self.MDG2_mod.connect(iklegctrlToeRoll_plug, liktoeblendCol1R_plug)
+                self.MDG2_mod.connect(liktoeblendOtpR_plug, liktoeclampRotX_plug)
+                self.MDG2_mod.commandToExecute('setAttr "LeftToe_range.minX" 0')
+                self.MDG2_mod.commandToExecute('setAttr "LeftToe_range.maxX" 1')
+                self.MDG2_mod.commandToExecute('setAttr "LeftToe_percetmultiply.operation" 1')
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "common" -niceName "Common" -attributeType "enum" -en "__________:" -keyable true Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "tilt" -niceName "Tilt" -attributeType double -minValue -180 -maxValue 180 -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('addAttr -longName "common" -niceName "Common" -attributeType "enum" -en "__________:" -keyable true Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "tilt" -niceName "Tilt" -attributeType double -minValue -180 -maxValue 180 -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.doIt()
 
-                likinnerlegtiltclampnode = self.ctrl_mod_n.createNode("clamp")
-                self.ctrl_mod_n.renameNode(likinnerlegtiltclampnode, "LeftInnerLegTilt_clamp")
-                likouterlegtiltclampnode = self.ctrl_mod_n.createNode("clamp")
-                self.ctrl_mod_n.renameNode(likouterlegtiltclampnode, "LeftOuterLegTilt_clamp")
+                likinnerlegtiltclampnode = self.MDG2_mod.createNode("clamp")
+                self.MDG2_mod.renameNode(likinnerlegtiltclampnode, "LeftInnerLegTilt_clamp")
+                likouterlegtiltclampnode = self.MDG2_mod.createNode("clamp")
+                self.MDG2_mod.renameNode(likouterlegtiltclampnode, "LeftOuterLegTilt_clamp")
                 leg_reverse_sl_ls.add("LeftReverseInnerFoot")
                 leg_reverse_sl_ls.add("LeftReverseOuterFoot")
                 reverse_inner_obj = leg_reverse_sl_ls.getDependNode(3)
@@ -7740,17 +9706,17 @@ class MainWindow(QtWidgets.QDialog):
                 likouterclampOtpB_plug = likouterclamp_fs.findPlug("outputB", False)
                 likouterclampRotZ_plug = reverseouterfoot_fs.findPlug("rotateZ", False)
 
-                self.ctrl_mod_n.connect(iklegctrlTilt_plug, likinnerclampInpB_plug)
-                self.ctrl_mod_n.connect(iklegctrlTilt_plug, likouterclampInpB_plug)
-                self.ctrl_mod_n.connect(likinnerclampOtpB_plug, likinnerclampRotZ_plug)
-                self.ctrl_mod_n.connect(likouterclampOtpB_plug, likouterclampRotZ_plug)
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftInnerLegTilt_clamp.maxB" 180')
-                self.ctrl_mod_n.commandToExecute('setAttr "LeftOuterLegTilt_clamp.minB" -180')
+                self.MDG2_mod.connect(iklegctrlTilt_plug, likinnerclampInpB_plug)
+                self.MDG2_mod.connect(iklegctrlTilt_plug, likouterclampInpB_plug)
+                self.MDG2_mod.connect(likinnerclampOtpB_plug, likinnerclampRotZ_plug)
+                self.MDG2_mod.connect(likouterclampOtpB_plug, likouterclampRotZ_plug)
+                self.MDG2_mod.commandToExecute('setAttr "LeftInnerLegTilt_clamp.maxB" 180')
+                self.MDG2_mod.commandToExecute('setAttr "LeftOuterLegTilt_clamp.minB" -180')
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "toespin" -niceName "Toe Spin" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "toewiggle" -niceName "Toe Wiggle" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "toespin" -niceName "Toe Spin" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "toewiggle" -niceName "Toe Wiggle" -attributeType double -keyable true -defaultValue 0 Biped_IkLeftFoot_ctrl')
+                self.MDG2_mod.doIt()
 
                 leg_reverse_sl_ls.add("LeftReverseFootToeWiggle")
                 reverse_toewiggle_obj = leg_reverse_sl_ls.getDependNode(5)
@@ -7764,24 +9730,23 @@ class MainWindow(QtWidgets.QDialog):
                 iklegctrlToeWiggle_plug = iklegctrl_fs.findPlug("toewiggle", False)
                 reversetoewiggleRotX_plug = reversetoewiggle_fs.findPlug("rotateX", False)
 
-                self.ctrl_mod_n.connect(iklegctrlLean_plug, likballclampRotZ_plug)
-                self.ctrl_mod_n.connect(iklegctrlToeSpin_plug, liktoeclampRotY_plug)
-                self.ctrl_mod_n.connect(iklegctrlToeWiggle_plug, reversetoewiggleRotX_plug)
+                self.MDG2_mod.connect(iklegctrlLean_plug, likballclampRotZ_plug)
+                self.MDG2_mod.connect(iklegctrlToeSpin_plug, liktoeclampRotY_plug)
+                self.MDG2_mod.connect(iklegctrlToeWiggle_plug, reversetoewiggleRotX_plug)
         else:
-            self.ctrl_mod_n.commandToExecute('delete "Biped_IkLeftFoot_null"')
-            self.ctrl_mod_n.commandToExecute('delete "IkLeftJointLeg_grp"')
-            self.ctrl_mod_n.commandToExecute('delete "IkStretchyLeftJointLeg_grp"')
-            self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_LeftFootOptions_ctrl.fkik')
+            self.MDG2_mod.commandToExecute('delete "Biped_IkLeftFoot_null"')
+            self.MDG2_mod.commandToExecute('delete "IkLeftJointLeg_grp"')
+            self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_LeftFootOptions_ctrl.fkik')
 
         for index in range(fkrarm_sl_ls.length()):
             jnt_obj = fkrarm_sl_ls.getDependNode(index)
             jnt_string = fkrarm_sl_ls.getSelectionStrings(index)
 
             if jnt_obj.hasFn(om2.MFn.kJoint):
-                rarmctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                rarmctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(rarmctrl_multMatrix, str(jnt_string)[2:][:-3]+"_multMatrix")
-                self.ctrl_mod_n.renameNode(rarmctrl_decomposeMatrix, str(jnt_string)[2:][:-3]+"_decomposeMatrix")
+                rarmctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                rarmctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(rarmctrl_multMatrix, str(jnt_string)[2:][:-3] + "_multMatrix")
+                self.MDG2_mod.renameNode(rarmctrl_decomposeMatrix, str(jnt_string)[2:][:-3] + "_decomposeMatrix")
 
                 rarmmultMatrix_fs = om2.MFnDependencyNode(rarmctrl_multMatrix)
                 rarmdecomposeMatrix_fs = om2.MFnDependencyNode(rarmctrl_decomposeMatrix)
@@ -7794,15 +9759,15 @@ class MainWindow(QtWidgets.QDialog):
                 rarmjntTrans_plug = rarmjnt_fs.findPlug("translate", False)
                 rarmjntRot_plug = rarmjnt_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.connect(rarmmultMatrixSum_plug, rarmdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(rarmdecomposeOtpTrans_plug, rarmjntTrans_plug)
-                self.ctrl_mod_n.connect(rarmdecomposeOtpRot_plug, rarmjntRot_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.connect(rarmmultMatrixSum_plug, rarmdecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(rarmdecomposeOtpTrans_plug, rarmjntTrans_plug)
+                self.MDG2_mod.connect(rarmdecomposeOtpRot_plug, rarmjntRot_plug)
                 if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
 
         fkrarm_sl_ls = om2.MSelectionList()
         fkrarm_sl_ls.add("FkRightArm")
@@ -7814,15 +9779,29 @@ class MainWindow(QtWidgets.QDialog):
         ikrarm_sl_ls.add("IkRightForeArm")
         ikrarm_sl_ls.add("IkRightHand")
 
+        noflipikrarm_sl_ls = om2.MSelectionList()
+        noflipikrarm_sl_ls.add("IkNoFlipRightArm")
+        noflipikrarm_sl_ls.add("IkNoFlipRightForeArm")
+        noflipikrarm_sl_ls.add("IkNoFlipRightHand")
+
+        pvikrarm_sl_ls = om2.MSelectionList()
+        pvikrarm_sl_ls.add("IkPVRightArm")
+        pvikrarm_sl_ls.add("IkPVRightForeArm")
+        pvikrarm_sl_ls.add("IkPVRightHand")
+
         rhandoptions_sl_ls = om2.MSelectionList()
         rhandoptions_sl_ls.add("Biped_RightHandOptions_ctrl")
         rhandoptions_obj = rhandoptions_sl_ls.getDependNode(0)
 
-        self.ctrl_mod_n.commandToExecute('addAttr -longName "fkik" -niceName "Fk/Ik" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightHandOptions_ctrl')
-        self.ctrl_mod_n.doIt()
+        self.MDG2_mod.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkRightArm_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkRightForeArm_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "fkik" -niceName "Fk/Ik" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightHandOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "kneeswitch" -niceName "Auto/Manual Knee" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightHandOptions_ctrl')
+        self.MDG2_mod.doIt()
 
         rhandoptions_fs = om2.MFnDependencyNode(rhandoptions_obj)
         rhandoptionsfkik_plug = rhandoptions_fs.findPlug("fkik", False)
+        rhandoptionskneeswitch_plug = rhandoptions_fs.findPlug("kneeswitch", False)
 
         for index in range(rarm_sl_ls.length()):
             fkjnt_obj = fkrarm_sl_ls.getDependNode(index)
@@ -7832,6 +9811,12 @@ class MainWindow(QtWidgets.QDialog):
 
             bindjnt_obj = rarm_sl_ls.getDependNode(index)
             bindjnt_string = rarm_sl_ls.getSelectionStrings(index)
+
+            noflipjnt_obj = noflipikrarm_sl_ls.getDependNode(index)
+            noflipjnt_string = noflipikrarm_sl_ls.getSelectionStrings(index)
+
+            pvjnt_obj = pvikrarm_sl_ls.getDependNode(index)
+            pvjnt_string = pvikrarm_sl_ls.getSelectionStrings(index)
 
             if bindjnt_obj.hasFn(om2.MFn.kJoint):
                 if cmds.getAttr("{0}.jointOrientX".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(bindjnt_string)[3:][:-3])) != 0:
@@ -7850,53 +9835,556 @@ class MainWindow(QtWidgets.QDialog):
                 armjoint_fs = om2.MFnDependencyNode(bindjnt_obj)
                 fkarmjoint_fs = om2.MFnDependencyNode(fkjnt_obj)
 
+                fkarmjointtransotp_plug = fkarmjoint_fs.findPlug("translate", False)
                 fkarmjointrototp_plug = fkarmjoint_fs.findPlug("rotate", False)
+                armjointtransinp_plug = armjoint_fs.findPlug("translate", False)
                 armjointrotinp_plug = armjoint_fs.findPlug("rotate", False)
 
-                if cmds.objExists("RightHand_Ik"):
-                    armblendnode = self.ctrl_mod_n.createNode("blendColors")
-                    armjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                    self.ctrl_mod_n.renameNode(armjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
-                    self.ctrl_mod_n.renameNode(armblendnode, str(bindjnt_string)[2:][:-3]+"_blend")
+                if cmds.objExists("NoFlipRightHand_Ik") and cmds.objExists("PVRightHand_Ik"):
+                    armrotblendnode = self.MDG2_mod.createNode("blendColors")
+                    armtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    armjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    self.MDG2_mod.renameNode(armjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3] + "Blend_decomposeMatrix")
+                    self.MDG2_mod.renameNode(armrotblendnode, str(bindjnt_string)[2:][:-3] + "_blend")
 
-                    armblendnode_fs = om2.MFnDependencyNode(armblendnode)
+                    armrotblendnode_fs = om2.MFnDependencyNode(armrotblendnode)
+                    armtransblendnode_fs = om2.MFnDependencyNode(armtransblendnode)
                     armdecomposeMatrix_fs = om2.MFnDependencyNode(armjoint_decomposeMatrix)
                     ikarmjoint_fs = om2.MFnDependencyNode(ikjnt_obj)
 
                     armdecomposeInpMatrix_plug = armdecomposeMatrix_fs.findPlug("inputMatrix", False)
                     armdecomposeOtpRot_plug = armdecomposeMatrix_fs.findPlug("outputRotate", False)
-                    armblendnodeinp1_plug = armblendnode_fs.findPlug("color1", False)
-                    armblendnodeinp2_plug = armblendnode_fs.findPlug("color2", False)
-                    armblendnodeotp_plug = armblendnode_fs.findPlug("output", False)
-                    armblendnodeblender_plug = armblendnode_fs.findPlug("blender", False)
+                    armdecomposeOtpTrans_plug = armdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    armrotblendnodeinp1_plug = armrotblendnode_fs.findPlug("color1", False)
+                    armrotblendnodeinp2_plug = armrotblendnode_fs.findPlug("color2", False)
+                    armrotblendnodeotp_plug = armrotblendnode_fs.findPlug("output", False)
+                    armrotblendnodeblender_plug = armrotblendnode_fs.findPlug("blender", False)
+                    armtransblendnodeinp1_plug = armtransblendnode_fs.findPlug("color1", False)
+                    armtransblendnodeinp2_plug = armtransblendnode_fs.findPlug("color2", False)
+                    armtransblendnodeotp_plug = armtransblendnode_fs.findPlug("output", False)
+                    armtransblendnodeblender_plug = armtransblendnode_fs.findPlug("blender", False)
                     ikarmjointrototp_plug = ikarmjoint_fs.findPlug("matrix", False)
 
-                    self.ctrl_mod_n.connect(ikarmjointrototp_plug, armdecomposeInpMatrix_plug)
-                    self.ctrl_mod_n.connect(armdecomposeOtpRot_plug, armblendnodeinp1_plug)
-                    self.ctrl_mod_n.connect(fkarmjointrototp_plug, armblendnodeinp2_plug)
-                    self.ctrl_mod_n.connect(armblendnodeotp_plug, armjointrotinp_plug)
-                    self.ctrl_mod_n.connect(rhandoptionsfkik_plug, armblendnodeblender_plug)
+                    self.MDG2_mod.connect(ikarmjointrototp_plug, armdecomposeInpMatrix_plug)
+                    self.MDG2_mod.connect(armdecomposeOtpRot_plug, armrotblendnodeinp1_plug)
+                    self.MDG2_mod.connect(armdecomposeOtpTrans_plug, armtransblendnodeinp1_plug)
+                    self.MDG2_mod.connect(fkarmjointrototp_plug, armrotblendnodeinp2_plug)
+                    self.MDG2_mod.connect(fkarmjointtransotp_plug, armtransblendnodeinp2_plug)
+                    self.MDG2_mod.connect(armrotblendnodeotp_plug, armjointrotinp_plug)
+                    self.MDG2_mod.connect(armtransblendnodeotp_plug, armjointtransinp_plug)
+                    self.MDG2_mod.connect(rhandoptionsfkik_plug, armrotblendnodeblender_plug)
+                    self.MDG2_mod.connect(rhandoptionsfkik_plug, armtransblendnodeblender_plug)
+
+                    armrotblendnode = self.MDG2_mod.createNode("blendColors")
+                    armtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    nofliparmjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    pvarmjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    self.MDG2_mod.renameNode(nofliparmjoint_decomposeMatrix, str(noflipjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
+                    self.MDG2_mod.renameNode(pvarmjoint_decomposeMatrix, str(pvjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
+                    self.MDG2_mod.renameNode(armrotblendnode, str(bindjnt_string)[2:][:-3]+"Rot_kneeblend")
+                    self.MDG2_mod.renameNode(armtransblendnode, str(bindjnt_string)[2:][:-3]+"Trans_kneeblend")
+
+                    armrotblendnode_fs = om2.MFnDependencyNode(armrotblendnode)
+                    armtransblendnode_fs = om2.MFnDependencyNode(armtransblendnode)
+                    nofliparmdecomposeMatrix_fs = om2.MFnDependencyNode(nofliparmjoint_decomposeMatrix)
+                    pvarmdecomposeMatrix_fs = om2.MFnDependencyNode(pvarmjoint_decomposeMatrix)
+                    noflipikarmjoint_fs = om2.MFnDependencyNode(noflipjnt_obj)
+                    pvikarmjoint_fs = om2.MFnDependencyNode(pvjnt_obj)
+
+                    nofliparmdecomposeInpMatrix_plug = nofliparmdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                    nofliparmdecomposeOtpRot_plug = nofliparmdecomposeMatrix_fs.findPlug("outputRotate", False)
+                    nofliparmdecomposeOtpTrans_plug = nofliparmdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    pvarmdecomposeInpMatrix_plug = pvarmdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                    pvarmdecomposeOtpRot_plug = pvarmdecomposeMatrix_fs.findPlug("outputRotate", False)
+                    pvarmdecomposeOtpTrans_plug = pvarmdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    armrotblendnodeinp1_plug = armrotblendnode_fs.findPlug("color1", False)
+                    armrotblendnodeinp2_plug = armrotblendnode_fs.findPlug("color2", False)
+                    armrotblendnodeotp_plug = armrotblendnode_fs.findPlug("output", False)
+                    armrotblendnodeblender_plug = armrotblendnode_fs.findPlug("blender", False)
+                    armtransblendnodeinp1_plug = armtransblendnode_fs.findPlug("color1", False)
+                    armtransblendnodeinp2_plug = armtransblendnode_fs.findPlug("color2", False)
+                    armtransblendnodeotp_plug = armtransblendnode_fs.findPlug("output", False)
+                    armtransblendnodeblender_plug = armtransblendnode_fs.findPlug("blender", False)
+                    noflipikarmjointotp_plug = noflipikarmjoint_fs.findPlug("matrix", False)
+                    pvikarmjointotp_plug = pvikarmjoint_fs.findPlug("matrix", False)
+                    ikarmjointinpTrans_plug = ikarmjoint_fs.findPlug("translate", False)
+                    ikarmjointinpRot_plug = ikarmjoint_fs.findPlug("jointOrient", False)
+
+                    self.MDG2_mod.connect(noflipikarmjointotp_plug, nofliparmdecomposeInpMatrix_plug)
+                    self.MDG2_mod.connect(pvikarmjointotp_plug, pvarmdecomposeInpMatrix_plug)
+                    self.MDG2_mod.connect(pvarmdecomposeOtpRot_plug, armrotblendnodeinp1_plug)
+                    self.MDG2_mod.connect(pvarmdecomposeOtpTrans_plug, armtransblendnodeinp1_plug)
+                    self.MDG2_mod.connect(nofliparmdecomposeOtpRot_plug, armrotblendnodeinp2_plug)
+                    self.MDG2_mod.connect(nofliparmdecomposeOtpTrans_plug, armtransblendnodeinp2_plug)
+                    self.MDG2_mod.connect(armrotblendnodeotp_plug, ikarmjointinpRot_plug)
+                    self.MDG2_mod.connect(armtransblendnodeotp_plug, ikarmjointinpTrans_plug)
+                    self.MDG2_mod.connect(rhandoptionskneeswitch_plug, armrotblendnodeblender_plug)
+                    self.MDG2_mod.connect(rhandoptionskneeswitch_plug, armtransblendnodeblender_plug)
 
                 else:
-                    self.ctrl_mod_n.connect(fkarmjointrototp_plug, armjointrotinp_plug)
-                    self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_RightHandOptions_ctrl.fkik')
-                    self.ctrl_mod_n.commandToExecute('setAttr "IkRightArm.visibility" 0')
+                    self.MDG2_mod.connect(fkarmjointtransotp_plug, armjointtransinp_plug)
+                    self.MDG2_mod.connect(fkarmjointrototp_plug, armjointrotinp_plug)
 
-        if cmds.objExists("RightHand_Ik"):
+            if self.autostretch.currentIndex() == 1:
+                if index < 2:
+                    ikrarmgrp_sl_lst = om2.MSelectionList()
+                    ikrarmgrp_sl_lst.add("RightUpperArmIkCluster_grp")
+                    ikrarmgrp_sl_lst.add("RightUpperArmIkCluster2_grp")
+                    ikrarmgrp_sl_lst.add("RightLowerArmIkCluster_grp")
+                    ikrarmgrp_sl_lst.add("RightLowerArmIkCluster2_grp")
+                    grp_armupperikcluster = ikrarmgrp_sl_lst.getDependNode(0)
+                    grp_armupperikcluster2 = ikrarmgrp_sl_lst.getDependNode(1)
+                    grp_armlowerikcluster = ikrarmgrp_sl_lst.getDependNode(2)
+                    grp_armlowerikcluster2 = ikrarmgrp_sl_lst.getDependNode(3)
+
+                    rarmjoint_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                    armjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+
+                    rarmmultMatrix_fs = om2.MFnDependencyNode(rarmjoint_multMatrix)
+                    rarmdecomposeMatrix_fs = om2.MFnDependencyNode(armjoint_decomposeMatrix)
+                    ikrupperarmgrp_fs = om2.MFnDependencyNode(grp_armupperikcluster)
+                    ikrlowerarmgrp_fs = om2.MFnDependencyNode(grp_armlowerikcluster)
+
+                    rarmmultMatrixSum_plug = rarmmultMatrix_fs.findPlug("matrixSum", False)
+                    rarmdecomposeInpMatrix_plug = rarmdecomposeMatrix_fs.findPlug("inputMatrix", False)
+                    rarmdecomposeOtpTrans_plug = rarmdecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    rarmdecomposeOtpRot_plug = rarmdecomposeMatrix_fs.findPlug("outputRotate", False)
+                    ikrupperarmgrpTrans_plug = ikrupperarmgrp_fs.findPlug("translate", False)
+                    ikrupperarmgrpRot_plug = ikrupperarmgrp_fs.findPlug("rotate", False)
+                    ikrlowerarmgrpTrans_plug = ikrlowerarmgrp_fs.findPlug("translate", False)
+                    ikrlowerarmgrpRot_plug = ikrlowerarmgrp_fs.findPlug("rotate", False)
+
+                    self.MDG2_mod.renameNode(rarmjoint_multMatrix, str(bindjnt_string)[2:][:-3]+"_multMatrix")
+                    self.MDG2_mod.renameNode(armjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"_decomposeMatrix")
+                    self.MDG2_mod.commandToExecute('connectAttr -force {0}.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(bindjnt_string)[3:][:-3]))
+                    self.MDG2_mod.connect(rarmmultMatrixSum_plug, rarmdecomposeInpMatrix_plug)
+
+                    fkrarmstretch_expression = om1.MFnExpression()
+
+                    if index == 0:
+                        fkrarmstretch_expression.create("Biped_FkRightForeArm_ctrl.translateY = Biped_FkRightArm_ctrl.stretchy")
+                        fkrarmstretch_expression.create("Biped_FkRightForeArm_ctrl.translateZ = Biped_FkRightForeArm_ctrl.translateY/10")
+                        fkrarmstretch_expression.create("Biped_FkRightForeArm_ctrl.translateX = Biped_FkRightForeArm_ctrl.translateY/10")
+
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightUpperArmIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.MDG2_mod.connect(rarmdecomposeOtpTrans_plug, ikrupperarmgrpTrans_plug)
+                        self.MDG2_mod.connect(rarmdecomposeOtpRot_plug, ikrupperarmgrpRot_plug)
+
+                        rupperarmcluster2_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                        lupperarmcluster2_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+
+                        rupperarmcluster2multMatrix_fs = om2.MFnDependencyNode(rupperarmcluster2_multMatrix)
+                        rupperarmcluster2decomposeMatrix_fs = om2.MFnDependencyNode(lupperarmcluster2_decomposeMatrix)
+                        rupperarmcluster2_fs = om2.MFnDependencyNode(grp_armupperikcluster2)
+
+                        rupperarmcluster2multMatrixSum_plug = rupperarmcluster2multMatrix_fs.findPlug("matrixSum", False)
+                        rupperarmcluster2decomposeInpMatrix_plug = rupperarmcluster2decomposeMatrix_fs.findPlug("inputMatrix", False)
+                        rupperarmcluster2decomposeOtpTrans_plug = rupperarmcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
+                        rupperarmcluster2Trans_plug = rupperarmcluster2_fs.findPlug("translate", False)
+
+                        self.MDG2_mod.renameNode(rupperarmcluster2_multMatrix, "RightUpperArmCluster2_multMatrix")
+                        self.MDG2_mod.renameNode(lupperarmcluster2_decomposeMatrix,"RightUpperArmCluster2_decomposeMatrix")
+                        self.MDG2_mod.connect(rupperarmcluster2multMatrixSum_plug, rupperarmcluster2decomposeInpMatrix_plug)
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightForeArm.worldMatrix[0] RightUpperArmCluster2_multMatrix.matrixIn[0]')
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightUpperArmIkCluster2_grp.parentInverseMatrix[0] RightUpperArmCluster2_multMatrix.matrixIn[1]')
+                        self.MDG2_mod.connect(rupperarmcluster2decomposeOtpTrans_plug, rupperarmcluster2Trans_plug)
+
+                    elif index == 1:
+                        fkrarmstretch_expression.create("Biped_FkRightHand_ctrl.translateY = Biped_FkRightForeArm_ctrl.stretchy")
+
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightLowerArmIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.MDG2_mod.connect(rarmdecomposeOtpTrans_plug, ikrlowerarmgrpTrans_plug)
+                        self.MDG2_mod.connect(rarmdecomposeOtpRot_plug, ikrlowerarmgrpRot_plug)
+
+                        rlowerarmcluster2_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                        rlowerarmcluster2_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+
+                        rlowerarmcluster2multMatrix_fs = om2.MFnDependencyNode(rlowerarmcluster2_multMatrix)
+                        rlowerarmcluster2decomposeMatrix_fs = om2.MFnDependencyNode(rlowerarmcluster2_decomposeMatrix)
+                        rlowerarmcluster2_fs = om2.MFnDependencyNode(grp_armlowerikcluster2)
+
+                        rlowerarmcluster2multMatrixSum_plug = rlowerarmcluster2multMatrix_fs.findPlug("matrixSum", False)
+                        rlowerarmcluster2decomposeInpMatrix_plug = rlowerarmcluster2decomposeMatrix_fs.findPlug("inputMatrix", False)
+                        rlowerarmcluster2decomposeOtpTrans_plug = rlowerarmcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
+                        rlowerarmcluster2Trans_plug = rlowerarmcluster2_fs.findPlug("translate", False)
+
+                        self.MDG2_mod.renameNode(rlowerarmcluster2_multMatrix, "RightLowerArmCluster2_multMatrix")
+                        self.MDG2_mod.renameNode(rlowerarmcluster2_decomposeMatrix,"RightLowerArmCluster2_decomposeMatrix")
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightHand.worldMatrix[0] RightLowerArmCluster2_multMatrix.matrixIn[0]')
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightLowerArmIkCluster2_grp.parentInverseMatrix[0] RightLowerArmCluster2_multMatrix.matrixIn[1]')
+                        self.MDG2_mod.connect(rlowerarmcluster2multMatrixSum_plug, rlowerarmcluster2decomposeInpMatrix_plug)
+                        self.MDG2_mod.connect(rlowerarmcluster2decomposeOtpTrans_plug, rlowerarmcluster2Trans_plug)
+
+            elif cmds.objExists("RightArmIkCluster_grp") and cmds.objExists("IkStretchyRightJointArm_grp"):
+                self.MDG2_mod.commandToExecute('delete "RightArmIkCluster_grp"')
+                self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_FkRightArm_ctrl.stretchy')
+                self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_FkRightForeArm_ctrl.stretchy')
+                self.MDG2_mod.doIt()
+
+        grp_armupperikcluster1 = om1.MObject()
+        grp_armupperikcluster2 = om1.MObject()
+        obj_stretchyrightarm = om1.MObject()
+
+        if self.autostretch.currentIndex() == 1:
+
+            self.MDG2_mod.commandToExecute('addAttr -longName "stretchable" -niceName "Stretchable" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightHandOptions_ctrl')
+            self.MDG2_mod.doIt()
+
+            stretchy_sl_lst1.add("Biped_RightHandOptions_ctrl")
+            stretchy_sl_lst1.getDependNode(4, obj_stretchyrightarm)
+
+            if cmds.objExists("IkSplineRightUpperArm0"):
+                ikrupperarm_sl_lst = om1.MSelectionList()
+                ikrupperarm_sl_lst.add("IkSplineRightUpperArm*")
+                ikrupperarm_sl_lst.getDependNode(0, obj_root)
+                ikrupperarm_sl_lst.getDependNode(ikrupperarm_sl_lst.length()-1, obj_endspine)
+
+                ikrupperarmgrp_sl_lst = om1.MSelectionList()
+                ikrupperarmgrp_sl_lst.add("RightUpperArmIkCluster1_grp")
+                ikrupperarmgrp_sl_lst.add("RightUpperArmIkCluster2_grp")
+                ikrupperarmgrp_sl_lst.getDependNode(0, grp_armupperikcluster1)
+                ikrupperarmgrp_sl_lst.getDependNode(1, grp_armupperikcluster2)
+
+                self.MDag_path = om1.MDagPath()
+                rootspine_path = self.MDag_path.getAPathTo(obj_root)
+
+                try:
+                    ikspineiksolver_lst.add("ikSplineSolver*")
+                except:
+                    cmds.createNode("ikSplineSolver")
+
+                self.ikrarm_effector = self.IK_Effector.create(obj_endspine)
+                ikrarm_effector_path = self.MDag_path.getAPathTo(self.ikrarm_effector)
+
+                self.rarm_ik = self.IK_Handle.create(rootspine_path, ikrarm_effector_path)
+
+                obj_array = om1.MPointArray()
+                obj_lst_mpoint = []
+                obj = om1.MObject()
+                for index in range(ikrupperarm_sl_lst.length()):
+                    ikrupperarm_sl_lst.getDependNode(index, obj)
+                    obj_path = self.MDag_path.getAPathTo(obj)
+                    obj_tn = om1.MFnTransform(obj_path)
+                    obj_t = obj_tn.translation(om1.MSpace.kWorld)
+                    obj_lst_mpoint.append(om1.MPoint(obj_t))
+                    obj_array.append(obj_lst_mpoint[index])
+
+                self.ikspline_cv_tn = ikspinedag_n.create("transform", "RightUpperArm_SplineCv")
+                ikspline_cv = self.MNurbs1_cv.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                cmds.parent("RightUpperArm_SplineCv", "DoNotTouch")
+
+                rarmcrv_info = ikspinedg_modifier.createNode("curveInfo")
+                rarmstretchpercent = ikspinedg_modifier.createNode("multiplyDivide")
+                rarmstretchpow = ikspinedg_modifier.createNode("multiplyDivide")
+                rarmstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                rarmscalediv = ikspinedg_modifier.createNode("multiplyDivide")
+                rikarmstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                blendstretch = ikspinedg_modifier.createNode("blendColors")
+
+                rarmcrvinfo_fs = om1.MFnDependencyNode(rarmcrv_info)
+                rarmstretchpercent_fs = om1.MFnDependencyNode(rarmstretchpercent)
+                rarmstretchpow_fs = om1.MFnDependencyNode(rarmstretchpow)
+                rarmstretchdiv_fs = om1.MFnDependencyNode(rarmstretchdiv)
+                rarmscalediv_fs = om1.MFnDependencyNode(rarmscalediv)
+                rikarmstretchdiv_fs = om1.MFnDependencyNode(rikarmstretchdiv)
+                rikarmstretchcluster1_fs = om1.MFnDependencyNode(grp_armupperikcluster1)
+                rikarmstretchcluster2_fs = om1.MFnDependencyNode(grp_armupperikcluster2)
+                blendstretch_fs = om1.MFnDependencyNode(blendstretch)
+                rhandstretchoption_fs = om1.MFnDependencyNode(obj_stretchyrightarm)
+
+                rarmcrvinfoarc_plug = rarmcrvinfo_fs.findPlug("arcLength")
+                rarmstretchpercentinp1y_plug = rarmstretchpercent_fs.findPlug("input1Y")
+                rarmstretchpercentotp_plug = rarmstretchpercent_fs.findPlug("outputY")
+                rarmstretchpowinp1x_plug = rarmstretchpow_fs.findPlug("input1X")
+                rarmstretchpowinp1z_plug = rarmstretchpow_fs.findPlug("input1Z")
+                rarmstretchpowotpx_plug = rarmstretchpow_fs.findPlug("outputX")
+                rarmstretchpowotpz_plug = rarmstretchpow_fs.findPlug("outputZ")
+                rarmstretchdivinp2x_plug = rarmstretchdiv_fs.findPlug("input2X")
+                rarmstretchdivinp2z_plug = rarmstretchdiv_fs.findPlug("input2Z")
+                rarmstretchdivotox_plug = rarmstretchdiv_fs.findPlug("outputX")
+                rarmstretchdivotpz_plug = rarmstretchdiv_fs.findPlug("outputZ")
+                rarmscaledivinp1y_plug = rarmscalediv_fs.findPlug("input1Y")
+                rarmscaledivinp2y_plug = rarmscalediv_fs.findPlug("input2Y")
+                rarmscaledivotpy_plug = rarmscalediv_fs.findPlug("outputY")
+                rikarmstretchdivinp1_plug = rikarmstretchdiv_fs.findPlug("input1")
+                rikarmstretchdivotp_plug = rikarmstretchdiv_fs.findPlug("output")
+                rikarmstretchclust1trans_plug = rikarmstretchcluster1_fs.findPlug("translate")
+                rikarmstretchclust2trans_plug = rikarmstretchcluster2_fs.findPlug("translate")
+                blendstretchinp1r_plug = blendstretch_fs.findPlug("color1R")
+                blendstretchinp1g_plug = blendstretch_fs.findPlug("color1G")
+                blendstretchinp1b_plug = blendstretch_fs.findPlug("color1B")
+                blendstretchotpr_plug = blendstretch_fs.findPlug("outputR")
+                blendstretchotpg_plug = blendstretch_fs.findPlug("outputG")
+                blendstretchotpb_plug = blendstretch_fs.findPlug("outputB")
+                blendstretch_plug = blendstretch_fs.findPlug("blender")
+                rhandstretchoption_plug = rhandstretchoption_fs.findPlug("stretchable")
+
+                objparent = om1.MObject()
+                objchild = om1.MObject()
+                for index in range(ikrupperarm_sl_lst.length()):
+                    if index < ikrupperarm_sl_lst.length()-1:
+                        ikrupperarm_sl_lst.getDependNode(index, objparent)
+                        ikrupperarm_sl_lst.getDependNode(index+1, objchild)
+                        rarmparentjnt_fs = om1.MFnDependencyNode(objparent)
+                        rarmchildjnt_fs = om1.MFnDependencyNode(objchild)
+                        rarmjnt_syplug = rarmparentjnt_fs.findPlug("scaleY")
+                        rarmjnt_sxplug = rarmparentjnt_fs.findPlug("scaleX")
+                        rarmjnt_szplug = rarmparentjnt_fs.findPlug("scaleZ")
+                        rarmjnt_sotpplug = rarmparentjnt_fs.findPlug("scale")
+                        rarmjnt_invsplug = rarmchildjnt_fs.findPlug("inverseScale")
+                        ikspinedg_modifier.connect(rarmstretchpercentotp_plug, blendstretchinp1g_plug)
+                        ikspinedg_modifier.connect(rarmstretchdivotox_plug, blendstretchinp1r_plug)
+                        ikspinedg_modifier.connect(rarmstretchdivotpz_plug, blendstretchinp1b_plug)
+                        ikspinedg_modifier.connect(blendstretchotpg_plug, rarmjnt_syplug)
+                        ikspinedg_modifier.connect(blendstretchotpr_plug, rarmjnt_sxplug)
+                        ikspinedg_modifier.connect(blendstretchotpb_plug, rarmjnt_szplug)
+                        ikspinedg_modifier.connect(rarmjnt_sotpplug, rarmjnt_invsplug)
+
+                ikspinedg_modifier.renameNode(rarmcrv_info, "RightUpperArmSpline_Info")
+                ikspinedg_modifier.renameNode(rarmstretchpercent, "RightUpperArmStretch_Percent")
+                ikspinedg_modifier.renameNode(rarmstretchpow, "RightUpperArmStretch_Power")
+                ikspinedg_modifier.renameNode(rarmstretchdiv, "RightUpperArmStretch_Divide")
+                ikspinedg_modifier.renameNode(ikspline_cv, "RightUpperArm_SplineCvShape")
+                ikspinedg_modifier.renameNode(self.rarm_ik, "RightUpperArm_Ik")
+                ikspinedg_modifier.renameNode(self.ikrarm_effector, "RightUpperArm_effector")
+                ikspinedg_modifier.renameNode(rarmscalediv, "IkRightUpperArmGlobalScale_Average")
+                ikspinedg_modifier.renameNode(rikarmstretchdiv, "RightUpperArmStretch_Divide2")
+                ikspinedg_modifier.renameNode(blendstretch, "RightUpperArmStretch_Blend")
+                ikspinedg_modifier.commandToExecute('parent "RightUpperArm_Ik" "DoNotTouch"')
+                ikspinedg_modifier.commandToExecute('connectAttr -force RightUpperArm_SplineCvShape.worldSpace[0] RightUpperArm_Ik.inCurve')
+                ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "RightUpperArmIk_skin" IkCvSplineRightUpperArm0 IkCvSplineRightUpperArm1 IkCvSplineRightUpperArm2 RightUpperArm_SplineCv')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArm_Ik.dTwistControlEnable" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArm_Ik.dWorldUpType" 4')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArm_Ik.dForwardAxis" 3')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArm_Ik.dWorldUpAxis" 4')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArm_Ik.dWorldUpVectorY" 0')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArm_Ik.dWorldUpVectorEndY" 0')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArm_Ik.dWorldUpVectorZ" -1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArm_Ik.dWorldUpVectorEndZ" -1')
+                ikspinedg_modifier.commandToExecute('connectAttr -force IkCvSplineRightUpperArm0.worldMatrix[0] RightUpperArm_Ik.dWorldUpMatrix')
+                ikspinedg_modifier.commandToExecute('connectAttr -force IkCvSplineLeftUpperArm2.worldMatrix[0] RightUpperArm_Ik.dWorldUpMatrixEnd')
+                ikspinedg_modifier.commandToExecute('connectAttr -force RightUpperArm_SplineCvShape.worldSpace[0] RightUpperArmSpline_Info.inputCurve')
+                ikspinedg_modifier.connect(rarmcrvinfoarc_plug, rarmscaledivinp1y_plug)
+                ikspinedg_modifier.connect(masterctrlsy_plug, rarmscaledivinp2y_plug)
+                ikspinedg_modifier.connect(rarmscaledivotpy_plug, rarmstretchpercentinp1y_plug)
+                ikspinedg_modifier.connect(rarmstretchpercentotp_plug, rarmstretchpowinp1x_plug)
+                ikspinedg_modifier.connect(rarmstretchpercentotp_plug, rarmstretchpowinp1z_plug)
+                ikspinedg_modifier.connect(rarmstretchpowotpx_plug, rarmstretchdivinp2x_plug)
+                ikspinedg_modifier.connect(rarmstretchpowotpz_plug, rarmstretchdivinp2z_plug)
+                ikspinedg_modifier.connect(rikarmstretchclust2trans_plug, rikarmstretchdivinp1_plug)
+                ikspinedg_modifier.connect(rikarmstretchdivotp_plug, rikarmstretchclust1trans_plug)
+                ikspinedg_modifier.connect(rhandstretchoption_plug, blendstretch_plug)
+                ikspinedg_modifier.commandToExecute('float $rightupperarmstretchinput1Y = `getAttr "RightUpperArmStretch_Percent.input1Y"`; setAttr "RightUpperArmStretch_Percent.input2Y" $rightupperarmstretchinput1Y')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Power.input2X" 0.5')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Power.input2Z" 0.5')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Divide.input1X" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Divide.input1Z" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Percent.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Power.operation" 3')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Divide.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "IkRightUpperArmGlobalScale_Average.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Divide2.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Divide2.input2X" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Divide2.input2Y" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Divide2.input2Z" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Blend.color2R" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Blend.color2G" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightUpperArmStretch_Blend.color2B" 1')
+                ikspinedg_modifier.doIt()
+
+                ikspline_solver = self.IK_System.findSolver("ikSplineSolver")
+                self.IK_Handle.setSolver(ikspline_solver)
+
+            grp_armlowerikcluster1 = om1.MObject()
+            grp_armlowerikcluster2 = om1.MObject()
+
+            if cmds.objExists("IkSplineRightLowerArm0"):
+                ikrlowerarm_sl_lst = om1.MSelectionList()
+                ikrlowerarm_sl_lst.add("IkSplineRightLowerArm*")
+                ikrlowerarm_sl_lst.getDependNode(0, obj_root)
+                ikrlowerarm_sl_lst.getDependNode(ikrlowerarm_sl_lst.length()-1, obj_endspine)
+
+                ikrlowerarmgrp_sl_lst = om1.MSelectionList()
+                ikrlowerarmgrp_sl_lst.add("RightLowerArmIkCluster1_grp")
+                ikrlowerarmgrp_sl_lst.add("RightLowerArmIkCluster2_grp")
+                ikrlowerarmgrp_sl_lst.getDependNode(0, grp_armlowerikcluster1)
+                ikrlowerarmgrp_sl_lst.getDependNode(1, grp_armlowerikcluster2)
+
+                rootspine_path = self.MDag_path.getAPathTo(obj_root)
+
+                try:
+                    ikspineiksolver_lst.add("ikSplineSolver*")
+                except:
+                    cmds.createNode("ikSplineSolver")
+
+                self.ikrarm_effector = self.IK_Effector.create(obj_endspine)
+                ikrarm_effector_path = self.MDag_path.getAPathTo(self.ikrarm_effector)
+
+                self.rarm_ik = self.IK_Handle.create(rootspine_path, ikrarm_effector_path)
+
+                obj_array = om1.MPointArray()
+                obj_lst_mpoint = []
+                obj = om1.MObject()
+                for index in range(ikrlowerarm_sl_lst.length()):
+                    ikrlowerarm_sl_lst.getDependNode(index, obj)
+                    obj_path = self.MDag_path.getAPathTo(obj)
+                    obj_tn = om1.MFnTransform(obj_path)
+                    obj_t = obj_tn.translation(om1.MSpace.kWorld)
+                    obj_lst_mpoint.append(om1.MPoint(obj_t))
+                    obj_array.append(obj_lst_mpoint[index])
+
+                self.ikspline_cv_tn = ikspinedag_n.create("transform", "RightLowerArm_SplineCv")
+                ikspline_cv = self.MNurbs1_cv.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                cmds.parent("RightLowerArm_SplineCv", "DoNotTouch")
+
+                rarmcrv_info = ikspinedg_modifier.createNode("curveInfo")
+                rarmstretchpercent = ikspinedg_modifier.createNode("multiplyDivide")
+                rarmstretchpow = ikspinedg_modifier.createNode("multiplyDivide")
+                rarmstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                rarmscalediv = ikspinedg_modifier.createNode("multiplyDivide")
+                rikarmstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
+                blendstretch = ikspinedg_modifier.createNode("blendColors")
+
+                rarmcrvinfo_fs = om1.MFnDependencyNode(rarmcrv_info)
+                rarmstretchpercent_fs = om1.MFnDependencyNode(rarmstretchpercent)
+                rarmstretchpow_fs = om1.MFnDependencyNode(rarmstretchpow)
+                rarmstretchdiv_fs = om1.MFnDependencyNode(rarmstretchdiv)
+                rarmscalediv_fs = om1.MFnDependencyNode(rarmscalediv)
+                rikarmstretchdiv_fs = om1.MFnDependencyNode(rikarmstretchdiv)
+                rikarmstretchcluster1_fs = om1.MFnDependencyNode(grp_armlowerikcluster1)
+                rikarmstretchcluster2_fs = om1.MFnDependencyNode(grp_armlowerikcluster2)
+                blendstretch_fs = om1.MFnDependencyNode(blendstretch)
+
+                rarmcrvinfoarc_plug = rarmcrvinfo_fs.findPlug("arcLength")
+                rarmstretchpercentinp1y_plug = rarmstretchpercent_fs.findPlug("input1Y")
+                rarmstretchpercentotp_plug = rarmstretchpercent_fs.findPlug("outputY")
+                rarmstretchpowinp1x_plug = rarmstretchpow_fs.findPlug("input1X")
+                rarmstretchpowinp1z_plug = rarmstretchpow_fs.findPlug("input1Z")
+                rarmstretchpowotpx_plug = rarmstretchpow_fs.findPlug("outputX")
+                rarmstretchpowotpz_plug = rarmstretchpow_fs.findPlug("outputZ")
+                rarmstretchdivinp2x_plug = rarmstretchdiv_fs.findPlug("input2X")
+                rarmstretchdivinp2z_plug = rarmstretchdiv_fs.findPlug("input2Z")
+                rarmstretchdivotox_plug = rarmstretchdiv_fs.findPlug("outputX")
+                rarmstretchdivotpz_plug = rarmstretchdiv_fs.findPlug("outputZ")
+                rarmscaledivinp1y_plug = rarmscalediv_fs.findPlug("input1Y")
+                rarmscaledivinp2y_plug = rarmscalediv_fs.findPlug("input2Y")
+                rarmscaledivotpy_plug = rarmscalediv_fs.findPlug("outputY")
+                rikarmstretchdivinp1_plug = rikarmstretchdiv_fs.findPlug("input1")
+                rikarmstretchdivotp_plug = rikarmstretchdiv_fs.findPlug("output")
+                rikarmstretchclust1trans_plug = rikarmstretchcluster1_fs.findPlug("translate")
+                rikarmstretchclust2trans_plug = rikarmstretchcluster2_fs.findPlug("translate")
+                blendstretchinp1r_plug = blendstretch_fs.findPlug("color1R")
+                blendstretchinp1g_plug = blendstretch_fs.findPlug("color1G")
+                blendstretchinp1b_plug = blendstretch_fs.findPlug("color1B")
+                blendstretchotpr_plug = blendstretch_fs.findPlug("outputR")
+                blendstretchotpg_plug = blendstretch_fs.findPlug("outputG")
+                blendstretchotpb_plug = blendstretch_fs.findPlug("outputB")
+                blendstretch_plug = blendstretch_fs.findPlug("blender")
+
+                objparent = om1.MObject()
+                objchild = om1.MObject()
+                for index in range(ikrlowerarm_sl_lst.length()):
+                    if index < ikrlowerarm_sl_lst.length()-1:
+                        ikrlowerarm_sl_lst.getDependNode(index, objparent)
+                        ikrlowerarm_sl_lst.getDependNode(index+1, objchild)
+                        rarmparentjnt_fs = om1.MFnDependencyNode(objparent)
+                        rarmchildjnt_fs = om1.MFnDependencyNode(objchild)
+                        rarmjnt_syplug = rarmparentjnt_fs.findPlug("scaleY")
+                        rarmjnt_sxplug = rarmparentjnt_fs.findPlug("scaleX")
+                        rarmjnt_szplug = rarmparentjnt_fs.findPlug("scaleZ")
+                        rarmjnt_sotpplug = rarmparentjnt_fs.findPlug("scale")
+                        rarmjnt_invsplug = rarmchildjnt_fs.findPlug("inverseScale")
+                        ikspinedg_modifier.connect(rarmstretchpercentotp_plug, blendstretchinp1g_plug)
+                        ikspinedg_modifier.connect(rarmstretchdivotox_plug, blendstretchinp1r_plug)
+                        ikspinedg_modifier.connect(rarmstretchdivotpz_plug, blendstretchinp1b_plug)
+                        ikspinedg_modifier.connect(blendstretchotpg_plug, rarmjnt_syplug)
+                        ikspinedg_modifier.connect(blendstretchotpr_plug, rarmjnt_sxplug)
+                        ikspinedg_modifier.connect(blendstretchotpb_plug, rarmjnt_szplug)
+                        ikspinedg_modifier.connect(rarmjnt_sotpplug, rarmjnt_invsplug)
+
+                ikspinedg_modifier.renameNode(rarmcrv_info, "RightLowerArmSpline_Info")
+                ikspinedg_modifier.renameNode(rarmstretchpercent, "RightLowerArmStretch_Percent")
+                ikspinedg_modifier.renameNode(rarmstretchpow, "RightLowerArmStretch_Power")
+                ikspinedg_modifier.renameNode(rarmstretchdiv, "RightLowerArmStretch_Divide")
+                ikspinedg_modifier.renameNode(ikspline_cv, "RightLowerArm_SplineCvShape")
+                ikspinedg_modifier.renameNode(self.rarm_ik, "RightLowerArm_Ik")
+                ikspinedg_modifier.renameNode(self.ikrarm_effector, "RightLowerArm_effector")
+                ikspinedg_modifier.renameNode(rarmscalediv, "IkRightLowerArmGlobalScale_Average")
+                ikspinedg_modifier.renameNode(rikarmstretchdiv, "RightLowerArmStretch_Divide2")
+                ikspinedg_modifier.renameNode(blendstretch, "RightLowerArmStretch_Blend")
+                ikspinedg_modifier.commandToExecute('parent "RightLowerArm_Ik" "DoNotTouch"')
+                ikspinedg_modifier.commandToExecute('connectAttr -f RightLowerArm_SplineCvShape.worldSpace[0] RightLowerArm_Ik.inCurve')
+                ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "RightLowerArmIk_skin" IkCvSplineRightLowerArm0 IkCvSplineRightLowerArm1 IkCvSplineRightLowerArm2 RightLowerArm_SplineCv')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArm_Ik.dTwistControlEnable" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArm_Ik.dWorldUpType" 4')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArm_Ik.dForwardAxis" 3')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArm_Ik.dWorldUpAxis" 4')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArm_Ik.dWorldUpVectorY" 0')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArm_Ik.dWorldUpVectorEndY" 0')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArm_Ik.dWorldUpVectorZ" -1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArm_Ik.dWorldUpVectorEndZ" -1')
+                ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineRightLowerArm0.worldMatrix[0] RightLowerArm_Ik.dWorldUpMatrix')
+                ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineRightLowerArm2.worldMatrix[0] RightLowerArm_Ik.dWorldUpMatrixEnd')
+                ikspinedg_modifier.commandToExecute('connectAttr -f RightLowerArm_SplineCvShape.worldSpace[0] RightLowerArmSpline_Info.inputCurve')
+                ikspinedg_modifier.connect(rarmcrvinfoarc_plug, rarmscaledivinp1y_plug)
+                ikspinedg_modifier.connect(masterctrlsy_plug, rarmscaledivinp2y_plug)
+                ikspinedg_modifier.connect(rarmscaledivotpy_plug, rarmstretchpercentinp1y_plug)
+                ikspinedg_modifier.connect(rarmstretchpercentotp_plug, rarmstretchpowinp1x_plug)
+                ikspinedg_modifier.connect(rarmstretchpercentotp_plug, rarmstretchpowinp1z_plug)
+                ikspinedg_modifier.connect(rarmstretchpowotpx_plug, rarmstretchdivinp2x_plug)
+                ikspinedg_modifier.connect(rarmstretchpowotpz_plug, rarmstretchdivinp2z_plug)
+                ikspinedg_modifier.connect(rikarmstretchclust2trans_plug, rikarmstretchdivinp1_plug)
+                ikspinedg_modifier.connect(rikarmstretchdivotp_plug, rikarmstretchclust1trans_plug)
+                ikspinedg_modifier.connect(rhandstretchoption_plug, blendstretch_plug)
+                ikspinedg_modifier.commandToExecute('float $rightlowerarmstretchinput1Y = `getAttr "RightLowerArmStretch_Percent.input1Y"`; setAttr "RightLowerArmStretch_Percent.input2Y" $rightlowerarmstretchinput1Y')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Power.input2X" 0.5')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Power.input2Z" 0.5')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Divide.input1X" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Divide.input1Z" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Percent.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Power.operation" 3')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Divide.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "IkRightLowerArmGlobalScale_Average.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Divide2.operation" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Divide2.input2X" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Divide2.input2Y" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Divide2.input2Z" 2')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Blend.color2R" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Blend.color2G" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RightLowerArmStretch_Blend.color2B" 1')
+                ikspinedg_modifier.doIt()
+
+                ikspline_solver = self.IK_System.findSolver("ikSplineSolver")
+                self.IK_Handle.setSolver(ikspline_solver)
+
+        stretchy_sl_lst2.add("Biped_RightHandOptions_ctrl")
+        obj_stretchyrightarm2 = stretchy_sl_lst2.getDependNode(2)
+
+        if cmds.objExists("NoFlipRightHand_Ik") and cmds.objExists("PVRightHand_Ik"):
+
+            self.MDG2_mod.commandToExecute('addAttr -longName "follow" -niceName "Follow Body" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_IkRightHand_ctrl')
+            self.MDG2_mod.commandToExecute('parentConstraint -mo -weight 1 Biped_Root_ctrl Biped_IkRightHandRot_null')
+            self.MDG2_mod.doIt()
+
             rhandik_sl_ls = om2.MSelectionList()
-            rhandik_sl_ls.add("RightHand_Ik")
-            rikhandobj_fs = om2.MFnDependencyNode(rhandik_sl_ls.getDependNode(0))
+            rhandik_sl_ls.add("RightArmIk_grp")
+            rhandik_sl_ls.add("Biped_NoFlipRightElbow_null")
+            rhandik_sl_ls.add("Biped_IkRightHand_ctrl")
+            rhandik_sl_ls.add("IkStretchyRightJointArm_grp")
+            rikhandgrp_fs = om2.MFnDependencyNode(rhandik_sl_ls.getDependNode(0))
+            nofliprightelbownullobj_fs = om2.MFnDependencyNode(rhandik_sl_ls.getDependNode(1))
+            ikarmctrl_fs = om2.MFnDependencyNode(rhandik_sl_ls.getDependNode(2))
             rikhand_fs = om2.MFnDependencyNode(ikrarm_sl_ls.getDependNode(2))
 
             if self.typeofRHandIK.currentIndex() == 1 or 2:
-                rikhandctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                rikhandctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                rikhandrot_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                rikhandrot_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(rikhandctrl_multMatrix, "IkRightHand_multMatrix")
-                self.ctrl_mod_n.renameNode(rikhandctrl_decomposeMatrix, "IkRightHand_decomposeMatrix")
-                self.ctrl_mod_n.renameNode(rikhandrot_multMatrix, "IkRightHandRot_multMatrix")
-                self.ctrl_mod_n.renameNode(rikhandrot_decomposeMatrix, "IkRightHandRot_decomposeMatrix")
+                rikhandctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                rikhandctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                rikhandrot_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                rikhandrot_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(rikhandctrl_multMatrix, "IkRightHand_multMatrix")
+                self.MDG2_mod.renameNode(rikhandctrl_decomposeMatrix, "IkRightHand_decomposeMatrix")
+                self.MDG2_mod.renameNode(rikhandrot_multMatrix, "IkRightHandRot_multMatrix")
+                self.MDG2_mod.renameNode(rikhandrot_decomposeMatrix, "IkRightHandRot_decomposeMatrix")
 
                 rikhandmultMatrix_fs = om2.MFnDependencyNode(rikhandctrl_multMatrix)
                 rikhanddecomposeMatrix_fs = om2.MFnDependencyNode(rikhandctrl_decomposeMatrix)
@@ -7910,24 +10398,295 @@ class MainWindow(QtWidgets.QDialog):
                 rikhandrotmultMatrixSum_plug = rikhandrotmultMatrix_fs.findPlug("matrixSum", False)
                 rikhandrotdecomposeInpMatrix_plug = rikhandrotdecomposeMatrix_fs.findPlug("inputMatrix", False)
                 rikhandrotdecomposeOtpRot_plug = rikhandrotdecomposeMatrix_fs.findPlug("outputRotate", False)
-                rikhandjntTrans_plug = rikhandobj_fs.findPlug("translate", False)
-                rikhandjntRot_plug = rikhandobj_fs.findPlug("rotate", False)
+                rikhandgrpTrans_plug = rikhandgrp_fs.findPlug("translate", False)
+                rikhandgrpRot_plug = rikhandgrp_fs.findPlug("rotate", False)
+                ikarmctrlTrans_plug = ikarmctrl_fs.findPlug("translate", False)
+                ikarmctrlRot_plug = ikarmctrl_fs.findPlug("rotate", False)
+                nofliprightelbownullTrans_plug = nofliprightelbownullobj_fs.findPlug("translate", False)
+                nofliprightelbownullRot_plug = nofliprightelbownullobj_fs.findPlug("rotate", False)
                 rikhandRot_plug = rikhand_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_IkRightHand_ctrl.worldMatrix[0] IkRightHand_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.commandToExecute('connectAttr -force RightHand_Ik.parentInverseMatrix[0] IkRightHand_multMatrix.matrixIn[1]')
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_IkRightHand_ctrl.worldMatrix[0] IkRightHandRot_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.commandToExecute('connectAttr -force IkRightHand.parentInverseMatrix[0] IkRightHandRot_multMatrix.matrixIn[1]')
-                self.ctrl_mod_n.connect(rikhandmultMatrixSum_plug, rikhanddecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(rikhanddecomposeOtpTrans_plug, rikhandjntTrans_plug)
-                self.ctrl_mod_n.connect(rikhanddecomposeOtpRot_plug, rikhandjntRot_plug)
-                self.ctrl_mod_n.connect(rikhandrotmultMatrixSum_plug, rikhandrotdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(rikhandrotdecomposeOtpRot_plug, rikhandRot_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_IkRightHand_ctrl.worldMatrix[0] IkRightHand_multMatrix.matrixIn[0]')
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_IkRightHand_ctrl.worldMatrix[0] IkRightHandRot_multMatrix.matrixIn[0]')
+                self.MDG2_mod.commandToExecute('connectAttr -force IkRightHand.parentInverseMatrix[0] IkRightHandRot_multMatrix.matrixIn[1]')
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_IkRightHand_ctrl.follow Biped_IkRightHandRot_null_parentConstraint1.Biped_Root_ctrlW0')
+                self.MDG2_mod.connect(rikhandmultMatrixSum_plug, rikhanddecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(rikhanddecomposeOtpTrans_plug, rikhandgrpTrans_plug)
+                self.MDG2_mod.connect(rikhandrotmultMatrixSum_plug, rikhandrotdecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(rikhanddecomposeOtpRot_plug, rikhandgrpRot_plug)
+                self.MDG2_mod.connect(ikarmctrlTrans_plug, nofliprightelbownullTrans_plug)
+                self.MDG2_mod.connect(ikarmctrlRot_plug, nofliprightelbownullRot_plug)
+                self.MDG2_mod.connect(rikhandrotdecomposeOtpRot_plug, rikhandRot_plug)
+                self.MDG2_mod.commandToExecute('parent NoFlipRightHand_Ik RightArmIk_grp')
+                self.MDG2_mod.commandToExecute('parent PVRightHand_Ik RightArmIk_grp')
+                self.MDG2_mod.commandToExecute('poleVectorConstraint Biped_NoFlipRightElbow_ctrl NoFlipRightHand_Ik')
+                self.MDG2_mod.commandToExecute('poleVectorConstraint Biped_PVRightElbow_ctrl PVRightHand_Ik')
+                self.MDG2_mod.commandToExecute('setAttr "NoFlipRightHand_Ik.twist" 90')
+
+                if self.autostretch.currentIndex() == 1:
+                    rikarmdistloc = om2.MFnDagNode()
+
+                    rikarmdistloc1_tn = rikarmdistloc.create("transform", "distloc_R_arm1", rhandik_sl_ls.getDependNode(3))
+                    rikarmdistloc1_ln = rikarmdistloc.create("locator", "R_arm1_Shape", rikarmdistloc1_tn)
+                    rikhanddistloc1_tn = rikarmdistloc.create("transform", "distloc_R_hand1")
+                    rikhanddistloc1_ln = rikarmdistloc.create("locator", "R_hand1_Shape", rikhanddistloc1_tn)
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension1" "IkRightArmDistance_Info"')
+                    self.MDG2_mod.doIt()
+
+                    rarmnull_transform_t = larmnull_transform.translation(om2.MSpace.kTransform)
+                    rikupperarmdistloc_transform = om2.MFnTransform(rikarmdistloc1_tn)
+                    rikupperarmdistloc_transform.setTranslation(rarmnull_transform_t, om2.MSpace.kTransform)
+
+                    IkRightArmDistance_sl_ls = om2.MSelectionList()
+                    IkRightArmDistance_sl_ls.add("IkRightArmDistance_InfoShape")
+
+                    rikhandDist_fs = om2.MFnDependencyNode(rikhanddistloc1_tn)
+                    rikarmjntDist_fs = om2.MFnDependencyNode(IkRightArmDistance_sl_ls.getDependNode(0))
+
+                    rikarmjntDistPoint2_plug = rikarmjntDist_fs.findPlug("endPoint", False)
+                    rikhandDistOtpTrans_plug = rikhandDist_fs.findPlug("translate", False)
+
+                    self.MDG2_mod.commandToExecute('connectAttr -force R_arm1_Shape.worldPosition[0] IkRightArmDistance_InfoShape.startPoint')
+                    self.MDG2_mod.connect(rikhandDistOtpTrans_plug, rikarmjntDistPoint2_plug)
+                    self.MDG2_mod.connect(rikhanddecomposeOtpTrans_plug, rikhandDistOtpTrans_plug)
+                    self.MDG2_mod.commandToExecute('float $noflipikrightforearmtranslateY = `getAttr "IkNoFlipRightForeArm.translateY"`; float $noflipikrighthandtranslateY = `getAttr "IkNoFlipRightHand.translateY"`; float $totalnoflipikrightarmtranslateY = $noflipikrightforearmtranslateY + $noflipikrighthandtranslateY; setDrivenKeyframe -currentDriver IkRightArmDistance_InfoShape.distance -driverValue $totalnoflipikrightarmtranslateY -attribute "translateY" -value $noflipikrightforearmtranslateY IkNoFlipRightForeArm;')
+                    self.MDG2_mod.commandToExecute('float $noflipikrightforearmtranslateY = `getAttr "IkNoFlipRightForeArm.translateY"`; float $noflipikrighthandtranslateY = `getAttr "IkNoFlipRightHand.translateY"`; float $totalnoflipikrightarmtranslateY = $noflipikrightforearmtranslateY + $noflipikrighthandtranslateY; setDrivenKeyframe -currentDriver IkRightArmDistance_InfoShape.distance -driverValue ($totalnoflipikrightarmtranslateY*2) -attribute "translateY" -value ($noflipikrightforearmtranslateY*2) IkNoFlipRightForeArm;')
+                    self.MDG2_mod.commandToExecute('float $noflipikrightforearmtranslateY = `getAttr "IkNoFlipRightForeArm.translateY"`; float $noflipikrighthandtranslateY = `getAttr "IkNoFlipRightHand.translateY"`; float $totalnoflipikrightarmtranslateY = $noflipikrightforearmtranslateY + $noflipikrighthandtranslateY; setDrivenKeyframe -currentDriver IkRightArmDistance_InfoShape.distance -driverValue $totalnoflipikrightarmtranslateY -attribute "translateY" -value $noflipikrighthandtranslateY IkNoFlipRightHand;')
+                    self.MDG2_mod.commandToExecute('float $noflipikrightforearmtranslateY = `getAttr "IkNoFlipRightForeArm.translateY"`; float $noflipikrighthandtranslateY = `getAttr "IkNoFlipRightHand.translateY"`; float $totalnoflipikrightarmtranslateY = $noflipikrightforearmtranslateY + $noflipikrighthandtranslateY; setDrivenKeyframe -currentDriver IkRightArmDistance_InfoShape.distance -driverValue ($totalnoflipikrightarmtranslateY*2) -attribute "translateY" -value ($noflipikrighthandtranslateY*2) IkNoFlipRightHand;')
+                    self.MDG2_mod.commandToExecute('float $pvikrightforearmtranslateY = `getAttr "IkPVRightForeArm.translateY"`; float $pvikrighthandtranslateY = `getAttr "IkPVRightHand.translateY"`; float $totalpvikrightarmtranslateY = $pvikrightforearmtranslateY + $pvikrighthandtranslateY; setDrivenKeyframe -currentDriver IkRightArmDistance_InfoShape.distance -driverValue $totalpvikrightarmtranslateY -attribute "translateY" -value $pvikrightforearmtranslateY IkPVRightForeArm;')
+                    self.MDG2_mod.commandToExecute('float $pvikrightforearmtranslateY = `getAttr "IkPVRightForeArm.translateY"`; float $pvikrighthandtranslateY = `getAttr "IkPVRightHand.translateY"`; float $totalpvikrightarmtranslateY = $pvikrightforearmtranslateY + $pvikrighthandtranslateY; setDrivenKeyframe -currentDriver IkRightArmDistance_InfoShape.distance -driverValue ($totalpvikrightarmtranslateY*2) -attribute "translateY" -value ($pvikrightforearmtranslateY*2) IkPVRightForeArm;')
+                    self.MDG2_mod.commandToExecute('float $pvikrightforearmtranslateY = `getAttr "IkPVRightForeArm.translateY"`; float $pvikrighthandtranslateY = `getAttr "IkPVRightHand.translateY"`; float $totalpvikrightarmtranslateY = $pvikrightforearmtranslateY + $pvikrighthandtranslateY; setDrivenKeyframe -currentDriver IkRightArmDistance_InfoShape.distance -driverValue $totalpvikrightarmtranslateY -attribute "translateY" -value $pvikrighthandtranslateY IkPVRightHand;')
+                    self.MDG2_mod.commandToExecute('float $pvikrightforearmtranslateY = `getAttr "IkPVRightForeArm.translateY"`; float $pvikrighthandtranslateY = `getAttr "IkPVRightHand.translateY"`; float $totalpvikrightarmtranslateY = $pvikrightforearmtranslateY + $pvikrighthandtranslateY; setDrivenKeyframe -currentDriver IkRightArmDistance_InfoShape.distance -driverValue ($totalpvikrightarmtranslateY*2) -attribute "translateY" -value ($pvikrighthandtranslateY*2) IkPVRightHand;')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkNoFlipRightForeArm; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkPVRightForeArm; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkNoFlipRightHand; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkPVRightHand; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('parent "IkRightArmDistance_Info" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "distloc_R_hand1" "DoNotTouch"')
+
+                    self.MDG2_mod.commandToExecute('addAttr -longName "elbowsnap" -niceName "Elbow Snap" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_PVRightElbow_ctrl')
+
+                    rikarmdistloc2_tn = rikarmdistloc.create("transform", "distloc_R_arm2", rhandik_sl_ls.getDependNode(3))
+                    rikarmdistloc2_ln = rikarmdistloc.create("locator", "R_arm2_Shape", rikarmdistloc2_tn)
+                    rikelbowdistloc_tn = rikarmdistloc.create("transform", "distloc_R_elbow")
+                    rikelbowdistloc_ln = rikarmdistloc.create("locator", "R_elbow_Shape", rikelbowdistloc_tn)
+                    rikhanddistloc2_tn = rikarmdistloc.create("transform", "distloc_R_hand2")
+                    rikhanddistloc2_ln = rikarmdistloc.create("locator", "R_hand2_Shape", rikhanddistloc2_tn)
+                    pvrightelbowctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    rikpvupperarmtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    rikpvlowerlegtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    rikpvupperarmstretchblendnode = self.MDG2_mod.createNode("blendColors")
+                    rikpvlowerarmstretchblendnode = self.MDG2_mod.createNode("blendColors")
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.renameNode(pvrightelbowctrl_decomposeMatrix, "PVRightElbow_decomposeMatrix")
+                    self.MDG2_mod.renameNode(rikpvupperarmtransblendnode, "PVRightUpperArmTrans_blend")
+                    self.MDG2_mod.renameNode(rikpvlowerlegtransblendnode, "PVRightLowerArmTrans_blend")
+                    self.MDG2_mod.renameNode(rikpvupperarmstretchblendnode, "PVRightUpperArmStretch_blend")
+                    self.MDG2_mod.renameNode(rikpvlowerarmstretchblendnode, "PVRightLowerArmStretch_blend")
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension1" "RightUpperArmDistance_Info"')
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension2" "RightLowerArmDistance_Info"')
+                    self.MDG2_mod.doIt()
+
+                    rikupperarmdistloc2_transform = om2.MFnTransform(rikarmdistloc2_tn)
+                    rikupperarmdistloc2_transform.setTranslation(rarmnull_transform_t, om2.MSpace.kTransform)
+
+                    IkRightArmDistance_sl_ls.add("RightUpperArmDistance_InfoShape")
+                    IkRightArmDistance_sl_ls.add("RightLowerArmDistance_InfoShape")
+                    IkRightArmDistance_sl_ls.add("IkPVRightForeArm_translateY")
+                    IkRightArmDistance_sl_ls.add("IkPVRightHand_translateY")
+                    IkRightArmDistance_sl_ls.add("Biped_PVRightElbow_ctrl")
+                    IkRightArmDistance_sl_ls.add("IkNoFlipRightForeArm_translateY")
+                    IkRightArmDistance_sl_ls.add("IkNoFlipRightHand_translateY")
+
+                    rikelbowDist_fs = om2.MFnDependencyNode(rikelbowdistloc_tn)
+                    rikhandDist_fs = om2.MFnDependencyNode(rikhanddistloc2_tn)
+                    rikupperarmjntDist_fs = om2.MFnDependencyNode(IkRightArmDistance_sl_ls.getDependNode(1))
+                    riklowerarmjntDist_fs = om2.MFnDependencyNode(IkRightArmDistance_sl_ls.getDependNode(2))
+                    pvrightelbowkey_fs = om2.MFnDependencyNode(IkRightArmDistance_sl_ls.getDependNode(3))
+                    pvrighthandkey_fs = om2.MFnDependencyNode(IkRightArmDistance_sl_ls.getDependNode(4))
+                    pvrightelbowctrlDecomposeMatrix_fs = om2.MFnDependencyNode(pvrightelbowctrl_decomposeMatrix)
+                    rikpvupperarmtransblendnode_fs = om2.MFnDependencyNode(rikpvupperarmtransblendnode)
+                    rikpvlowerarmtransblendnode_fs = om2.MFnDependencyNode(rikpvlowerlegtransblendnode)
+                    pvrightelbowctrl_fs = om2.MFnDependencyNode(IkRightArmDistance_sl_ls.getDependNode(5))
+                    pvrightelbowjnt_fs = om2.MFnDependencyNode(pvikrarm_sl_ls.getDependNode(1))
+                    pvrighthandjnt_fs = om2.MFnDependencyNode(pvikrarm_sl_ls.getDependNode(2))
+                    rikupperarmstretchblendnode_fs = om2.MFnDependencyNode(rikpvupperarmstretchblendnode)
+                    riklowerarmstretchblendnode_fs = om2.MFnDependencyNode(rikpvlowerarmstretchblendnode)
+                    righthandoption_fs = om2.MFnDependencyNode(obj_stretchyrightarm2)
+
+                    rikupperarmjntDistPoint2_plug = rikupperarmjntDist_fs.findPlug("endPoint", False)
+                    riklowerarmjntDistPoint1_plug = riklowerarmjntDist_fs.findPlug("startPoint", False)
+                    riklowerarmjntDistPoint2_plug = riklowerarmjntDist_fs.findPlug("endPoint", False)
+                    rikelbowDistOtpTrans_plug = rikelbowDist_fs.findPlug("translate", False)
+                    rikhandDistOtpTrans_plug = rikhandDist_fs.findPlug("translate", False)
+                    pvrightelbowctrlDecomposeMatrixOtpTrans_plug = pvrightelbowctrlDecomposeMatrix_fs.findPlug("outputTranslate", False)
+                    pvrightelbowkeyotp_plug = pvrightelbowkey_fs.findPlug("output", False)
+                    pvrighthandkeyotp_plug = pvrighthandkey_fs.findPlug("output", False)
+                    rikpvupperarmtransblendnodeinp1g_plug = rikpvupperarmtransblendnode_fs.findPlug("color1G", False)
+                    rikpvupperarmtransblendnodeinp2g_plug = rikpvupperarmtransblendnode_fs.findPlug("color2G", False)
+                    rikpvupperarmtransblendnodeotp_plug = rikpvupperarmtransblendnode_fs.findPlug("outputG", False)
+                    rikpvupperarmtransblendnodeblender_plug = rikpvupperarmtransblendnode_fs.findPlug("blender", False)
+                    rikpvlowerarmtransblendnodeinp1g_plug = rikpvlowerarmtransblendnode_fs.findPlug("color1G", False)
+                    rikpvlowerarmtransblendnodeinp2g_plug = rikpvlowerarmtransblendnode_fs.findPlug("color2G", False)
+                    rikpvlowerarmtransblendnodeotp_plug = rikpvlowerarmtransblendnode_fs.findPlug("outputG", False)
+                    rikpvlowerarmtransblendnodeblender_plug = rikpvlowerarmtransblendnode_fs.findPlug("blender", False)
+                    pvrightelbowctrl_fs_plug = pvrightelbowctrl_fs.findPlug("elbowsnap", False)
+                    rikpvupperarmstretchblendnodeinp1g_plug = rikupperarmstretchblendnode_fs.findPlug("color1G", False)
+                    rikpvupperarmstretchblendnodeotp_plug = rikupperarmstretchblendnode_fs.findPlug("outputG", False)
+                    rikpvupperarmstretchblendnodeblender_plug = rikupperarmstretchblendnode_fs.findPlug("blender", False)
+                    rikpvlowerarmstretchblendnodeinp1g_plug = riklowerarmstretchblendnode_fs.findPlug("color1G", False)
+                    rikpvlowerarmstretchblendnodeotp_plug = riklowerarmstretchblendnode_fs.findPlug("outputG", False)
+                    rikpvlowerarmstretchblendnodeblender_plug = riklowerarmstretchblendnode_fs.findPlug("blender", False)
+                    ikrighthandstretch_plug = righthandoption_fs.findPlug("stretchable", False)
+                    pvrightelbowjntTrans_plug = pvrightelbowjnt_fs.findPlug("translateY", False)
+                    pvrighthandjntTrans_plug = pvrighthandjnt_fs.findPlug("translateY", False)
+
+                    self.MDG2_mod.commandToExecute('connectAttr -force R_arm2_Shape.worldPosition[0] RightUpperArmDistance_InfoShape.startPoint')
+                    self.MDG2_mod.commandToExecute('connectAttr -force Biped_PVRightElbow_ctrl.worldMatrix[0] PVRightElbow_decomposeMatrix.inputMatrix')
+                    self.MDG2_mod.connect(rikelbowDistOtpTrans_plug, rikupperarmjntDistPoint2_plug)
+                    self.MDG2_mod.connect(rikelbowDistOtpTrans_plug, riklowerarmjntDistPoint1_plug)
+                    self.MDG2_mod.connect(rikhandDistOtpTrans_plug, riklowerarmjntDistPoint2_plug)
+                    self.MDG2_mod.connect(rikhanddecomposeOtpTrans_plug, rikhandDistOtpTrans_plug)
+                    self.MDG2_mod.connect(pvrightelbowctrlDecomposeMatrixOtpTrans_plug, rikelbowDistOtpTrans_plug)
+
+                    self.MDG2_mod.disconnect(pvrightelbowkeyotp_plug, pvrightelbowjntTrans_plug)
+                    self.MDG2_mod.disconnect(pvrighthandkeyotp_plug, pvrighthandjntTrans_plug)
+                    self.MDG2_mod.connect(pvrightelbowkeyotp_plug, rikpvupperarmtransblendnodeinp2g_plug)
+                    self.MDG2_mod.connect(pvrighthandkeyotp_plug, rikpvlowerarmtransblendnodeinp2g_plug)
+                    self.MDG2_mod.connect(pvrightelbowctrl_fs_plug, rikpvupperarmtransblendnodeblender_plug)
+                    self.MDG2_mod.connect(pvrightelbowctrl_fs_plug, rikpvlowerarmtransblendnodeblender_plug)
+                    self.MDG2_mod.connect(rikpvupperarmtransblendnodeotp_plug, rikpvupperarmstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(rikpvlowerarmtransblendnodeotp_plug, rikpvlowerarmstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(rikpvupperarmstretchblendnodeotp_plug, pvrightelbowjntTrans_plug)
+                    self.MDG2_mod.connect(rikpvlowerarmstretchblendnodeotp_plug, pvrighthandjntTrans_plug)
+                    self.MDG2_mod.connect(ikrighthandstretch_plug, rikpvupperarmstretchblendnodeblender_plug)
+                    self.MDG2_mod.connect(ikrighthandstretch_plug, rikpvlowerarmstretchblendnodeblender_plug)
+                    self.MDG2_mod.commandToExecute('float $pvikrightforearmtranslateY = `getAttr "PVRightUpperArmStretch_blend.color1G"`; setAttr "PVRightUpperArmStretch_blend.color2G" $pvikrightforearmtranslateY;')
+                    self.MDG2_mod.commandToExecute('float $pvikrighthandtranslateY = `getAttr "PVRightLowerArmStretch_blend.color1G"`; setAttr "PVRightLowerArmStretch_blend.color2G" $pvikrighthandtranslateY;')
+                    self.MDG2_mod.commandToExecute('parent "distloc_R_elbow" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "distloc_R_hand2" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "RightUpperArmDistance_Info" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "RightLowerArmDistance_Info" "DoNotTouch"')
+
+                    self.MDG2_mod.commandToExecute('addAttr -longName "forearmlength" -niceName "AutoElbow ForeArm Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkRightHand_ctrl')
+                    self.MDG2_mod.commandToExecute('addAttr -longName "wristlength" -niceName "AutoElbow Wrist Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkRightHand_ctrl')
+                    self.MDG2_mod.doIt()
+
+                    rikautokneeupperlegnode = self.MDG2_mod.createNode("multiplyDivide")
+                    rikautokneelowerlegnode = self.MDG2_mod.createNode("multiplyDivide")
+                    riknoflipupperarmtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    riknofliplowerarmtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    self.MDG2_mod.renameNode(rikautokneeupperlegnode, "NoFlipRightForeArmTrans_multiply")
+                    self.MDG2_mod.renameNode(rikautokneelowerlegnode, "NoFlipRightHandTrans_multiply")
+                    self.MDG2_mod.renameNode(riknoflipupperarmtransblendnode, "NoFlipRightUpperArmStretch_blend")
+                    self.MDG2_mod.renameNode(riknofliplowerarmtransblendnode, "NoFlipRightLowerArmStretch_blend")
+
+                    rikautoelbowupperleg_fs = om2.MFnDependencyNode(rikautokneeupperlegnode)
+                    rikautoelbowlowerleg_fs = om2.MFnDependencyNode(rikautokneelowerlegnode)
+                    nofliprightelbowkey_fs = om2.MFnDependencyNode(IkRightArmDistance_sl_ls.getDependNode(6))
+                    nofliprighthandkey_fs = om2.MFnDependencyNode(IkRightArmDistance_sl_ls.getDependNode(7))
+                    nofliprightelbowjntTrans_fs = om2.MFnDependencyNode(noflipikrarm_sl_ls.getDependNode(1))
+                    nofliprighthandjntTrans_fs = om2.MFnDependencyNode(noflipikrarm_sl_ls.getDependNode(2))
+                    riknoflipupperarmstretchblendnode_fs = om2.MFnDependencyNode(riknoflipupperarmtransblendnode)
+                    riknofliplowerarmstretchblendnode_fs = om2.MFnDependencyNode(riknofliplowerarmtransblendnode)
+
+                    ikautoelbowupperarmInp1Y_plug = rikautoelbowupperleg_fs.findPlug("input1Y", False)
+                    ikautoelbowupperarmInp2Y_plug = rikautoelbowupperleg_fs.findPlug("input2Y", False)
+                    rikautoelbowupperarmOtp_plug = rikautoelbowupperleg_fs.findPlug("outputY", False)
+                    ikautoelbowlowerarmInp1Y_plug = rikautoelbowlowerleg_fs.findPlug("input1Y", False)
+                    ikautoelbowlowerarmInp2Y_plug = rikautoelbowlowerleg_fs.findPlug("input2Y", False)
+                    rikautoelbowlowerarmOtp_plug = rikautoelbowlowerleg_fs.findPlug("outputY", False)
+                    nofliprightelbowkeyotp_plug = nofliprightelbowkey_fs.findPlug("output", False)
+                    nofliprighthandkeyotp_plug = nofliprighthandkey_fs.findPlug("output", False)
+                    nofliprightelbowjnttty_plug = nofliprightelbowjntTrans_fs.findPlug("translateY", False)
+                    nofliprighthandjntty_plug = nofliprighthandjntTrans_fs.findPlug("translateY", False)
+                    rikctrlelbowupperarm_plug = ikarmctrl_fs.findPlug("forearmlength", False)
+                    rikctrlelbowlowerarm_plug = ikarmctrl_fs.findPlug("wristlength", False)
+                    riknoflipupperarmstretchblendnodeinp1g_plug = riknoflipupperarmstretchblendnode_fs.findPlug("color1G", False)
+                    riknoflipupperarmstretchblendnodeotp_plug = riknoflipupperarmstretchblendnode_fs.findPlug("outputG", False)
+                    riknoflipupperarmstretchblendnodeblender_plug = riknoflipupperarmstretchblendnode_fs.findPlug("blender", False)
+                    riknofliplowerarmstretchblendnodeinp1g_plug = riknofliplowerarmstretchblendnode_fs.findPlug("color1G", False)
+                    riknofliplowerarmstretchblendnodeotp_plug = riknofliplowerarmstretchblendnode_fs.findPlug("outputG", False)
+                    riknofliplowerarmstretchblendnodeblender_plug = riknofliplowerarmstretchblendnode_fs.findPlug("blender", False)
+
+                    self.MDG2_mod.disconnect(nofliprightelbowkeyotp_plug, nofliprightelbowjnttty_plug)
+                    self.MDG2_mod.disconnect(nofliprighthandkeyotp_plug, nofliprighthandjntty_plug)
+                    self.MDG2_mod.connect(rikctrlelbowupperarm_plug, ikautoelbowupperarmInp1Y_plug)
+                    self.MDG2_mod.connect(nofliprightelbowkeyotp_plug, ikautoelbowupperarmInp2Y_plug)
+                    self.MDG2_mod.connect(rikctrlelbowlowerarm_plug, ikautoelbowlowerarmInp1Y_plug)
+                    self.MDG2_mod.connect(nofliprighthandkeyotp_plug, ikautoelbowlowerarmInp2Y_plug)
+                    self.MDG2_mod.connect(rikautoelbowupperarmOtp_plug, riknoflipupperarmstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(rikautoelbowlowerarmOtp_plug, riknofliplowerarmstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(riknoflipupperarmstretchblendnodeotp_plug, nofliprightelbowjnttty_plug)
+                    self.MDG2_mod.connect(riknofliplowerarmstretchblendnodeotp_plug, nofliprighthandjntty_plug)
+                    self.MDG2_mod.connect(ikrighthandstretch_plug, riknoflipupperarmstretchblendnodeblender_plug)
+                    self.MDG2_mod.connect(ikrighthandstretch_plug, riknofliplowerarmstretchblendnodeblender_plug)
+                    self.MDG2_mod.commandToExecute('float $noflipikrightforearmtranslateY = `getAttr "NoFlipRightUpperArmStretch_blend.color1G"`; setAttr "NoFlipRightUpperArmStretch_blend.color2G" $noflipikrightforearmtranslateY;')
+                    self.MDG2_mod.commandToExecute('float $noflipikrighthandtranslateY = `getAttr "NoFlipRightLowerArmStretch_blend.color1G"`; setAttr "NoFlipRightLowerArmStretch_blend.color2G" $noflipikrighthandtranslateY;')
+                    self.MDG2_mod.commandToExecute('setAttr "NoFlipRightForeArmTrans_multiply.operation" 1')
+                    self.MDG2_mod.commandToExecute('setAttr "NoFlipRightHandTrans_multiply.operation" 1')
+
+                    rightarmglobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    nofliprightlegglobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    nofliprightfootlobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    self.MDG2_mod.renameNode(rightarmglobalscalenode, "IKRightArmGlobalScale_Average")
+                    self.MDG2_mod.renameNode(nofliprightlegglobalscalenode, "IKNoFlipRightForeArmGlobalScale_Average")
+                    self.MDG2_mod.renameNode(nofliprightfootlobalscalenode, "IKNoFlipRightHandGlobalScale_Average")
+
+                    rightarmglobalscale_fs = om2.MFnDependencyNode(rightarmglobalscalenode)
+                    nofliprightarmglobalscale_fs = om2.MFnDependencyNode(nofliprightlegglobalscalenode)
+                    nofliprighthandlobalscale_fs = om2.MFnDependencyNode(nofliprightfootlobalscalenode)
+                    masterlctrl_fs = om2.MFnDependencyNode(obj_masterctrl2)
+
+                    rikupperarmjntDist_plug = rikupperarmjntDist_fs.findPlug("distance", False)
+                    riklowerarmjntDist_plug = riklowerarmjntDist_fs.findPlug("distance", False)
+                    rikarmjntDist_plug = rikarmjntDist_fs.findPlug("distance", False)
+                    masterlctrlsy_plug = masterlctrl_fs.findPlug("scaleY", False)
+                    rightarmglobalscaleInp1Y_plug = rightarmglobalscale_fs.findPlug("input1Y", False)
+                    rightarmglobalscaleInp2Y_plug = rightarmglobalscale_fs.findPlug("input2Y", False)
+                    rightarmglobalscaleOtpY_plug = rightarmglobalscale_fs.findPlug("outputY", False)
+                    nofliprightarmglobalscaleInp1Y_plug = nofliprightarmglobalscale_fs.findPlug("input1Y", False)
+                    nofliprightarmglobalscaleInp2Y_plug = nofliprightarmglobalscale_fs.findPlug("input2Y", False)
+                    nofliprightarmglobalscaleOtpY_plug = nofliprightarmglobalscale_fs.findPlug("outputY", False)
+                    nofliprighthandlobalscaleInp1Y_plug = nofliprighthandlobalscale_fs.findPlug("input1Y", False)
+                    nofliprighthandlobalscaleInp2Y_plug = nofliprighthandlobalscale_fs.findPlug("input2Y", False)
+                    nofliprighthandlobalscaleOtpY_plug = nofliprighthandlobalscale_fs.findPlug("outputY", False)
+                    nofliprightelbowkeyinp_plug = nofliprightelbowkey_fs.findPlug("input", False)
+                    nofliprighthandkeyinp_plug = nofliprighthandkey_fs.findPlug("input", False)
+                    pvrightelbowkeyinp_plug = pvrightelbowkey_fs.findPlug("input", False)
+                    pvrighthandkeyinp_plug = pvrighthandkey_fs.findPlug("input", False)
+
+                    self.MDG2_mod.disconnect(rikarmjntDist_plug, nofliprightelbowkeyinp_plug)
+                    self.MDG2_mod.disconnect(rikarmjntDist_plug, nofliprighthandkeyinp_plug)
+                    self.MDG2_mod.disconnect(rikarmjntDist_plug, pvrightelbowkeyinp_plug)
+                    self.MDG2_mod.disconnect(rikarmjntDist_plug, pvrighthandkeyinp_plug)
+                    self.MDG2_mod.connect(riklowerarmjntDist_plug, nofliprighthandlobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(rikupperarmjntDist_plug, nofliprightarmglobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(riklowerarmjntDist_plug, nofliprighthandlobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, nofliprightarmglobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, nofliprighthandlobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(nofliprightarmglobalscaleOtpY_plug, rikpvupperarmtransblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(nofliprighthandlobalscaleOtpY_plug, rikpvlowerarmtransblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(rikarmjntDist_plug, rightarmglobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, rightarmglobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(rightarmglobalscaleOtpY_plug, nofliprightelbowkeyinp_plug)
+                    self.MDG2_mod.connect(rightarmglobalscaleOtpY_plug, nofliprighthandkeyinp_plug)
+                    self.MDG2_mod.connect(rightarmglobalscaleOtpY_plug, pvrightelbowkeyinp_plug)
+                    self.MDG2_mod.connect(rightarmglobalscaleOtpY_plug, pvrighthandkeyinp_plug)
+                    self.MDG2_mod.commandToExecute('setAttr "IKNoFlipRightForeArmGlobalScale_Average.operation" 2')
+                    self.MDG2_mod.commandToExecute('setAttr "IKNoFlipRightHandGlobalScale_Average.operation" 2')
+                    self.MDG2_mod.commandToExecute('setAttr "IKRightArmGlobalScale_Average.operation" 2')
+
+                # else:
+                #     # self.MDG2_mod.commandToExecute('delete "IkStretchyRightJointArm_grp"')
+                #     # self.MDG2_mod.commandToExecute('delete "RightArmIkCluster_grp"')
 
         else:
-            self.ctrl_mod_n.commandToExecute('delete "Biped_IkRightHand_null"')
-            self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_RightHandOptions_ctrl.fkik')
-            self.ctrl_mod_n.commandToExecute('setAttr "IkRightArm.visibility" 0')
+            self.MDG2_mod.commandToExecute('delete "Biped_IkRightHand_null"')
+            self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_RightHandOptions_ctrl.fkik')
+            self.MDG2_mod.commandToExecute('setAttr "IkRightArm.visibility" 0')
 
         rfinger_sl_ls = om2.MSelectionList()
         rfinger_sl_ls.add("RightFinger*")
@@ -7936,10 +10695,10 @@ class MainWindow(QtWidgets.QDialog):
             jnt_string = rfinger_sl_ls.getSelectionStrings(index)
 
             if jnt_obj.hasFn(om2.MFn.kJoint):
-                rfingerctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                rfingerctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(rfingerctrl_multMatrix, str(jnt_string)[2:][:-3]+"_multMatrix")
-                self.ctrl_mod_n.renameNode(rfingerctrl_decomposeMatrix, str(jnt_string)[2:][:-3]+"_decomposeMatrix")
+                rfingerctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                rfingerctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(rfingerctrl_multMatrix, str(jnt_string)[2:][:-3] + "_multMatrix")
+                self.MDG2_mod.renameNode(rfingerctrl_decomposeMatrix, str(jnt_string)[2:][:-3] + "_decomposeMatrix")
 
                 rfingermultMatrix_fs = om2.MFnDependencyNode(rfingerctrl_multMatrix)
                 rfingerdecomposeMatrix_fs = om2.MFnDependencyNode(rfingerctrl_decomposeMatrix)
@@ -7952,28 +10711,99 @@ class MainWindow(QtWidgets.QDialog):
                 rfingerjntTrans_plug = rfingerjnt_fs.findPlug("translate", False)
                 rfingerjntRot_plug = rfingerjnt_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.connect(rfingermultMatrixSum_plug, rfingerdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(rfingerdecomposeOtpTrans_plug, rfingerjntTrans_plug)
-                self.ctrl_mod_n.connect(rfingerdecomposeOtpRot_plug, rfingerjntRot_plug)
-                self.ctrl_mod_n.connect(lfingerdecomposeOtpRot_plug, lfingerjntRot_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.connect(rfingermultMatrixSum_plug, rfingerdecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(rfingerdecomposeOtpTrans_plug, rfingerjntTrans_plug)
+                self.MDG2_mod.connect(rfingerdecomposeOtpRot_plug, rfingerjntRot_plug)
+                self.MDG2_mod.connect(lfingerdecomposeOtpRot_plug, lfingerjntRot_plug)
                 if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
 
                 if cmds.objExists("Biped_{0}4_ctrl".format(str(jnt_string)[3:][:-4])):
-                    self.ctrl_mod_n.commandToExecute('setAttr "Biped_{0}4_ctrl.visibility" 0'.format(str(jnt_string)[3:][:-4]))
+                    self.MDG2_mod.commandToExecute('setAttr "Biped_{0}4_ctrl.visibility" 0'.format(str(jnt_string)[3:][:-4]))
+
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_RightFingerOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "spread" -niceName "Spread" -attributeType double -keyable true -defaultValue 0 Biped_RightFingerOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "relax" -niceName "Relax" -attributeType double -minValue -10 -maxValue 10 -keyable true -defaultValue 0 Biped_RightFingerOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_RightThumbOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_RightIndexOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_RightMiddleOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_RightRingOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "curl" -niceName "Curl" -attributeType double -keyable true -minValue -10 -maxValue 10 -defaultValue 0 Biped_RightPinkyOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_RightThumbOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_RightIndexOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_RightMiddleOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_RightRingOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_RightPinkyOptions_ctrl')
+        self.MDG2_mod.doIt()
+
+        rfingercurl_sl_ls = om2.MSelectionList()
+        rfingercurl_sl_ls.add("Biped_RightFinger*_curl")
+
+        self.MDG2_mod.commandToExecute('float $rightfingeroptionsspread = `getAttr "Biped_RightFingerOptions_ctrl.spread"`; float $rightfingerthumbrotateZ = `getAttr "Biped_RightFingerThumb1_globalcurl.rotateZ"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.spread -driverValue $rightfingeroptionsspread -attribute "rotateZ" -value $rightfingerthumbrotateZ Biped_RightFingerThumb1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 20.0; float $rightfingeroptionsspread = `getAttr "Biped_RightFingerOptions_ctrl.spread"`; float $rightfingerthumbrotateZ = `getAttr "Biped_RightFingerThumb1_globalcurl.rotateZ"`; float $totalrightfingeroptionsspread = $rightfingeroptionsspread + $add1; float $totalrightthumbrotateZ = $rightfingerthumbrotateZ + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.spread -driverValue $totalrightfingeroptionsspread -attribute "rotateZ" -value $totalrightthumbrotateZ Biped_RightFingerThumb1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $rightfingeroptionsspread = `getAttr "Biped_RightFingerOptions_ctrl.spread"`; float $rightfingerindexrotateZ = `getAttr "Biped_RightFingerIndex1_globalcurl.rotateZ"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.spread -driverValue $rightfingeroptionsspread -attribute "rotateZ" -value $rightfingerindexrotateZ Biped_RightFingerIndex1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 10.0; float $rightfingeroptionsspread = `getAttr "Biped_RightFingerOptions_ctrl.spread"`; float $rightfingerindexrotateZ = `getAttr "Biped_RightFingerIndex1_globalcurl.rotateZ"`; float $totalrightfingeroptionsspread = $rightfingeroptionsspread + $add1; float $totalrightindexrotateZ = $rightfingerindexrotateZ + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.spread -driverValue $totalrightfingeroptionsspread -attribute "rotateZ" -value $totalrightindexrotateZ Biped_RightFingerIndex1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $rightfingeroptionsspread = `getAttr "Biped_RightFingerOptions_ctrl.spread"`; float $rightfingermiddlerotateZ = `getAttr "Biped_RightFingerMiddle1_globalcurl.rotateZ"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.spread -driverValue $rightfingeroptionsspread -attribute "rotateZ" -value $rightfingermiddlerotateZ Biped_RightFingerMiddle1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 2.0; float $rightfingeroptionsspread = `getAttr "Biped_RightFingerOptions_ctrl.spread"`; float $rightfingermiddlerotateZ = `getAttr "Biped_RightFingerMiddle1_globalcurl.rotateZ"`; float $totalrightfingeroptionsspread = $rightfingeroptionsspread + $add1; float $totalrightmiddlerotateZ = $rightfingermiddlerotateZ + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.spread -driverValue $totalrightfingeroptionsspread -attribute "rotateZ" -value $totalrightmiddlerotateZ Biped_RightFingerMiddle1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $rightfingeroptionsspread = `getAttr "Biped_RightFingerOptions_ctrl.spread"`; float $rightfingerringrotateZ = `getAttr "Biped_RightFingerRing1_globalcurl.rotateZ"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.spread -driverValue $rightfingeroptionsspread -attribute "rotateZ" -value $rightfingerringrotateZ Biped_RightFingerRing1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = -8.0; float $rightfingeroptionsspread = `getAttr "Biped_RightFingerOptions_ctrl.spread"`; float $rightfingerringrotateZ = `getAttr "Biped_RightFingerRing1_globalcurl.rotateZ"`; float $totalrightfingeroptionsspread = $rightfingeroptionsspread + $add1; float $totalrightringrotateZ = $rightfingerringrotateZ + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.spread -driverValue $totalrightfingeroptionsspread -attribute "rotateZ" -value $totalrightringrotateZ Biped_RightFingerRing1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $rightfingeroptionsspread = `getAttr "Biped_RightFingerOptions_ctrl.spread"`; float $rightfingerpinkyrotateZ = `getAttr "Biped_RightFingerPinky1_globalcurl.rotateZ"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.spread -driverValue $rightfingeroptionsspread -attribute "rotateZ" -value $rightfingerpinkyrotateZ Biped_RightFingerPinky1_globalcurl;')
+        self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = -15.0; float $rightfingeroptionsspread = `getAttr "Biped_RightFingerOptions_ctrl.spread"`; float $rightfingerpinkyrotateZ = `getAttr "Biped_RightFingerPinky1_globalcurl.rotateZ"`; float $totalrightfingeroptionsspread = $rightfingeroptionsspread + $add1; float $totalrightpinkyrotateZ = $rightfingerpinkyrotateZ + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.spread -driverValue $totalrightfingeroptionsspread -attribute "rotateZ" -value $totalrightpinkyrotateZ Biped_RightFingerPinky1_globalcurl;')
+
+        for index in range(rfingercurl_sl_ls.length()):
+            rfingercurl_obj = rfingercurl_sl_ls.getDependNode(index)
+            rfingercurl_string = rfingercurl_sl_ls.getSelectionStrings(index)
+
+            if rfingercurl_obj.hasFn(om2.MFn.kTransform):
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_Right{0}Options_ctrl.curl Biped_RightFinger{1}_curl.rotateX'.format(str(rfingercurl_string)[20:][:-9], str(rfingercurl_string)[20:][:-8]))
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_Right{0}Options_ctrl.lean Biped_RightFinger{1}_curl.rotateZ'.format(str(rfingercurl_string)[20:][:-9], str(rfingercurl_string)[20:][:-8]))
+
+            for index in range(1,5):
+                self.MDG2_mod.commandToExecute('float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingerindexrotateX = `getAttr "Biped_RightFingerIndex{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $rightfingeroptionscurl -attribute "rotateX" -value $leftfingerindexrotateX Biped_RightFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 90.0; float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingerindexrotateX = `getAttr "Biped_RightFingerIndex{0}_globalcurl.rotateX"`; float $totalrightfingeroptionscurl = $rightfingeroptionscurl + $add1; float $totalrightindexrotateX = $rightfingerindexrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $totalrightfingeroptionscurl -attribute "rotateX" -value $totalrightindexrotateX Biped_RightFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = -90.0; float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingerindexrotateX = `getAttr "Biped_RightFingerIndex{0}_globalcurl.rotateX"`; float $totalrightfingeroptionscurl = $rightfingeroptionscurl + $add1; float $totalrightindexrotateX = $rightfingerindexrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $totalrightfingeroptionscurl -attribute "rotateX" -value $totalrightindexrotateX Biped_RightFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingermiddlerotateX = `getAttr "Biped_RightFingerMiddle{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $rightfingeroptionscurl -attribute "rotateX" -value $rightfingermiddlerotateX Biped_RightFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 90.0; float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingermiddlerotateX = `getAttr "Biped_RightFingerMiddle{0}_globalcurl.rotateX"`; float $totalrightfingeroptionscurl = $rightfingeroptionscurl + $add1; float $totalrightmiddlerotateX = $rightfingermiddlerotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $totalrightfingeroptionscurl -attribute "rotateX" -value $totalrightmiddlerotateX Biped_RightFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = -90.0; float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingermiddlerotateX = `getAttr "Biped_RightFingerMiddle{0}_globalcurl.rotateX"`; float $totalrightfingeroptionscurl = $rightfingeroptionscurl + $add1; float $totalrightmiddlerotateX = $rightfingermiddlerotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $totalrightfingeroptionscurl -attribute "rotateX" -value $totalrightmiddlerotateX Biped_RightFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingerringrotateX = `getAttr "Biped_RightFingerRing{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $rightfingeroptionscurl -attribute "rotateX" -value $rightfingerringrotateX Biped_RightFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 90.0; float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingerringrotateX = `getAttr "Biped_RightFingerRing{0}_globalcurl.rotateX"`; float $totalrightfingeroptionscurl = $rightfingeroptionscurl + $add1; float $totalrightringrotateX = $rightfingerringrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $totalrightfingeroptionscurl -attribute "rotateX" -value $totalrightringrotateX Biped_RightFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = -90.0; float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingerringrotateX = `getAttr "Biped_RightFingerRing{0}_globalcurl.rotateX"`; float $totalrightfingeroptionscurl = $rightfingeroptionscurl + $add1; float $totalrightringrotateX = $rightfingerringrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $totalrightfingeroptionscurl -attribute "rotateX" -value $totalrightringrotateX Biped_RightFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingerpinkyrotateX = `getAttr "Biped_RightFingerPinky{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $rightfingeroptionscurl -attribute "rotateX" -value $rightfingerpinkyrotateX Biped_RightFingerPinky{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 90.0; float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingerpinkyrotateX = `getAttr "Biped_RightFingerPinky{0}_globalcurl.rotateX"`; float $totalrightfingeroptionscurl = $rightfingeroptionscurl + $add1; float $totalrightpinkyrotateX = $rightfingerpinkyrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $totalrightfingeroptionscurl -attribute "rotateX" -value $totalrightpinkyrotateX Biped_RightFingerPinky{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = -90.0; float $rightfingeroptionscurl = `getAttr "Biped_RightFingerOptions_ctrl.curl"`; float $rightfingerpinkyrotateX = `getAttr "Biped_RightFingerPinky{0}_globalcurl.rotateX"`; float $totalrightfingeroptionscurl = $rightfingeroptionscurl + $add1; float $totalrightpinkyrotateX = $rightfingerpinkyrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.curl -driverValue $totalrightfingeroptionscurl -attribute "rotateX" -value $totalrightpinkyrotateX Biped_RightFingerPinky{0}_globalcurl;'.format(index))
+
+                self.MDG2_mod.commandToExecute('float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingerindexrotateX = `getAttr "Biped_RightFingerIndex{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $rightfingeroptionsrelax -attribute "rotateX" -value $rightfingerindexrotateX Biped_RightFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 15.0; float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingerindexrotateX = `getAttr "Biped_RightFingerIndex{0}_globalcurl.rotateX"`; float $totalrightfingeroptionsrelax = $rightfingeroptionsrelax + $add1; float $totalrightindexrotateX = $rightfingerindexrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $totalrightfingeroptionsrelax -attribute "rotateX" -value $totalrightindexrotateX Biped_RightFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = 5.0; float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingerindexrotateX = `getAttr "Biped_RightFingerIndex{0}_globalcurl.rotateX"`; float $totalrightfingeroptionsrelax = $rightfingeroptionsrelax + $add1; float $totalrightindexrotateX = $rightfingerindexrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $totalrightfingeroptionsrelax -attribute "rotateX" -value $totalrightindexrotateX Biped_RightFingerIndex{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingermiddlerotateX = `getAttr "Biped_RightFingerMiddle{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $rightfingeroptionsrelax -attribute "rotateX" -value $rightfingermiddlerotateX Biped_RightFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 10.0; float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingermiddlerotateX = `getAttr "Biped_RightFingerMiddle{0}_globalcurl.rotateX"`; float $totalrightfingeroptionsrelax = $rightfingeroptionsrelax + $add1; float $totalrightmiddlerotateX = $rightfingermiddlerotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $totalrightfingeroptionsrelax -attribute "rotateX" -value $totalrightmiddlerotateX Biped_RightFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = 8.0; float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingermiddlerotateX = `getAttr "Biped_RightFingerMiddle{0}_globalcurl.rotateX"`; float $totalrightfingeroptionsrelax = $rightfingeroptionsrelax + $add1; float $totalrightmiddlerotateX = $rightfingermiddlerotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $totalrightfingeroptionsrelax -attribute "rotateX" -value $totalrightmiddlerotateX Biped_RightFingerMiddle{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingerringrotateX = `getAttr "Biped_RightFingerRing{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $rightfingeroptionsrelax -attribute "rotateX" -value $rightfingerringrotateX Biped_RightFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 8.0; float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingerringrotateX = `getAttr "Biped_RightFingerRing{0}_globalcurl.rotateX"`; float $totalrightfingeroptionsrelax = $rightfingeroptionsrelax + $add1; float $totalrightringrotateX = $rightfingerringrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $totalrightfingeroptionsrelax -attribute "rotateX" -value $totalrightringrotateX Biped_RightFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = 10.0; float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingerringrotateX = `getAttr "Biped_RightFingerRing{0}_globalcurl.rotateX"`; float $totalrightfingeroptionsrelax = $rightfingeroptionsrelax + $add1; float $totalrightringrotateX = $rightfingerringrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $totalrightfingeroptionsrelax -attribute "rotateX" -value $totalrightringrotateX Biped_RightFingerRing{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingerpinkyrotateX = `getAttr "Biped_RightFingerPinky{0}_globalcurl.rotateX"`; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $rightfingeroptionsrelax -attribute "rotateX" -value $rightfingerpinkyrotateX Biped_RightFingerPinky{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = 10.0; float $add2 = 5.0; float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingerpinkyrotateX = `getAttr "Biped_RightFingerPinky{0}_globalcurl.rotateX"`; float $totalrightfingeroptionsrelax = $rightfingeroptionsrelax + $add1; float $totalrightpinkyrotateX = $rightfingerpinkyrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $totalrightfingeroptionsrelax -attribute "rotateX" -value $totalrightpinkyrotateX Biped_RightFingerPinky{0}_globalcurl;'.format(index))
+                self.MDG2_mod.commandToExecute('float $add1 = -10.0; float $add2 = 15.0; float $rightfingeroptionsrelax = `getAttr "Biped_RightFingerOptions_ctrl.relax"`; float $rightfingerpinkyrotateX = `getAttr "Biped_RightFingerPinky{0}_globalcurl.rotateX"`; float $totalrightfingeroptionsrelax = $rightfingeroptionsrelax + $add1; float $totalrightpinkyrotateX = $rightfingerpinkyrotateX + $add2; setDrivenKeyframe -currentDriver Biped_RightFingerOptions_ctrl.relax -driverValue $totalrightfingeroptionsrelax -attribute "rotateX" -value $totalrightpinkyrotateX Biped_RightFingerPinky{0}_globalcurl;'.format(index))
+
+                self.MDG2_mod.commandToExecute('selectKey Biped_RightFingerThumb{0}_globalcurl; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative -preInfinite cycleRelative'.format(index))
+                self.MDG2_mod.commandToExecute('selectKey Biped_RightFingerIndex{0}_globalcurl; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative -preInfinite cycleRelative'.format(index))
+                self.MDG2_mod.commandToExecute('selectKey Biped_RightFingerMiddle{0}_globalcurl; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative -preInfinite cycleRelative'.format(index))
+                self.MDG2_mod.commandToExecute('selectKey Biped_RightFingerRing{0}_globalcurl; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative -preInfinite cycleRelative'.format(index))
+                self.MDG2_mod.commandToExecute('selectKey Biped_RightFingerPinky{0}_globalcurl; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative -preInfinite cycleRelative'.format(index))
+
 
         rfingergrp_sl_ls = om2.MSelectionList()
         rfingergrp_sl_ls.add("Biped_RightFingers_null")
         grp_obj = rfingergrp_sl_ls.getDependNode(0)
 
-        rfingergrp_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-        rfingergrp_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-        self.ctrl_mod_n.renameNode(rfingergrp_multMatrix, "RightFingers_multMatrix")
-        self.ctrl_mod_n.renameNode(rfingergrp_decomposeMatrix, "RightFingers_decomposeMatrix")
+        rfingergrp_multMatrix = self.MDG2_mod.createNode("multMatrix")
+        rfingergrp_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+        self.MDG2_mod.renameNode(rfingergrp_multMatrix, "RightFingers_multMatrix")
+        self.MDG2_mod.renameNode(rfingergrp_decomposeMatrix, "RightFingers_decomposeMatrix")
 
         rfingergrpmultMatrix_fs = om2.MFnDependencyNode(rfingergrp_multMatrix)
         rfingergrpdecomposeMatrix_fs = om2.MFnDependencyNode(rfingergrp_decomposeMatrix)
@@ -7986,11 +10816,11 @@ class MainWindow(QtWidgets.QDialog):
         rfingergrpjntTrans_plug = rfingergrp_fs.findPlug("translate", False)
         rfingergrpjntRot_plug = rfingergrp_fs.findPlug("rotate", False)
 
-        self.ctrl_mod_n.commandToExecute('connectAttr -force RightHand.worldMatrix[0] RightFingers_multMatrix.matrixIn[0]')
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_RightFingers_null.parentInverseMatrix[0] RightFingers_multMatrix.matrixIn[1]')
-        self.ctrl_mod_n.connect(rfingergrpmultMatrixSum_plug, rfingergrpdecomposeInpMatrix_plug)
-        self.ctrl_mod_n.connect(rfingergrpdecomposeOtpTrans_plug, rfingergrpjntTrans_plug)
-        self.ctrl_mod_n.connect(rfingergrpdecomposeOtpRot_plug, rfingergrpjntRot_plug)
+        self.MDG2_mod.commandToExecute('connectAttr -force RightHand.worldMatrix[0] RightFingers_multMatrix.matrixIn[0]')
+        self.MDG2_mod.commandToExecute('connectAttr -force Biped_RightFingers_null.parentInverseMatrix[0] RightFingers_multMatrix.matrixIn[1]')
+        self.MDG2_mod.connect(rfingergrpmultMatrixSum_plug, rfingergrpdecomposeInpMatrix_plug)
+        self.MDG2_mod.connect(rfingergrpdecomposeOtpTrans_plug, rfingergrpjntTrans_plug)
+        self.MDG2_mod.connect(rfingergrpdecomposeOtpRot_plug, rfingergrpjntRot_plug)
 
         ikrleg_sl_ls = om2.MSelectionList()
         ikrleg_sl_ls.add("IkRightUpLeg")
@@ -8016,11 +10846,11 @@ class MainWindow(QtWidgets.QDialog):
         fkrleggrp_obj = rlegoptions_sl_ls.getDependNode(1)
         rleggrp_obj = rlegoptions_sl_ls.getDependNode(2)
 
-        self.ctrl_mod_n.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkRightUpLeg_ctrl')
-        self.ctrl_mod_n.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkRightLeg_ctrl')
-        self.ctrl_mod_n.commandToExecute('addAttr -longName "fkik" -niceName "Fk/Ik" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightFootOptions_ctrl')
-        self.ctrl_mod_n.commandToExecute('addAttr -longName "kneeswitch" -niceName "Auto/Manual Knee" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightFootOptions_ctrl')
-        self.ctrl_mod_n.doIt()
+        self.MDG2_mod.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkRightUpLeg_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "stretchy" -niceName "Stretchy" -attributeType double -keyable true -defaultValue 0 Biped_FkRightLeg_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "fkik" -niceName "Fk/Ik" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightFootOptions_ctrl')
+        self.MDG2_mod.commandToExecute('addAttr -longName "kneeswitch" -niceName "Auto/Manual Knee" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightFootOptions_ctrl')
+        self.MDG2_mod.doIt()
 
         rlegoptions_fs = om2.MFnDependencyNode(rlegoptions_obj)
         rlegoptionsfkik_plug = rlegoptions_fs.findPlug("fkik", False)
@@ -8037,10 +10867,10 @@ class MainWindow(QtWidgets.QDialog):
             bindjnt_string = rleg_sl_ls.getSelectionStrings(index)
 
             if jnt_obj.hasFn(om2.MFn.kJoint):
-                rlegctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                rlegctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(rlegctrl_multMatrix, str(jnt_string)[2:][:-3]+"_multMatrix")
-                self.ctrl_mod_n.renameNode(rlegctrl_decomposeMatrix, str(jnt_string)[2:][:-3]+"_decomposeMatrix")
+                rlegctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                rlegctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(rlegctrl_multMatrix, str(jnt_string)[2:][:-3] + "_multMatrix")
+                self.MDG2_mod.renameNode(rlegctrl_decomposeMatrix, str(jnt_string)[2:][:-3] + "_decomposeMatrix")
 
                 rlegmultMatrix_fs = om2.MFnDependencyNode(rlegctrl_multMatrix)
                 rlegdecomposeMatrix_fs = om2.MFnDependencyNode(rlegctrl_decomposeMatrix)
@@ -8053,16 +10883,16 @@ class MainWindow(QtWidgets.QDialog):
                 rlegjntTrans_plug = rlegjnt_fs.findPlug("translate", False)
                 rlegjntRot_plug = rlegjnt_fs.findPlug("rotate", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.connect(rlegmultMatrixSum_plug, rlegdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(rlegdecomposeOtpTrans_plug, rlegjntTrans_plug)
-                self.ctrl_mod_n.connect(rlegdecomposeOtpRot_plug, rlegjntRot_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_{0}_ctrl.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.commandToExecute('connectAttr -force {0}.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(jnt_string)[3:][:-3]))
+                self.MDG2_mod.connect(rlegmultMatrixSum_plug, rlegdecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(rlegdecomposeOtpTrans_plug, rlegjntTrans_plug)
+                self.MDG2_mod.connect(rlegdecomposeOtpRot_plug, rlegjntRot_plug)
 
                 if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
+                    self.MDG2_mod.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
 
             if bindjnt_obj.hasFn(om2.MFn.kJoint):
                 if cmds.getAttr("{0}.jointOrientX".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(bindjnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(bindjnt_string)[3:][:-3])) != 0:
@@ -8087,12 +10917,12 @@ class MainWindow(QtWidgets.QDialog):
                 fklegjointrototp_plug = fklegjoint_fs.findPlug("rotate", False)
 
                 if cmds.objExists("NoFlipRightLeg_Ik") and cmds.objExists("PVRightLeg_Ik"):
-                    legrotblendnode = self.ctrl_mod_n.createNode("blendColors")
-                    legtransblendnode = self.ctrl_mod_n.createNode("blendColors")
-                    legjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                    self.ctrl_mod_n.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
-                    self.ctrl_mod_n.renameNode(legrotblendnode, str(bindjnt_string)[2:][:-3]+"_blend")
-                    self.ctrl_mod_n.renameNode(legtransblendnode, str(bindjnt_string)[2:][:-3]+"Trans_blend")
+                    legrotblendnode = self.MDG2_mod.createNode("blendColors")
+                    legtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    legjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    self.MDG2_mod.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3] + "Blend_decomposeMatrix")
+                    self.MDG2_mod.renameNode(legrotblendnode, str(bindjnt_string)[2:][:-3] + "_blend")
+                    self.MDG2_mod.renameNode(legtransblendnode, str(bindjnt_string)[2:][:-3] + "Trans_blend")
 
                     legrotblendnode_fs = om2.MFnDependencyNode(legrotblendnode)
                     legtransblendnode_fs = om2.MFnDependencyNode(legtransblendnode)
@@ -8112,15 +10942,15 @@ class MainWindow(QtWidgets.QDialog):
                     legtransblendnodeblender_plug = legtransblendnode_fs.findPlug("blender", False)
                     iklegjointotp_plug = iklegjoint_fs.findPlug("matrix", False)
 
-                    self.ctrl_mod_n.connect(iklegjointotp_plug, legdecomposeInpMatrix_plug)
-                    self.ctrl_mod_n.connect(legdecomposeOtpRot_plug, legrotblendnodeinp1_plug)
-                    self.ctrl_mod_n.connect(legdecomposeOtpTrans_plug, legtransblendnodeinp1_plug)
-                    self.ctrl_mod_n.connect(fklegjointrototp_plug, legrotblendnodeinp2_plug)
-                    self.ctrl_mod_n.connect(fklegjointtransotp_plug, legtransblendnodeinp2_plug)
-                    self.ctrl_mod_n.connect(legrotblendnodeotp_plug, legjointrotinp_plug)
-                    self.ctrl_mod_n.connect(legtransblendnodeotp_plug, legjointtransinp_plug)
-                    self.ctrl_mod_n.connect(rlegoptionsfkik_plug, legrotblendnodeblender_plug)
-                    self.ctrl_mod_n.connect(rlegoptionsfkik_plug, legtransblendnodeblender_plug)
+                    self.MDG2_mod.connect(iklegjointotp_plug, legdecomposeInpMatrix_plug)
+                    self.MDG2_mod.connect(legdecomposeOtpRot_plug, legrotblendnodeinp1_plug)
+                    self.MDG2_mod.connect(legdecomposeOtpTrans_plug, legtransblendnodeinp1_plug)
+                    self.MDG2_mod.connect(fklegjointrototp_plug, legrotblendnodeinp2_plug)
+                    self.MDG2_mod.connect(fklegjointtransotp_plug, legtransblendnodeinp2_plug)
+                    self.MDG2_mod.connect(legrotblendnodeotp_plug, legjointrotinp_plug)
+                    self.MDG2_mod.connect(legtransblendnodeotp_plug, legjointtransinp_plug)
+                    self.MDG2_mod.connect(rlegoptionsfkik_plug, legrotblendnodeblender_plug)
+                    self.MDG2_mod.connect(rlegoptionsfkik_plug, legtransblendnodeblender_plug)
 
                     if index < 3:
                         noflipjnt_obj = noflipikrleg_sl_ls.getDependNode(index)
@@ -8129,14 +10959,14 @@ class MainWindow(QtWidgets.QDialog):
                         pvjnt_obj = pvikrleg_sl_ls.getDependNode(index)
                         pvjnt_string = pvikrleg_sl_ls.getSelectionStrings(index)
 
-                        legrotblendnode = self.ctrl_mod_n.createNode("blendColors")
-                        legtransblendnode = self.ctrl_mod_n.createNode("blendColors")
-                        nofliplegjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                        pvlegjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                        self.ctrl_mod_n.renameNode(nofliplegjoint_decomposeMatrix, str(noflipjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
-                        self.ctrl_mod_n.renameNode(pvlegjoint_decomposeMatrix, str(pvjnt_string)[2:][:-3]+"Blend_decomposeMatrix")
-                        self.ctrl_mod_n.renameNode(legrotblendnode, str(bindjnt_string)[2:][:-3]+"Rot_kneeblend")
-                        self.ctrl_mod_n.renameNode(legtransblendnode, str(bindjnt_string)[2:][:-3]+"Trans_kneeblend")
+                        legrotblendnode = self.MDG2_mod.createNode("blendColors")
+                        legtransblendnode = self.MDG2_mod.createNode("blendColors")
+                        nofliplegjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                        pvlegjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                        self.MDG2_mod.renameNode(nofliplegjoint_decomposeMatrix, str(noflipjnt_string)[2:][:-3] + "Blend_decomposeMatrix")
+                        self.MDG2_mod.renameNode(pvlegjoint_decomposeMatrix, str(pvjnt_string)[2:][:-3] + "Blend_decomposeMatrix")
+                        self.MDG2_mod.renameNode(legrotblendnode, str(bindjnt_string)[2:][:-3] + "Rot_kneeblend")
+                        self.MDG2_mod.renameNode(legtransblendnode, str(bindjnt_string)[2:][:-3] + "Trans_kneeblend")
 
                         legrotblendnode_fs = om2.MFnDependencyNode(legrotblendnode)
                         legtransblendnode_fs = om2.MFnDependencyNode(legtransblendnode)
@@ -8164,19 +10994,19 @@ class MainWindow(QtWidgets.QDialog):
                         iklegjointinpTrans_plug = iklegjoint_fs.findPlug("translate", False)
                         iklegjointinpRot_plug = iklegjoint_fs.findPlug("jointOrient", False)
 
-                        self.ctrl_mod_n.connect(noflipiklegjointotp_plug, nofliplegdecomposeInpMatrix_plug)
-                        self.ctrl_mod_n.connect(pviklegjointotp_plug, pvlegdecomposeInpMatrix_plug)
-                        self.ctrl_mod_n.connect(pvlegdecomposeOtpRot_plug, legrotblendnodeinp1_plug)
-                        self.ctrl_mod_n.connect(pvlegdecomposeOtpTrans_plug, legtransblendnodeinp1_plug)
-                        self.ctrl_mod_n.connect(nofliplegdecomposeOtpRot_plug, legrotblendnodeinp2_plug)
-                        self.ctrl_mod_n.connect(nofliplegdecomposeOtpTrans_plug, legtransblendnodeinp2_plug)
-                        self.ctrl_mod_n.connect(legrotblendnodeotp_plug, iklegjointinpRot_plug)
-                        self.ctrl_mod_n.connect(legtransblendnodeotp_plug, iklegjointinpTrans_plug)
-                        self.ctrl_mod_n.connect(rlegoptionskneeswitch_plug, legrotblendnodeblender_plug)
-                        self.ctrl_mod_n.connect(rlegoptionskneeswitch_plug, legtransblendnodeblender_plug)
+                        self.MDG2_mod.connect(noflipiklegjointotp_plug, nofliplegdecomposeInpMatrix_plug)
+                        self.MDG2_mod.connect(pviklegjointotp_plug, pvlegdecomposeInpMatrix_plug)
+                        self.MDG2_mod.connect(pvlegdecomposeOtpRot_plug, legrotblendnodeinp1_plug)
+                        self.MDG2_mod.connect(pvlegdecomposeOtpTrans_plug, legtransblendnodeinp1_plug)
+                        self.MDG2_mod.connect(nofliplegdecomposeOtpRot_plug, legrotblendnodeinp2_plug)
+                        self.MDG2_mod.connect(nofliplegdecomposeOtpTrans_plug, legtransblendnodeinp2_plug)
+                        self.MDG2_mod.connect(legrotblendnodeotp_plug, iklegjointinpRot_plug)
+                        self.MDG2_mod.connect(legtransblendnodeotp_plug, iklegjointinpTrans_plug)
+                        self.MDG2_mod.connect(rlegoptionskneeswitch_plug, legrotblendnodeblender_plug)
+                        self.MDG2_mod.connect(rlegoptionskneeswitch_plug, legtransblendnodeblender_plug)
                 else:
-                    self.ctrl_mod_n.connect(fklegjointtransotp_plug, legjointtransinp_plug)
-                    self.ctrl_mod_n.connect(fklegjointrototp_plug, legjointrotinp_plug)
+                    self.MDG2_mod.connect(fklegjointtransotp_plug, legjointtransinp_plug)
+                    self.MDG2_mod.connect(fklegjointrototp_plug, legjointrotinp_plug)
 
             if self.autostretch.currentIndex() == 1:
                 if index < 2:
@@ -8188,10 +11018,10 @@ class MainWindow(QtWidgets.QDialog):
                     grp_legupperikcluster = ikrleggrp_sl_lst.getDependNode(0)
                     grp_legupperikcluster2 = ikrleggrp_sl_lst.getDependNode(1)
                     grp_leglowerikcluster = ikrleggrp_sl_lst.getDependNode(2)
-                    grp_leglowerikcluster2 = ikrleggrp_sl_lst.getDependNode(3)
+                    grp_armlowerikcluster2 = ikrleggrp_sl_lst.getDependNode(3)
 
-                    rlegjoint_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                    legjoint_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                    rlegjoint_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                    legjoint_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
 
                     rlegmultMatrix_fs = om2.MFnDependencyNode(rlegjoint_multMatrix)
                     rlegdecomposeMatrix_fs = om2.MFnDependencyNode(legjoint_decomposeMatrix)
@@ -8207,10 +11037,10 @@ class MainWindow(QtWidgets.QDialog):
                     ikrlowerleggrpTrans_plug = ikllowerleggrp_fs.findPlug("translate", False)
                     ikrlowerleggrpRot_plug = ikllowerleggrp_fs.findPlug("rotate", False)
 
-                    self.ctrl_mod_n.renameNode(rlegjoint_multMatrix, str(bindjnt_string)[2:][:-3]+"_multMatrix")
-                    self.ctrl_mod_n.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3]+"_decomposeMatrix")
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force {0}.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(bindjnt_string)[3:][:-3]))
-                    self.ctrl_mod_n.connect(rlegmultMatrixSum_plug, rlegdecomposeInpMatrix_plug)
+                    self.MDG2_mod.renameNode(rlegjoint_multMatrix, str(bindjnt_string)[2:][:-3] + "_multMatrix")
+                    self.MDG2_mod.renameNode(legjoint_decomposeMatrix, str(bindjnt_string)[2:][:-3] + "_decomposeMatrix")
+                    self.MDG2_mod.commandToExecute('connectAttr -force {0}.worldMatrix[0] {0}_multMatrix.matrixIn[0]'.format(str(bindjnt_string)[3:][:-3]))
+                    self.MDG2_mod.connect(rlegmultMatrixSum_plug, rlegdecomposeInpMatrix_plug)
 
                     fkrlegstretch_expression = om1.MFnExpression()
 
@@ -8218,12 +11048,12 @@ class MainWindow(QtWidgets.QDialog):
                         fkrlegstretch_expression.create("Biped_FkRightLeg_ctrl.translateY = Biped_FkRightUpLeg_ctrl.stretchy")
                         fkrlegstretch_expression.create("Biped_FkRightLeg_ctrl.translateZ = Biped_FkRightLeg_ctrl.translateY/10")
 
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightUpperLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
-                        self.ctrl_mod_n.connect(rlegdecomposeOtpTrans_plug, iklupperleggrpTrans_plug)
-                        self.ctrl_mod_n.connect(rlegdecomposeOtpRot_plug, iklupperleggrpRot_plug)
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightUpperLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.MDG2_mod.connect(rlegdecomposeOtpTrans_plug, iklupperleggrpTrans_plug)
+                        self.MDG2_mod.connect(rlegdecomposeOtpRot_plug, iklupperleggrpRot_plug)
 
-                        rupperlegcluster2_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                        rupperlegcluster2_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                        rupperlegcluster2_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                        rupperlegcluster2_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
 
                         rupperlegcluster2multMatrix_fs = om2.MFnDependencyNode(rupperlegcluster2_multMatrix)
                         rupperlegcluster2decomposeMatrix_fs = om2.MFnDependencyNode(rupperlegcluster2_decomposeMatrix)
@@ -8234,45 +11064,45 @@ class MainWindow(QtWidgets.QDialog):
                         rupperlegcluster2decomposeOtpTrans_plug = rupperlegcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
                         rupperlegcluster2Trans_plug = rupperlegcluster2_fs.findPlug("translate", False)
 
-                        self.ctrl_mod_n.renameNode(rupperlegcluster2_multMatrix, "RightUpperLegCluster2_multMatrix")
-                        self.ctrl_mod_n.renameNode(rupperlegcluster2_decomposeMatrix,"RightUpperLegCluster2_decomposeMatrix")
-                        self.ctrl_mod_n.connect(rupperlegcluster2multMatrixSum_plug, rupperlegcluster2decomposeInpMatrix_plug)
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightLeg.worldMatrix[0] RightUpperLegCluster2_multMatrix.matrixIn[0]')
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightUpperLegIkCluster2_grp.parentInverseMatrix[0] RightUpperLegCluster2_multMatrix.matrixIn[1]')
-                        self.ctrl_mod_n.connect(rupperlegcluster2decomposeOtpTrans_plug, rupperlegcluster2Trans_plug)
+                        self.MDG2_mod.renameNode(rupperlegcluster2_multMatrix, "RightUpperLegCluster2_multMatrix")
+                        self.MDG2_mod.renameNode(rupperlegcluster2_decomposeMatrix, "RightUpperLegCluster2_decomposeMatrix")
+                        self.MDG2_mod.connect(rupperlegcluster2multMatrixSum_plug, rupperlegcluster2decomposeInpMatrix_plug)
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightLeg.worldMatrix[0] RightUpperLegCluster2_multMatrix.matrixIn[0]')
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightUpperLegIkCluster2_grp.parentInverseMatrix[0] RightUpperLegCluster2_multMatrix.matrixIn[1]')
+                        self.MDG2_mod.connect(rupperlegcluster2decomposeOtpTrans_plug, rupperlegcluster2Trans_plug)
 
                     elif index == 1:
                         fkrlegstretch_expression.create("Biped_FkRightFoot_ctrl.translateY = Biped_FkRightLeg_ctrl.stretchy")
                         fkrlegstretch_expression.create("Biped_FkRightFoot_ctrl.translateZ = Biped_FkRightFoot_ctrl.translateY*(-1.5)")
 
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightLowerLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
-                        self.ctrl_mod_n.connect(rlegdecomposeOtpTrans_plug, ikrlowerleggrpTrans_plug)
-                        self.ctrl_mod_n.connect(rlegdecomposeOtpRot_plug, ikrlowerleggrpRot_plug)
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightLowerLegIkCluster_grp.parentInverseMatrix[0] {0}_multMatrix.matrixIn[1]'.format(str(bindjnt_string)[3:][:-3]))
+                        self.MDG2_mod.connect(rlegdecomposeOtpTrans_plug, ikrlowerleggrpTrans_plug)
+                        self.MDG2_mod.connect(rlegdecomposeOtpRot_plug, ikrlowerleggrpRot_plug)
 
-                        rlowerlegcluster2_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                        rlowerlegcluster2_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
+                        rlowerlegcluster2_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                        rlowerlegcluster2_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
 
                         rlowerlegcluster2multMatrix_f = om2.MFnDependencyNode(rlowerlegcluster2_multMatrix)
                         rlowerlegcluster2decomposeMatrix_fs = om2.MFnDependencyNode(rlowerlegcluster2_decomposeMatrix)
-                        rlowerlegcluster2_fs = om2.MFnDependencyNode(grp_leglowerikcluster2)
+                        rlowerlegcluster2_fs = om2.MFnDependencyNode(grp_armlowerikcluster2)
 
                         rlowerlegcluster2multMatrixSum_plug = rlowerlegcluster2multMatrix_f.findPlug("matrixSum", False)
                         rlowerlegcluster2decomposeInpMatrix_plug = rlowerlegcluster2decomposeMatrix_fs.findPlug("inputMatrix", False)
                         rlowerlegcluster2decomposeOtpTrans_plug = rlowerlegcluster2decomposeMatrix_fs.findPlug("outputTranslate", False)
                         rlowerlegcluster2Trans_plug = rlowerlegcluster2_fs.findPlug("translate", False)
 
-                        self.ctrl_mod_n.renameNode(rlowerlegcluster2_multMatrix, "RightLowerLegCluster2_multMatrix")
-                        self.ctrl_mod_n.renameNode(rlowerlegcluster2_decomposeMatrix,"RightLowerLegCluster2_decomposeMatrix")
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightFoot.worldMatrix[0] RightLowerLegCluster2_multMatrix.matrixIn[0]')
-                        self.ctrl_mod_n.commandToExecute('connectAttr -force RightLowerLegIkCluster2_grp.parentInverseMatrix[0] RightLowerLegCluster2_multMatrix.matrixIn[1]')
-                        self.ctrl_mod_n.connect(rlowerlegcluster2multMatrixSum_plug, rlowerlegcluster2decomposeInpMatrix_plug)
-                        self.ctrl_mod_n.connect(rlowerlegcluster2decomposeOtpTrans_plug, rlowerlegcluster2Trans_plug)
+                        self.MDG2_mod.renameNode(rlowerlegcluster2_multMatrix, "RightLowerLegCluster2_multMatrix")
+                        self.MDG2_mod.renameNode(rlowerlegcluster2_decomposeMatrix, "RightLowerLegCluster2_decomposeMatrix")
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightFoot.worldMatrix[0] RightLowerLegCluster2_multMatrix.matrixIn[0]')
+                        self.MDG2_mod.commandToExecute('connectAttr -force RightLowerLegIkCluster2_grp.parentInverseMatrix[0] RightLowerLegCluster2_multMatrix.matrixIn[1]')
+                        self.MDG2_mod.connect(rlowerlegcluster2multMatrixSum_plug, rlowerlegcluster2decomposeInpMatrix_plug)
+                        self.MDG2_mod.connect(rlowerlegcluster2decomposeOtpTrans_plug, rlowerlegcluster2Trans_plug)
 
             elif cmds.objExists("RightLegIkCluster_grp") and cmds.objExists("IkStretchyRightJointLeg_grp"):
-                self.ctrl_mod_n.commandToExecute('delete "RightLegIkCluster_grp"')
-                self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_FkRightUpLeg_ctrl.stretchy')
-                self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_FkRightLeg_ctrl.stretchy')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('delete "RightLegIkCluster_grp"')
+                self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_FkRightUpLeg_ctrl.stretchy')
+                self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_FkRightLeg_ctrl.stretchy')
+                self.MDG2_mod.doIt()
 
         fkrleggrp_fs = om2.MFnDependencyNode(fkrleggrp_obj)
         rleggrp_fs = om2.MFnDependencyNode(rleggrp_obj)
@@ -8280,13 +11110,21 @@ class MainWindow(QtWidgets.QDialog):
         fkrleggrpScal_plug = fkrleggrp_fs.findPlug("scale", False)
         rleggrpScal_plug = rleggrp_fs.findPlug("scale", False)
 
-        self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, fkrleggrpScal_plug)
-        self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, rleggrpScal_plug)
+        self.MDG2_mod.connect(masterdecomposeOtpScale_plug, fkrleggrpScal_plug)
+        self.MDG2_mod.connect(masterdecomposeOtpScale_plug, rleggrpScal_plug)
 
         grp_legupperikcluster1 = om1.MObject()
         grp_legupperikcluster2 = om1.MObject()
+        obj_stretchyrightfoot = om1.MObject()
 
         if self.autostretch.currentIndex() == 1:
+
+            self.MDG2_mod.commandToExecute('addAttr -longName "stretchable" -niceName "Stretchable" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightFootOptions_ctrl')
+            self.MDG2_mod.doIt()
+
+            stretchy_sl_lst1.add("Biped_RightFootOptions_ctrl")
+            stretchy_sl_lst1.getDependNode(5, obj_stretchyrightfoot)
+
             if cmds.objExists("IkSplineRightUpperLeg0"):
                 ikrupperleg_sl_lst = om1.MSelectionList()
                 ikrupperleg_sl_lst.add("IkSplineRightUpperLeg*")
@@ -8307,24 +11145,24 @@ class MainWindow(QtWidgets.QDialog):
                 except:
                     cmds.createNode("ikSplineSolver")
 
-                self.ikrleg_effector = ik_effector.create(obj_endspine)
+                self.ikrleg_effector = self.IK_Effector.create(obj_endspine)
                 ikrleg_effector_path = rleg_pathnode.getAPathTo(self.ikrleg_effector)
 
-                self.rleg_ik = ik_handle.create(rootspine_path, ikrleg_effector_path)
+                self.rleg_ik = self.IK_Handle.create(rootspine_path, ikrleg_effector_path)
 
                 obj_array = om1.MPointArray()
                 obj_lst_mpoint = []
                 obj = om1.MObject()
                 for index in range(ikrupperleg_sl_lst.length()):
                     ikrupperleg_sl_lst.getDependNode(index, obj)
-                    obj_path = ikspineobj_path_n.getAPathTo(obj)
+                    obj_path = self.MDag_path.getAPathTo(obj)
                     obj_tn = om1.MFnTransform(obj_path)
                     obj_t = obj_tn.translation(om1.MSpace.kWorld)
                     obj_lst_mpoint.append(om1.MPoint(obj_t))
                     obj_array.append(obj_lst_mpoint[index])
 
                 self.ikspline_cv_tn = ikspinedag_n.create("transform", "RightUpperLeg_SplineCv")
-                ikspline_cv = ikspline_cv_n.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                ikspline_cv = self.MNurbs1_cv.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
                 cmds.parent("RightUpperLeg_SplineCv", "DoNotTouch")
 
                 rlegcrv_info = ikspinedg_modifier.createNode("curveInfo")
@@ -8333,8 +11171,7 @@ class MainWindow(QtWidgets.QDialog):
                 rlegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
                 rlegscalediv = ikspinedg_modifier.createNode("multiplyDivide")
                 riklegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
-                # liklegstretchsub = ikspinedg_modifier.createNode("plusMinusAverage")
-                # liklegstretchsum = ikspinedg_modifier.createNode("plusMinusAverage")
+                blendstretch = ikspinedg_modifier.createNode("blendColors")
 
                 rlegcrvinfo_fs = om1.MFnDependencyNode(rlegcrv_info)
                 rlegstretchpercent_fs = om1.MFnDependencyNode(rlegstretchpercent)
@@ -8342,10 +11179,10 @@ class MainWindow(QtWidgets.QDialog):
                 rlegstretchdiv_fs = om1.MFnDependencyNode(rlegstretchdiv)
                 rlegscalediv_fs = om1.MFnDependencyNode(rlegscalediv)
                 riklegstretchdiv_fs = om1.MFnDependencyNode(riklegstretchdiv)
-                # liklegstretchsub_fs = om1.MFnDependencyNode(liklegstretchsub)
-                # liklegstretchsum_fs = om1.MFnDependencyNode(liklegstretchsum)
                 riklegstretchcluster1_fs = om1.MFnDependencyNode(grp_legupperikcluster1)
                 riklegstretchcluster2_fs = om1.MFnDependencyNode(grp_legupperikcluster2)
+                blendstretch_fs = om1.MFnDependencyNode(blendstretch)
+                rlegstretchoption_fs = om1.MFnDependencyNode(obj_stretchyrightfoot)
 
                 rlegcrvinfoarc_plug = rlegcrvinfo_fs.findPlug("arcLength")
                 rlegstretchpercentinp1y_plug = rlegstretchpercent_fs.findPlug("input1Y")
@@ -8361,12 +11198,18 @@ class MainWindow(QtWidgets.QDialog):
                 rlegscaledivinp1y_plug = rlegscalediv_fs.findPlug("input1Y")
                 rlegscaledivinp2y_plug = rlegscalediv_fs.findPlug("input2Y")
                 rlegscaledivotpy_plug = rlegscalediv_fs.findPlug("outputY")
-                # liklegstretchsubotp_plug = liklegstretchsub_fs.findPlug("output3D")
                 riklegstretchdivinp1_plug = riklegstretchdiv_fs.findPlug("input1")
                 riklegstretchdivotp_plug = riklegstretchdiv_fs.findPlug("output")
-                # liklegstretchsumotp_plug = liklegstretchsum_fs.findPlug("output3D")
                 riklegstretchclust1trans_plug = riklegstretchcluster1_fs.findPlug("translate")
                 riklegstretchclust2trans_plug = riklegstretchcluster2_fs.findPlug("translate")
+                blendstretchinp1r_plug = blendstretch_fs.findPlug("color1R")
+                blendstretchinp1g_plug = blendstretch_fs.findPlug("color1G")
+                blendstretchinp1b_plug = blendstretch_fs.findPlug("color1B")
+                blendstretchotpr_plug = blendstretch_fs.findPlug("outputR")
+                blendstretchotpg_plug = blendstretch_fs.findPlug("outputG")
+                blendstretchotpb_plug = blendstretch_fs.findPlug("outputB")
+                blendstretch_plug = blendstretch_fs.findPlug("blender")
+                rlegstretchoption_plug = rlegstretchoption_fs.findPlug("stretchable")
 
                 objparent = om1.MObject()
                 objchild = om1.MObject()
@@ -8381,11 +11224,13 @@ class MainWindow(QtWidgets.QDialog):
                         rlegjnt_szplug = rlegparentjnt_fs.findPlug("scaleZ")
                         rlegjnt_sotpplug = rlegparentjnt_fs.findPlug("scale")
                         rlegjnt_invsplug = rlegchildjnt_fs.findPlug("inverseScale")
-                        ikspinedg_modifier.connect(rlegstretchpercentotp_plug, rlegjnt_syplug)
-                        ikspinedg_modifier.connect(rlegstretchdivotox_plug, rlegjnt_sxplug)
-                        ikspinedg_modifier.connect(rlegstretchdivotpz_plug, rlegjnt_szplug)
+                        ikspinedg_modifier.connect(rlegstretchpercentotp_plug, blendstretchinp1g_plug)
+                        ikspinedg_modifier.connect(rlegstretchdivotox_plug, blendstretchinp1r_plug)
+                        ikspinedg_modifier.connect(rlegstretchdivotpz_plug, blendstretchinp1b_plug)
+                        ikspinedg_modifier.connect(blendstretchotpg_plug, rlegjnt_syplug)
+                        ikspinedg_modifier.connect(blendstretchotpr_plug, rlegjnt_sxplug)
+                        ikspinedg_modifier.connect(blendstretchotpb_plug, rlegjnt_szplug)
                         ikspinedg_modifier.connect(rlegjnt_sotpplug, rlegjnt_invsplug)
-
 
                 ikspinedg_modifier.renameNode(rlegcrv_info, "RightUpperLegSpline_Info")
                 ikspinedg_modifier.renameNode(rlegstretchpercent, "RightUpperLegStretch_Percent")
@@ -8396,8 +11241,7 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.renameNode(self.ikrleg_effector, "RightUpperLeg_effector")
                 ikspinedg_modifier.renameNode(rlegscalediv, "IkRightUpperLegGlobalScale_Average")
                 ikspinedg_modifier.renameNode(riklegstretchdiv, "RightUpperLegStretch_Divide2")
-                # ikspinedg_modifier.renameNode(liklegstretchsub, "LeftUpperLegStretch_Sub")
-                # ikspinedg_modifier.renameNode(liklegstretchsum, "LeftUpperLegStretch_Sum")
+                ikspinedg_modifier.renameNode(blendstretch, "RighUpperLegStretch_Blend")
                 ikspinedg_modifier.commandToExecute('parent "RightUpperLeg_Ik" "DoNotTouch"')
                 ikspinedg_modifier.commandToExecute('connectAttr -force RightUpperLeg_SplineCvShape.worldSpace[0] RightUpperLeg_Ik.inCurve')
                 ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "RightUpperLegIk_skin" IkCvSplineRightUpperLeg0 IkCvSplineRightUpperLeg1 IkCvSplineRightUpperLeg2 RightUpperLeg_SplineCv')
@@ -8412,10 +11256,6 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.commandToExecute('connectAttr -force IkCvSplineRightUpperLeg0.worldMatrix[0] RightUpperLeg_Ik.dWorldUpMatrix')
                 ikspinedg_modifier.commandToExecute('connectAttr -force IkCvSplineRightUpperLeg2.worldMatrix[0] RightUpperLeg_Ik.dWorldUpMatrixEnd')
                 ikspinedg_modifier.commandToExecute('connectAttr -force RightUpperLeg_SplineCvShape.worldSpace[0] RightUpperLegSpline_Info.inputCurve')
-                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegIkCluster1_grp.translate LeftUpperLegStretch_Sub.input3D[0]')
-                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegIkCluster2_grp.translate LeftUpperLegStretch_Sub.input3D[1]')
-                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegIkCluster2_grp.translate LeftUpperLegStretch_Sum.input3D[0]')
-                # ikspinedg_modifier.commandToExecute('connectAttr -force LeftUpperLegStretch_Divide2.output LeftUpperLegStretch_Sum.input3D[1]')
                 ikspinedg_modifier.connect(rlegcrvinfoarc_plug, rlegscaledivinp1y_plug)
                 ikspinedg_modifier.connect(masterctrlsy_plug, rlegscaledivinp2y_plug)
                 ikspinedg_modifier.connect(rlegscaledivotpy_plug, rlegstretchpercentinp1y_plug)
@@ -8425,6 +11265,7 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.connect(rlegstretchpowotpz_plug, rlegstretchdivinp2z_plug)
                 ikspinedg_modifier.connect(riklegstretchclust2trans_plug, riklegstretchdivinp1_plug)
                 ikspinedg_modifier.connect(riklegstretchdivotp_plug, riklegstretchclust1trans_plug)
+                ikspinedg_modifier.connect(rlegstretchoption_plug, blendstretch_plug)
                 ikspinedg_modifier.commandToExecute('float $rightupperlegstretchinput1Y = `getAttr "RightUpperLegStretch_Percent.input1Y"`; setAttr "RightUpperLegStretch_Percent.input2Y" $rightupperlegstretchinput1Y')
                 ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Power.input2X" 0.5')
                 ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Power.input2Z" 0.5')
@@ -8435,19 +11276,19 @@ class MainWindow(QtWidgets.QDialog):
                 ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide.operation" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "IkRightUpperLegGlobalScale_Average.operation" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide2.operation" 2')
-                # ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Sum.operation" 1')
-                # ikspinedg_modifier.commandToExecute('setAttr "LeftUpperLegStretch_Sub.operation" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide2.input2X" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide2.input2Y" 2')
                 ikspinedg_modifier.commandToExecute('setAttr "RightUpperLegStretch_Divide2.input2Z" 2')
-                # ikspinedg_modifier.connect(liklegstretchsumotp_plug, liklegstretchclust1trans_plug)
+                ikspinedg_modifier.commandToExecute('setAttr "RighUpperLegStretch_Blend.color2R" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RighUpperLegStretch_Blend.color2G" 1')
+                ikspinedg_modifier.commandToExecute('setAttr "RighUpperLegStretch_Blend.color2B" 1')
                 ikspinedg_modifier.doIt()
 
-                ikspline_solver = ik_system.findSolver("ikSplineSolver")
-                ik_handle.setSolver(ikspline_solver)
+                ikspline_solver = self.IK_System.findSolver("ikSplineSolver")
+                self.IK_Handle.setSolver(ikspline_solver)
 
-                grp_leglowerikcluster1 = om1.MObject()
-                grp_leglowerikcluster2 = om1.MObject()
+                grp_armlowerikcluster1 = om1.MObject()
+                grp_armlowerikcluster2 = om1.MObject()
 
                 if cmds.objExists("IkSplineRightLowerLeg0"):
                     ikrlowerleg_sl_lst = om1.MSelectionList()
@@ -8458,8 +11299,8 @@ class MainWindow(QtWidgets.QDialog):
                     ikrlowerleggrp_sl_lst = om1.MSelectionList()
                     ikrlowerleggrp_sl_lst.add("RightLowerLegIkCluster1_grp")
                     ikrlowerleggrp_sl_lst.add("RightLowerLegIkCluster2_grp")
-                    ikrlowerleggrp_sl_lst.getDependNode(0, grp_leglowerikcluster1)
-                    ikrlowerleggrp_sl_lst.getDependNode(1, grp_leglowerikcluster2)
+                    ikrlowerleggrp_sl_lst.getDependNode(0, grp_armlowerikcluster1)
+                    ikrlowerleggrp_sl_lst.getDependNode(1, grp_armlowerikcluster2)
 
                     rleg_pathnode = om1.MDagPath()
                     rootspine_path = rleg_pathnode.getAPathTo(obj_root)
@@ -8469,24 +11310,24 @@ class MainWindow(QtWidgets.QDialog):
                     except:
                         cmds.createNode("ikSplineSolver")
 
-                    self.ikrleg_effector = ik_effector.create(obj_endspine)
+                    self.ikrleg_effector = self.IK_Effector.create(obj_endspine)
                     ikrleg_effector_path = rleg_pathnode.getAPathTo(self.ikrleg_effector)
 
-                    self.rleg_ik = ik_handle.create(rootspine_path, ikrleg_effector_path)
+                    self.rleg_ik = self.IK_Handle.create(rootspine_path, ikrleg_effector_path)
 
                     obj_array = om1.MPointArray()
                     obj_lst_mpoint = []
                     obj = om1.MObject()
                     for index in range(ikrlowerleg_sl_lst.length()):
                         ikrlowerleg_sl_lst.getDependNode(index, obj)
-                        obj_path = ikspineobj_path_n.getAPathTo(obj)
+                        obj_path = self.MDag_path.getAPathTo(obj)
                         obj_tn = om1.MFnTransform(obj_path)
                         obj_t = obj_tn.translation(om1.MSpace.kWorld)
                         obj_lst_mpoint.append(om1.MPoint(obj_t))
                         obj_array.append(obj_lst_mpoint[index])
 
                     self.ikspline_cv_tn = ikspinedag_n.create("transform", "RightLowerLeg_SplineCv")
-                    ikspline_cv = ikspline_cv_n.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
+                    ikspline_cv = self.MNurbs1_cv.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
                     cmds.parent("RightLowerLeg_SplineCv", "DoNotTouch")
 
                     rlegcrv_info = ikspinedg_modifier.createNode("curveInfo")
@@ -8495,8 +11336,7 @@ class MainWindow(QtWidgets.QDialog):
                     rlegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
                     rlegscalediv = ikspinedg_modifier.createNode("multiplyDivide")
                     riklegstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
-                    # liklegstretchsub = ikspinedg_modifier.createNode("plusMinusAverage")
-                    # liklegstretchsum = ikspinedg_modifier.createNode("plusMinusAverage")
+                    blendstretch = ikspinedg_modifier.createNode("blendColors")
 
                     rlegcrvinfo_fs = om1.MFnDependencyNode(rlegcrv_info)
                     rlegstretchpercent_fs = om1.MFnDependencyNode(rlegstretchpercent)
@@ -8504,10 +11344,9 @@ class MainWindow(QtWidgets.QDialog):
                     rlegstretchdiv_fs = om1.MFnDependencyNode(rlegstretchdiv)
                     rlegscalediv_fs = om1.MFnDependencyNode(rlegscalediv)
                     riklegstretchdiv_fs = om1.MFnDependencyNode(riklegstretchdiv)
-                    # liklegstretchsub_fs = om1.MFnDependencyNode(liklegstretchsub)
-                    # liklegstretchsum_fs = om1.MFnDependencyNode(liklegstretchsum)
-                    riklegstretchcluster1_fs = om1.MFnDependencyNode(grp_leglowerikcluster1)
-                    riklegstretchcluster2_fs = om1.MFnDependencyNode(grp_leglowerikcluster2)
+                    riklegstretchcluster1_fs = om1.MFnDependencyNode(grp_armlowerikcluster1)
+                    riklegstretchcluster2_fs = om1.MFnDependencyNode(grp_armlowerikcluster2)
+                    blendstretch_fs = om1.MFnDependencyNode(blendstretch)
 
                     rlegcrvinfoarc_plug = rlegcrvinfo_fs.findPlug("arcLength")
                     rlegstretchpercentinp1y_plug = rlegstretchpercent_fs.findPlug("input1Y")
@@ -8523,12 +11362,17 @@ class MainWindow(QtWidgets.QDialog):
                     rlegscaledivinp1y_plug = rlegscalediv_fs.findPlug("input1Y")
                     rlegscaledivinp2y_plug = rlegscalediv_fs.findPlug("input2Y")
                     rlegscaledivotpy_plug = rlegscalediv_fs.findPlug("outputY")
-                    # liklegstretchsubotp_plug = liklegstretchsub_fs.findPlug("output3D")
                     riklegstretchdivinp1_plug = riklegstretchdiv_fs.findPlug("input1")
                     riklegstretchdivotp_plug = riklegstretchdiv_fs.findPlug("output")
-                    # liklegstretchsumotp_plug = liklegstretchsum_fs.findPlug("output3D")
                     riklegstretchclust1trans_plug = riklegstretchcluster1_fs.findPlug("translate")
                     riklegstretchclust2trans_plug = riklegstretchcluster2_fs.findPlug("translate")
+                    blendstretchinp1r_plug = blendstretch_fs.findPlug("color1R")
+                    blendstretchinp1g_plug = blendstretch_fs.findPlug("color1G")
+                    blendstretchinp1b_plug = blendstretch_fs.findPlug("color1B")
+                    blendstretchotpr_plug = blendstretch_fs.findPlug("outputR")
+                    blendstretchotpg_plug = blendstretch_fs.findPlug("outputG")
+                    blendstretchotpb_plug = blendstretch_fs.findPlug("outputB")
+                    blendstretch_plug = blendstretch_fs.findPlug("blender")
 
                     objparent = om1.MObject()
                     objchild = om1.MObject()
@@ -8543,11 +11387,13 @@ class MainWindow(QtWidgets.QDialog):
                             rlegjnt_szplug = rlegparentjnt_fs.findPlug("scaleZ")
                             rlegjnt_sotpplug = rlegparentjnt_fs.findPlug("scale")
                             rlegjnt_invsplug = rlegchildjnt_fs.findPlug("inverseScale")
-                            ikspinedg_modifier.connect(rlegstretchpercentotp_plug, rlegjnt_syplug)
-                            ikspinedg_modifier.connect(rlegstretchdivotox_plug, rlegjnt_sxplug)
-                            ikspinedg_modifier.connect(rlegstretchdivotpz_plug, rlegjnt_szplug)
+                            ikspinedg_modifier.connect(rlegstretchpercentotp_plug, blendstretchinp1g_plug)
+                            ikspinedg_modifier.connect(rlegstretchdivotox_plug, blendstretchinp1r_plug)
+                            ikspinedg_modifier.connect(rlegstretchdivotpz_plug, blendstretchinp1b_plug)
+                            ikspinedg_modifier.connect(blendstretchotpg_plug, rlegjnt_syplug)
+                            ikspinedg_modifier.connect(blendstretchotpr_plug, rlegjnt_sxplug)
+                            ikspinedg_modifier.connect(blendstretchotpb_plug, rlegjnt_szplug)
                             ikspinedg_modifier.connect(rlegjnt_sotpplug, rlegjnt_invsplug)
-
 
                     ikspinedg_modifier.renameNode(rlegcrv_info, "RightLowerLegSpline_Info")
                     ikspinedg_modifier.renameNode(rlegstretchpercent, "RightLowerLegStretch_Percent")
@@ -8558,8 +11404,7 @@ class MainWindow(QtWidgets.QDialog):
                     ikspinedg_modifier.renameNode(self.ikrleg_effector, "RightLowerLeg_effector")
                     ikspinedg_modifier.renameNode(rlegscalediv, "IkRightLowerLegGlobalScale_Average")
                     ikspinedg_modifier.renameNode(riklegstretchdiv, "RightLowerLegStretch_Divide2")
-                    # ikspinedg_modifier.renameNode(liklegstretchsub, "LeftLowerLegStretch_Sub")
-                    # ikspinedg_modifier.renameNode(liklegstretchsum, "LeftLowerLegStretch_Sum")
+                    ikspinedg_modifier.renameNode(blendstretch, "RightLowerLegStretch_Blend")
                     ikspinedg_modifier.commandToExecute('parent "RightLowerLeg_Ik" "DoNotTouch"')
                     ikspinedg_modifier.commandToExecute('connectAttr -f RightLowerLeg_SplineCvShape.worldSpace[0] RightLowerLeg_Ik.inCurve')
                     ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "RightLowerLegIk_skin" IkCvSplineRightLowerLeg0 IkCvSplineRightLowerLeg1 IkCvSplineRightLowerLeg2 RightLowerLeg_SplineCv')
@@ -8574,10 +11419,6 @@ class MainWindow(QtWidgets.QDialog):
                     ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineRightLowerLeg0.worldMatrix[0] RightLowerLeg_Ik.dWorldUpMatrix')
                     ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSplineRightLowerLeg2.worldMatrix[0] RightLowerLeg_Ik.dWorldUpMatrixEnd')
                     ikspinedg_modifier.commandToExecute('connectAttr -f RightLowerLeg_SplineCvShape.worldSpace[0] RightLowerLegSpline_Info.inputCurve')
-                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster_grp.translate LeftLowerLegStretch_Sub.input3D[0]')
-                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster2_grp.translate LeftLowerLegStretch_Sub.input3D[1]')
-                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegIkCluster2_grp.translate LeftLowerLegStretch_Sum.input3D[0]')
-                    # ikspinedg_modifier.commandToExecute('connectAttr -f LeftLowerLegStretch_Divide2.output LeftLowerLegStretch_Sum.input3D[1]')
                     ikspinedg_modifier.connect(rlegcrvinfoarc_plug, rlegscaledivinp1y_plug)
                     ikspinedg_modifier.connect(masterctrlsy_plug, rlegscaledivinp2y_plug)
                     ikspinedg_modifier.connect(rlegscaledivotpy_plug, rlegstretchpercentinp1y_plug)
@@ -8587,6 +11428,7 @@ class MainWindow(QtWidgets.QDialog):
                     ikspinedg_modifier.connect(rlegstretchpowotpz_plug, rlegstretchdivinp2z_plug)
                     ikspinedg_modifier.connect(riklegstretchclust2trans_plug, riklegstretchdivinp1_plug)
                     ikspinedg_modifier.connect(riklegstretchdivotp_plug, riklegstretchclust1trans_plug)
+                    ikspinedg_modifier.connect(rlegstretchoption_plug, blendstretch_plug)
                     ikspinedg_modifier.commandToExecute('float $rightlowerlegstretchinput1Y = `getAttr "RightLowerLegStretch_Percent.input1Y"`; setAttr "RightLowerLegStretch_Percent.input2Y" $rightlowerlegstretchinput1Y')
                     ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Power.input2X" 0.5')
                     ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Power.input2Z" 0.5')
@@ -8600,12 +11442,20 @@ class MainWindow(QtWidgets.QDialog):
                     ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Divide2.input2X" 2')
                     ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Divide2.input2Y" 2')
                     ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Divide2.input2Z" 2')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Blend.color2R" 1')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Blend.color2G" 1')
+                    ikspinedg_modifier.commandToExecute('setAttr "RightLowerLegStretch_Blend.color2B" 1')
                     ikspinedg_modifier.doIt()
 
-                    ikspline_solver = ik_system.findSolver("ikSplineSolver")
-                    ik_handle.setSolver(ikspline_solver)
+                    ikspline_solver = self.IK_System.findSolver("ikSplineSolver")
+                    self.IK_Handle.setSolver(ikspline_solver)
 
         if cmds.objExists("NoFlipRightLeg_Ik") and cmds.objExists("PVRightLeg_Ik"):
+
+            self.MDG2_mod.commandToExecute('addAttr -longName "follow" -niceName "Follow Body" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+            self.MDG2_mod.commandToExecute('parentConstraint -mo -weight 1 Biped_Root_ctrl Biped_IkRightFootRot_null')
+            self.MDG2_mod.doIt()
+
             rlegik_sl_ls = om2.MSelectionList()
             rlegik_sl_ls.add("RightLegIk_grp")
             rlegik_sl_ls.add("Biped_NoFlipRightKnee_null")
@@ -8618,10 +11468,10 @@ class MainWindow(QtWidgets.QDialog):
             ikrightjointleggrp_fs = om2.MFnDependencyNode(rlegik_sl_ls.getDependNode(3))
 
             if self.typeofRLegIK.currentIndex() == 1 or 2:
-                riklegctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                riklegctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(riklegctrl_multMatrix, "IkRightLegCtrl_multMatrix")
-                self.ctrl_mod_n.renameNode(riklegctrl_decomposeMatrix, "IkRightLegCtrl_decomposeMatrix")
+                riklegctrl_multMatrix = self.MDG2_mod.createNode("multMatrix")
+                riklegctrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                self.MDG2_mod.renameNode(riklegctrl_multMatrix, "IkRightLegCtrl_multMatrix")
+                self.MDG2_mod.renameNode(riklegctrl_decomposeMatrix, "IkRightLegCtrl_decomposeMatrix")
 
                 riklegmultMatrix_fs = om2.MFnDependencyNode(riklegctrl_multMatrix)
                 riklegdecomposeMatrix_fs = om2.MFnDependencyNode(riklegctrl_decomposeMatrix)
@@ -8629,26 +11479,30 @@ class MainWindow(QtWidgets.QDialog):
                 riklegmultMatrixSum_plug = riklegmultMatrix_fs.findPlug("matrixSum", False)
                 riklegdecomposeInpMatrix_plug = riklegdecomposeMatrix_fs.findPlug("inputMatrix", False)
                 riklegdecomposeOtpTrans_plug = riklegdecomposeMatrix_fs.findPlug("outputTranslate", False)
-                riklegjntTrans_plug = rikleggrpobj_fs.findPlug("translate", False)
+                rikleggrpTrans_plug = rikleggrpobj_fs.findPlug("translate", False)
                 riklegdecomposeOtpRot_plug = riklegdecomposeMatrix_fs.findPlug("outputRotate", False)
-                riklegjntRot_plug = rikleggrpobj_fs.findPlug("rotate", False)
+                rikleggrpRot_plug = rikleggrpobj_fs.findPlug("rotate", False)
                 iklegctrlTrans_plug = iklegctrl_fs.findPlug("translate", False)
                 nofliprightkneenullTrans_plug = nofliprightkneenullobj_fs.findPlug("translate", False)
                 iklegctrlRot_plug = iklegctrl_fs.findPlug("rotate", False)
                 nofliprightkneenullRot_plug = nofliprightkneenullobj_fs.findPlug("rotate", False)
                 riklegjntScal_plug = rikleggrpobj_fs.findPlug("scale", False)
 
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_IkRightFoot_ctrl.worldMatrix[0] IkRightLegCtrl_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.commandToExecute('parent RightReverseFootHeel RightLegIk_grp')
-                self.ctrl_mod_n.commandToExecute('poleVectorConstraint Biped_NoFlipRightKnee_ctrl NoFlipRightLeg_Ik')
-                self.ctrl_mod_n.commandToExecute('poleVectorConstraint Biped_PVRightKnee_ctrl PVRightLeg_Ik')
-                self.ctrl_mod_n.commandToExecute('setAttr "NoFlipRightLeg_Ik.twist" 90')
-                self.ctrl_mod_n.connect(riklegmultMatrixSum_plug, riklegdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(riklegdecomposeOtpTrans_plug, riklegjntTrans_plug)
-                self.ctrl_mod_n.connect(riklegdecomposeOtpRot_plug, riklegjntRot_plug)
-                self.ctrl_mod_n.connect(iklegctrlTrans_plug, nofliprightkneenullTrans_plug)
-                self.ctrl_mod_n.connect(iklegctrlRot_plug, nofliprightkneenullRot_plug)
-                self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, riklegjntScal_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_IkRightFoot_ctrl.worldMatrix[0] IkRightLegCtrl_multMatrix.matrixIn[0]')
+                self.MDG2_mod.commandToExecute('parent RightReverseFootHeel RightLegIk_grp')
+                self.MDG2_mod.commandToExecute('poleVectorConstraint Biped_NoFlipRightKnee_ctrl NoFlipRightLeg_Ik')
+                self.MDG2_mod.commandToExecute('poleVectorConstraint Biped_PVRightKnee_ctrl PVRightLeg_Ik')
+                self.MDG2_mod.commandToExecute('setAttr "NoFlipRightLeg_Ik.twist" 90')
+                self.MDG2_mod.commandToExecute('connectAttr -force Biped_IkRightFoot_ctrl.follow Biped_IkRightFootRot_null_parentConstraint1.Biped_Root_ctrlW0')
+                self.MDG2_mod.connect(riklegmultMatrixSum_plug, riklegdecomposeInpMatrix_plug)
+                self.MDG2_mod.connect(riklegdecomposeOtpTrans_plug, rikleggrpTrans_plug)
+                self.MDG2_mod.connect(riklegdecomposeOtpRot_plug, rikleggrpRot_plug)
+                self.MDG2_mod.connect(iklegctrlTrans_plug, nofliprightkneenullTrans_plug)
+                self.MDG2_mod.connect(iklegctrlRot_plug, nofliprightkneenullRot_plug)
+                self.MDG2_mod.connect(masterdecomposeOtpScale_plug, riklegjntScal_plug)
+
+                stretchy_sl_lst2.add("Biped_RightFootOptions_ctrl")
+                obj_stretchyrightleg2 = stretchy_sl_lst2.getDependNode(3)
 
                 if self.autostretch.currentIndex() == 1:
                     riklegdistloc = om2.MFnDagNode()
@@ -8657,9 +11511,9 @@ class MainWindow(QtWidgets.QDialog):
                     rikupperlegdistloc_ln = riklegdistloc.create("locator", "R_upleg1_Shape", rikupperlegdistloc1_tn)
                     rikfootlegdistloc1_tn = riklegdistloc.create("transform", "distloc_R_legfoot1")
                     rikfootlegdistloc_ln = riklegdistloc.create("locator", "R_foot1_Shape", rikfootlegdistloc1_tn)
-                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
-                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension1" "IkRightLegDistance_Info"')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension1" "IkRightLegDistance_Info"')
+                    self.MDG2_mod.doIt()
 
                     ruplegnull_transform_t = ruplegnull_transform.translation(om2.MSpace.kTransform)
                     rikupperlegdistloc_transform = om2.MFnTransform(rikupperlegdistloc1_tn)
@@ -8674,25 +11528,25 @@ class MainWindow(QtWidgets.QDialog):
                     riklegjntDistPoint2_plug = riklegjntDist_fs.findPlug("endPoint", False)
                     rikfootlegDistOtpTrans_plug = rikfootlegDist_fs.findPlug("translate", False)
 
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force R_upleg1_Shape.worldPosition[0] IkRightLegDistance_InfoShape.startPoint')
-                    self.ctrl_mod_n.connect(rikfootlegDistOtpTrans_plug, riklegjntDistPoint2_plug)
-                    self.ctrl_mod_n.connect(riklegdecomposeOtpTrans_plug, rikfootlegDistOtpTrans_plug)
-                    self.ctrl_mod_n.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalnoflipikrightlegtranslateY -attribute "translateY" -value $noflipikrightlegtranslateY IkNoFlipRightLeg;')
-                    self.ctrl_mod_n.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalnoflipikrightlegtranslateY*2) -attribute "translateY" -value ($noflipikrightlegtranslateY*2) IkNoFlipRightLeg;')
-                    self.ctrl_mod_n.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalnoflipikrightlegtranslateY -attribute "translateY" -value $noflipikrightfoottranslateY IkNoFlipRightFoot;')
-                    self.ctrl_mod_n.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalnoflipikrightlegtranslateY*2) -attribute "translateY" -value ($noflipikrightfoottranslateY*2) IkNoFlipRightFoot;')
-                    self.ctrl_mod_n.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalpvikrightlegtranslateY -attribute "translateY" -value $pvikrightlegtranslateY IkPVRightLeg;')
-                    self.ctrl_mod_n.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalpvikrightlegtranslateY*2) -attribute "translateY" -value ($pvikrightlegtranslateY*2) IkPVRightLeg;')
-                    self.ctrl_mod_n.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalpvikrightlegtranslateY -attribute "translateY" -value $pvikrightfoottranslateY IkPVRightFoot;')
-                    self.ctrl_mod_n.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalpvikrightlegtranslateY*2) -attribute "translateY" -value ($pvikrightfoottranslateY*2) IkPVRightFoot;')
-                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkNoFlipRightLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
-                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkPVRightLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
-                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkNoFlipRightFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
-                    self.ctrl_mod_n.commandToExecute('selectKey -attribute translateY IkPVRightFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
-                    self.ctrl_mod_n.commandToExecute('parent "IkRightLegDistance_Info" "DoNotTouch"')
-                    self.ctrl_mod_n.commandToExecute('parent "distloc_R_legfoot1" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('connectAttr -force R_upleg1_Shape.worldPosition[0] IkRightLegDistance_InfoShape.startPoint')
+                    self.MDG2_mod.connect(rikfootlegDistOtpTrans_plug, riklegjntDistPoint2_plug)
+                    self.MDG2_mod.connect(riklegdecomposeOtpTrans_plug, rikfootlegDistOtpTrans_plug)
+                    self.MDG2_mod.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalnoflipikrightlegtranslateY -attribute "translateY" -value $noflipikrightlegtranslateY IkNoFlipRightLeg;')
+                    self.MDG2_mod.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalnoflipikrightlegtranslateY*2) -attribute "translateY" -value ($noflipikrightlegtranslateY*2) IkNoFlipRightLeg;')
+                    self.MDG2_mod.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalnoflipikrightlegtranslateY -attribute "translateY" -value $noflipikrightfoottranslateY IkNoFlipRightFoot;')
+                    self.MDG2_mod.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "IkNoFlipRightLeg.translateY"`; float $noflipikrightfoottranslateY = `getAttr "IkNoFlipRightFoot.translateY"`; float $totalnoflipikrightlegtranslateY = $noflipikrightlegtranslateY + $noflipikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalnoflipikrightlegtranslateY*2) -attribute "translateY" -value ($noflipikrightfoottranslateY*2) IkNoFlipRightFoot;')
+                    self.MDG2_mod.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalpvikrightlegtranslateY -attribute "translateY" -value $pvikrightlegtranslateY IkPVRightLeg;')
+                    self.MDG2_mod.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalpvikrightlegtranslateY*2) -attribute "translateY" -value ($pvikrightlegtranslateY*2) IkPVRightLeg;')
+                    self.MDG2_mod.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue $totalpvikrightlegtranslateY -attribute "translateY" -value $pvikrightfoottranslateY IkPVRightFoot;')
+                    self.MDG2_mod.commandToExecute('float $pvikrightlegtranslateY = `getAttr "IkPVRightLeg.translateY"`; float $pvikrightfoottranslateY = `getAttr "IkPVRightFoot.translateY"`; float $totalpvikrightlegtranslateY = $pvikrightlegtranslateY + $pvikrightfoottranslateY; setDrivenKeyframe -currentDriver IkRightLegDistance_InfoShape.distance -driverValue ($totalpvikrightlegtranslateY*2) -attribute "translateY" -value ($pvikrightfoottranslateY*2) IkPVRightFoot;')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkNoFlipRightLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkPVRightLeg; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkNoFlipRightFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('selectKey -attribute translateY IkPVRightFoot; keyTangent -inTangentType linear -outTangentType linear; setInfinity -postInfinite cycleRelative')
+                    self.MDG2_mod.commandToExecute('parent "IkRightLegDistance_Info" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "distloc_R_legfoot1" "DoNotTouch"')
 
-                    self.ctrl_mod_n.commandToExecute('addAttr -longName "kneesnap" -niceName "Knee Snap" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_PVRightKnee_ctrl')
+                    self.MDG2_mod.commandToExecute('addAttr -longName "kneesnap" -niceName "Knee Snap" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_PVRightKnee_ctrl')
 
                     rikupperlegdistloc2_tn = riklegdistloc.create("transform", "distloc_R_upleg2", rlegik_sl_ls.getDependNode(4))
                     rikupperlegdistloc_ln = riklegdistloc.create("locator", "R_upleg2_Shape", rikupperlegdistloc2_tn)
@@ -8700,17 +11554,21 @@ class MainWindow(QtWidgets.QDialog):
                     rikkneedistloc_ln = riklegdistloc.create("locator", "R_legknee_Shape", rikkneedistloc_tn)
                     rikfootlegdistloc2_tn = riklegdistloc.create("transform", "distloc_R_legfoot2")
                     rikfootlegdistloc_ln = riklegdistloc.create("locator", "R_legfoot2_Shape", rikfootlegdistloc2_tn)
-                    pvrightkneectrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                    rikpvuppertransblendnode = self.ctrl_mod_n.createNode("blendColors")
-                    rikpvlowertransblendnode = self.ctrl_mod_n.createNode("blendColors")
-                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
-                    self.ctrl_mod_n.commandToExecute('createNode "distanceDimShape"')
-                    self.ctrl_mod_n.renameNode(pvrightkneectrl_decomposeMatrix, "PVRightKnee_decomposeMatrix")
-                    self.ctrl_mod_n.renameNode(rikpvuppertransblendnode, "PVRightUpperLegTrans_blend")
-                    self.ctrl_mod_n.renameNode(rikpvlowertransblendnode, "PVRightLowerLegTrans_blend")
-                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension1" "RightUpperLegDistance_Info"')
-                    self.ctrl_mod_n.commandToExecute('rename "distanceDimension2" "RightLowerLegDistance_Info"')
-                    self.ctrl_mod_n.doIt()
+                    pvrightkneectrl_decomposeMatrix = self.MDG2_mod.createNode("decomposeMatrix")
+                    rikpvuppertransblendnode = self.MDG2_mod.createNode("blendColors")
+                    rikpvlowertransblendnode = self.MDG2_mod.createNode("blendColors")
+                    rikpvupperlegstretchblendnode = self.MDG2_mod.createNode("blendColors")
+                    rikpvlowerlegstretchblendnode = self.MDG2_mod.createNode("blendColors")
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.commandToExecute('createNode "distanceDimShape"')
+                    self.MDG2_mod.renameNode(pvrightkneectrl_decomposeMatrix, "PVRightKnee_decomposeMatrix")
+                    self.MDG2_mod.renameNode(rikpvuppertransblendnode, "PVRightUpperLegTrans_blend")
+                    self.MDG2_mod.renameNode(rikpvlowertransblendnode, "PVRightLowerLegTrans_blend")
+                    self.MDG2_mod.renameNode(rikpvupperlegstretchblendnode, "PVRightUpperLegStretch_blend")
+                    self.MDG2_mod.renameNode(rikpvlowerlegstretchblendnode, "PVRightLowerLegStretch_blend")
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension1" "RightUpperLegDistance_Info"')
+                    self.MDG2_mod.commandToExecute('rename "distanceDimension2" "RightLowerLegDistance_Info"')
+                    self.MDG2_mod.doIt()
 
                     rikupperlegdistloc2_transform = om2.MFnTransform(rikupperlegdistloc2_tn)
                     rikupperlegdistloc2_transform.setTranslation(ruplegnull_transform_t, om2.MSpace.kTransform)
@@ -8735,6 +11593,9 @@ class MainWindow(QtWidgets.QDialog):
                     pvrightkneectrl_fs = om2.MFnDependencyNode(IkRightLegDistance_sl_ls.getDependNode(5))
                     pvrightkneejnt_fs = om2.MFnDependencyNode(pvikrleg_sl_ls.getDependNode(1))
                     pvrightfootjnt_fs = om2.MFnDependencyNode(pvikrleg_sl_ls.getDependNode(2))
+                    rikupperlegstretchblendnode_fs = om2.MFnDependencyNode(rikpvupperlegstretchblendnode)
+                    riklowerlegstretchblendnode_fs = om2.MFnDependencyNode(rikpvlowerlegstretchblendnode)
+                    rightlegoption_fs = om2.MFnDependencyNode(obj_stretchyrightleg2)
 
                     rikupperlegjntDistPoint2_plug = rikupperlegjntDist_fs.findPlug("endPoint", False)
                     riklowerlegjntDistPoint1_plug = riklowerlegjntDist_fs.findPlug("startPoint", False)
@@ -8753,38 +11614,55 @@ class MainWindow(QtWidgets.QDialog):
                     rikpvlowertransblendnodeotp_plug = rikpvlowertransblendnode_fs.findPlug("outputG", False)
                     rikpvlowertransblendnodeblender_plug = rikpvlowertransblendnode_fs.findPlug("blender", False)
                     pvrightkneectrl_fs_plug = pvrightkneectrl_fs.findPlug("kneesnap", False)
+                    rikpvupperlegstretchblendnodeinp1g_plug = rikupperlegstretchblendnode_fs.findPlug("color1G", False)
+                    rikpvupperlegstretchblendnodeotp_plug = rikupperlegstretchblendnode_fs.findPlug("outputG", False)
+                    rikpvupperlegstretchblendnodeblender_plug = rikupperlegstretchblendnode_fs.findPlug("blender", False)
+                    rikpvlowerlegstretchblendnodeinp1g_plug = riklowerlegstretchblendnode_fs.findPlug("color1G", False)
+                    rikpvlowerlegstretchblendnodeotp_plug = riklowerlegstretchblendnode_fs.findPlug("outputG", False)
+                    rikpvlowerlegstretchblendnodeblender_plug = riklowerlegstretchblendnode_fs.findPlug("blender", False)
+                    ikrightlegstretch_plug = rightlegoption_fs.findPlug("stretchable", False)
                     pvrightkneejntTrans_plug = pvrightkneejnt_fs.findPlug("translateY", False)
                     pvrightfootjntTrans_plug = pvrightfootjnt_fs.findPlug("translateY", False)
 
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force R_upleg2_Shape.worldPosition[0] RightUpperLegDistance_InfoShape.startPoint')
-                    self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_PVRightKnee_ctrl.worldMatrix[0] PVRightKnee_decomposeMatrix.inputMatrix')
-                    self.ctrl_mod_n.connect(rikkneeDistOtpTrans_plug, rikupperlegjntDistPoint2_plug)
-                    self.ctrl_mod_n.connect(rikkneeDistOtpTrans_plug, riklowerlegjntDistPoint1_plug)
-                    self.ctrl_mod_n.connect(rikfootlegDistOtpTrans_plug, riklowerlegjntDistPoint2_plug)
-                    self.ctrl_mod_n.connect(riklegdecomposeOtpTrans_plug, rikfootlegDistOtpTrans_plug)
-                    self.ctrl_mod_n.connect(pvrightkneectrlDecomposeMatrixOtpTrans_plug, rikkneeDistOtpTrans_plug)
+                    self.MDG2_mod.commandToExecute('connectAttr -force R_upleg2_Shape.worldPosition[0] RightUpperLegDistance_InfoShape.startPoint')
+                    self.MDG2_mod.commandToExecute('connectAttr -force Biped_PVRightKnee_ctrl.worldMatrix[0] PVRightKnee_decomposeMatrix.inputMatrix')
+                    self.MDG2_mod.connect(rikkneeDistOtpTrans_plug, rikupperlegjntDistPoint2_plug)
+                    self.MDG2_mod.connect(rikkneeDistOtpTrans_plug, riklowerlegjntDistPoint1_plug)
+                    self.MDG2_mod.connect(rikfootlegDistOtpTrans_plug, riklowerlegjntDistPoint2_plug)
+                    self.MDG2_mod.connect(riklegdecomposeOtpTrans_plug, rikfootlegDistOtpTrans_plug)
+                    self.MDG2_mod.connect(pvrightkneectrlDecomposeMatrixOtpTrans_plug, rikkneeDistOtpTrans_plug)
 
-                    self.ctrl_mod_n.disconnect(pvrightkneekeyotp_plug, pvrightkneejntTrans_plug)
-                    self.ctrl_mod_n.disconnect(pvrightfootkeyotp_plug, pvrightfootjntTrans_plug)
-                    self.ctrl_mod_n.connect(pvrightkneekeyotp_plug, rikpvuppertransblendnodeinp2g_plug)
-                    self.ctrl_mod_n.connect(pvrightfootkeyotp_plug, rikpvlowertransblendnodeinp2g_plug)
-                    self.ctrl_mod_n.connect(pvrightkneectrl_fs_plug, rikpvuppertransblendnodeblender_plug)
-                    self.ctrl_mod_n.connect(pvrightkneectrl_fs_plug, rikpvlowertransblendnodeblender_plug)
-                    self.ctrl_mod_n.connect(rikpvuppertransblendnodeotp_plug, pvrightkneejntTrans_plug)
-                    self.ctrl_mod_n.connect(rikpvlowertransblendnodeotp_plug, pvrightfootjntTrans_plug)
-                    self.ctrl_mod_n.commandToExecute('parent "distloc_R_legknee" "DoNotTouch"')
-                    self.ctrl_mod_n.commandToExecute('parent "distloc_R_legfoot2" "DoNotTouch"')
-                    self.ctrl_mod_n.commandToExecute('parent "RightUpperLegDistance_Info" "DoNotTouch"')
-                    self.ctrl_mod_n.commandToExecute('parent "RightLowerLegDistance_Info" "DoNotTouch"')
+                    self.MDG2_mod.disconnect(pvrightkneekeyotp_plug, pvrightkneejntTrans_plug)
+                    self.MDG2_mod.disconnect(pvrightfootkeyotp_plug, pvrightfootjntTrans_plug)
+                    self.MDG2_mod.connect(pvrightkneekeyotp_plug, rikpvuppertransblendnodeinp2g_plug)
+                    self.MDG2_mod.connect(pvrightfootkeyotp_plug, rikpvlowertransblendnodeinp2g_plug)
+                    self.MDG2_mod.connect(pvrightkneectrl_fs_plug, rikpvuppertransblendnodeblender_plug)
+                    self.MDG2_mod.connect(pvrightkneectrl_fs_plug, rikpvlowertransblendnodeblender_plug)
+                    self.MDG2_mod.connect(rikpvuppertransblendnodeotp_plug, rikpvupperlegstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(rikpvlowertransblendnodeotp_plug, rikpvlowerlegstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(rikpvupperlegstretchblendnodeotp_plug, pvrightkneejntTrans_plug)
+                    self.MDG2_mod.connect(rikpvlowerlegstretchblendnodeotp_plug, pvrightfootjntTrans_plug)
+                    self.MDG2_mod.connect(ikrightlegstretch_plug, rikpvupperlegstretchblendnodeblender_plug)
+                    self.MDG2_mod.connect(ikrightlegstretch_plug, rikpvlowerlegstretchblendnodeblender_plug)
+                    self.MDG2_mod.commandToExecute('float $pvikrightlegtranslateY = `getAttr "PVRightUpperLegStretch_blend.color1G"`; setAttr "PVRightUpperLegStretch_blend.color2G" $pvikrightlegtranslateY;')
+                    self.MDG2_mod.commandToExecute('float $pvikrightfoottranslateY = `getAttr "PVRightLowerLegStretch_blend.color1G"`; setAttr "PVRightLowerLegStretch_blend.color2G" $pvikrightfoottranslateY;')
+                    self.MDG2_mod.commandToExecute('parent "distloc_R_legknee" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "distloc_R_legfoot2" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "RightUpperLegDistance_Info" "DoNotTouch"')
+                    self.MDG2_mod.commandToExecute('parent "RightLowerLegDistance_Info" "DoNotTouch"')
 
-                    self.ctrl_mod_n.commandToExecute('addAttr -longName "thighlength" -niceName "AutoKnee Thigh Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkRightFoot_ctrl')
-                    self.ctrl_mod_n.commandToExecute('addAttr -longName "calflength" -niceName "AutoKnee Calf Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkRightFoot_ctrl')
-                    self.ctrl_mod_n.doIt()
+                    self.MDG2_mod.commandToExecute('addAttr -longName "thighlength" -niceName "AutoKnee Thigh Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkRightFoot_ctrl')
+                    self.MDG2_mod.commandToExecute('addAttr -longName "calflength" -niceName "AutoKnee Calf Length" -attributeType double -minValue 0 -keyable true -defaultValue 1 Biped_IkRightFoot_ctrl')
+                    self.MDG2_mod.doIt()
 
-                    rikautokneeupperlegnode = self.ctrl_mod_n.createNode("multiplyDivide")
-                    rikautokneelowerlegnode = self.ctrl_mod_n.createNode("multiplyDivide")
-                    self.ctrl_mod_n.renameNode(rikautokneeupperlegnode, "NoFlipRightLegTrans_multiply")
-                    self.ctrl_mod_n.renameNode(rikautokneelowerlegnode, "NoFlipRightFootTrans_multiply")
+                    rikautokneeupperlegnode = self.MDG2_mod.createNode("multiplyDivide")
+                    rikautokneelowerlegnode = self.MDG2_mod.createNode("multiplyDivide")
+                    riknoflipupperlegtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    riknofliplowerlegtransblendnode = self.MDG2_mod.createNode("blendColors")
+                    self.MDG2_mod.renameNode(rikautokneeupperlegnode, "NoFlipRightLegTrans_multiply")
+                    self.MDG2_mod.renameNode(rikautokneelowerlegnode, "NoFlipRightFootTrans_multiply")
+                    self.MDG2_mod.renameNode(riknoflipupperlegtransblendnode, "NoFlipRightUpperLegStretch_blend")
+                    self.MDG2_mod.renameNode(riknofliplowerlegtransblendnode, "NoFlipRightLowerLegStretch_blend")
 
                     rikautokneeupperleg_fs = om2.MFnDependencyNode(rikautokneeupperlegnode)
                     rikautokneelowerleg_fs = om2.MFnDependencyNode(rikautokneelowerlegnode)
@@ -8792,37 +11670,51 @@ class MainWindow(QtWidgets.QDialog):
                     nofliprightfootkey_fs = om2.MFnDependencyNode(IkRightLegDistance_sl_ls.getDependNode(7))
                     nofliprightkneejntTrans_fs = om2.MFnDependencyNode(noflipikrleg_sl_ls.getDependNode(1))
                     nofliprightfootjntTrans_fs = om2.MFnDependencyNode(noflipikrleg_sl_ls.getDependNode(2))
+                    riknoflipupperlegstretchblendnode_fs = om2.MFnDependencyNode(riknoflipupperlegtransblendnode)
+                    riknofliplowerlegstretchblendnode_fs = om2.MFnDependencyNode(riknofliplowerlegtransblendnode)
 
-                    ikautokneeupperlegInp1Y_plug = rikautokneeupperleg_fs.findPlug("input1Y", False)
-                    ikautokneeupperlegInp2Y_plug = rikautokneeupperleg_fs.findPlug("input2Y", False)
-                    ikautokneeupperlegOtp_plug = rikautokneeupperleg_fs.findPlug("outputY", False)
-                    ikautokneelowerlegInp1Y_plug = rikautokneelowerleg_fs.findPlug("input1Y", False)
-                    ikautokneelowerlegInp2Y_plug = rikautokneelowerleg_fs.findPlug("input2Y", False)
-                    ikautokneelowerlegOtp_plug = rikautokneelowerleg_fs.findPlug("outputY", False)
+                    ikautoelbowupperarmInp1Y_plug = rikautokneeupperleg_fs.findPlug("input1Y", False)
+                    ikautoelbowupperarmInp2Y_plug = rikautokneeupperleg_fs.findPlug("input2Y", False)
+                    likautoelbowupperarmOtp_plug = rikautokneeupperleg_fs.findPlug("outputY", False)
+                    ikautoelbowlowerarmInp1Y_plug = rikautokneelowerleg_fs.findPlug("input1Y", False)
+                    ikautoelbowlowerarmInp2Y_plug = rikautokneelowerleg_fs.findPlug("input2Y", False)
+                    likautoelbowlowerarmOtp_plug = rikautokneelowerleg_fs.findPlug("outputY", False)
                     nofliprightkneekeyotp_plug = nofliprightkneekey_fs.findPlug("output", False)
                     nofliprightfootkeyotp_plug = nofliprightfootkey_fs.findPlug("output", False)
                     nofliprightkneejnttty_plug = nofliprightkneejntTrans_fs.findPlug("translateY", False)
                     nofliprightfootjntty_plug = nofliprightfootjntTrans_fs.findPlug("translateY", False)
                     iklegctrrkneeupperleg_plug = iklegctrl_fs.findPlug("thighlength", False)
                     iklegctrrkneelowerleg_plug = iklegctrl_fs.findPlug("calflength", False)
+                    riknoflipupperlegstretchblendnodeinp1g_plug = riknoflipupperlegstretchblendnode_fs.findPlug("color1G", False)
+                    riknoflipupperlegstretchblendnodeotp_plug = riknoflipupperlegstretchblendnode_fs.findPlug("outputG", False)
+                    riknoflipupperlegstretchblendnodeblender_plug = riknoflipupperlegstretchblendnode_fs.findPlug("blender", False)
+                    riknofliplowerlegstretchblendnodeinp1g_plug = riknofliplowerlegstretchblendnode_fs.findPlug("color1G", False)
+                    riknofliplowerlegstretchblendnodeotp_plug = riknofliplowerlegstretchblendnode_fs.findPlug("outputG", False)
+                    riknofliplowerlegstretchblendnodeblender_plug = riknofliplowerlegstretchblendnode_fs.findPlug("blender", False)
 
-                    self.ctrl_mod_n.disconnect(nofliprightkneekeyotp_plug, nofliprightkneejnttty_plug)
-                    self.ctrl_mod_n.disconnect(nofliprightfootkeyotp_plug, nofliprightfootjntty_plug)
-                    self.ctrl_mod_n.connect(iklegctrrkneeupperleg_plug, ikautokneeupperlegInp1Y_plug)
-                    self.ctrl_mod_n.connect(nofliprightkneekeyotp_plug, ikautokneeupperlegInp2Y_plug)
-                    self.ctrl_mod_n.connect(iklegctrrkneelowerleg_plug, ikautokneelowerlegInp1Y_plug)
-                    self.ctrl_mod_n.connect(nofliprightfootkeyotp_plug, ikautokneelowerlegInp2Y_plug)
-                    self.ctrl_mod_n.connect(ikautokneeupperlegOtp_plug, nofliprightkneejnttty_plug)
-                    self.ctrl_mod_n.connect(ikautokneelowerlegOtp_plug, nofliprightfootjntty_plug)
-                    self.ctrl_mod_n.commandToExecute('setAttr "NoFlipRightLegTrans_multiply.operation" 1')
-                    self.ctrl_mod_n.commandToExecute('setAttr "NoFlipRightFootTrans_multiply.operation" 1')
+                    self.MDG2_mod.disconnect(nofliprightkneekeyotp_plug, nofliprightkneejnttty_plug)
+                    self.MDG2_mod.disconnect(nofliprightfootkeyotp_plug, nofliprightfootjntty_plug)
+                    self.MDG2_mod.connect(iklegctrrkneeupperleg_plug, ikautoelbowupperarmInp1Y_plug)
+                    self.MDG2_mod.connect(nofliprightkneekeyotp_plug, ikautoelbowupperarmInp2Y_plug)
+                    self.MDG2_mod.connect(iklegctrrkneelowerleg_plug, ikautoelbowlowerarmInp1Y_plug)
+                    self.MDG2_mod.connect(nofliprightfootkeyotp_plug, ikautoelbowlowerarmInp2Y_plug)
+                    self.MDG2_mod.connect(likautoelbowupperarmOtp_plug, riknoflipupperlegstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(likautoelbowlowerarmOtp_plug, riknofliplowerlegstretchblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(riknoflipupperlegstretchblendnodeotp_plug, nofliprightkneejnttty_plug)
+                    self.MDG2_mod.connect(riknofliplowerlegstretchblendnodeotp_plug, nofliprightfootjntty_plug)
+                    self.MDG2_mod.connect(ikrightlegstretch_plug, riknoflipupperlegstretchblendnodeblender_plug)
+                    self.MDG2_mod.connect(ikrightlegstretch_plug, riknofliplowerlegstretchblendnodeblender_plug)
+                    self.MDG2_mod.commandToExecute('float $noflipikrightlegtranslateY = `getAttr "NoFlipRightUpperLegStretch_blend.color1G"`; setAttr "NoFlipRightUpperLegStretch_blend.color2G" $noflipikrightlegtranslateY;')
+                    self.MDG2_mod.commandToExecute('float $noflipikrightfoottranslateY = `getAttr "NoFlipRightLowerLegStretch_blend.color1G"`; setAttr "NoFlipRightLowerLegStretch_blend.color2G" $noflipikrightfoottranslateY;')
+                    self.MDG2_mod.commandToExecute('setAttr "NoFlipRightLegTrans_multiply.operation" 1')
+                    self.MDG2_mod.commandToExecute('setAttr "NoFlipRightFootTrans_multiply.operation" 1')
 
-                    rightlegglobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
-                    nofliprightlegglobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
-                    nofliprigthfootlobalscalenode = self.ctrl_mod_n.createNode("multiplyDivide")
-                    self.ctrl_mod_n.renameNode(rightlegglobalscalenode, "IKRightLegGlobalScale_Average")
-                    self.ctrl_mod_n.renameNode(nofliprightlegglobalscalenode, "IKNoFlipRightLegGlobalScale_Average")
-                    self.ctrl_mod_n.renameNode(nofliprigthfootlobalscalenode, "IKNoFlipRightFootGlobalScale_Average")
+                    rightlegglobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    nofliprightlegglobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    nofliprigthfootlobalscalenode = self.MDG2_mod.createNode("multiplyDivide")
+                    self.MDG2_mod.renameNode(rightlegglobalscalenode, "IKRightLegGlobalScale_Average")
+                    self.MDG2_mod.renameNode(nofliprightlegglobalscalenode, "IKNoFlipRightLegGlobalScale_Average")
+                    self.MDG2_mod.renameNode(nofliprigthfootlobalscalenode, "IKNoFlipRightFootGlobalScale_Average")
 
                     rightlegglobalscale_fs = om2.MFnDependencyNode(rightlegglobalscalenode)
                     nofliprightlegglobalscale_fs = om2.MFnDependencyNode(nofliprightlegglobalscalenode)
@@ -8848,42 +11740,46 @@ class MainWindow(QtWidgets.QDialog):
                     pvrightfootkeyinp_plug = pvrightfootkey_fs.findPlug("input", False)
                     ikrightjointleggrps_plug = ikrightjointleggrp_fs.findPlug("scale", False)
 
-                    self.ctrl_mod_n.disconnect(riklegjntDist_plug, nofliprightkneekeyinp_plug)
-                    self.ctrl_mod_n.disconnect(riklegjntDist_plug, nofliprightfootkeyinp_plug)
-                    self.ctrl_mod_n.disconnect(riklegjntDist_plug, pvrightkneekeyinp_plug)
-                    self.ctrl_mod_n.disconnect(riklegjntDist_plug, pvrightfootkeyinp_plug)
-                    self.ctrl_mod_n.connect(riklowerlegjntDist_plug, nofliprightfootlobalscaleInp1Y_plug)
-                    self.ctrl_mod_n.connect(rikupperlegjntDist_plug, nofliprightlegglobalscaleInp1Y_plug)
-                    self.ctrl_mod_n.connect(riklowerlegjntDist_plug, nofliprightfootlobalscaleInp1Y_plug)
-                    self.ctrl_mod_n.connect(masterlctrlsy_plug, nofliprightlegglobalscaleInp2Y_plug)
-                    self.ctrl_mod_n.connect(masterlctrlsy_plug, nofliprightfootlobalscaleInp2Y_plug)
-                    self.ctrl_mod_n.connect(nofliprightlegglobalscaleOtpY_plug, rikpvuppertransblendnodeinp1g_plug)
-                    self.ctrl_mod_n.connect(nofliprightfootlobalscaleOtpY_plug, rikpvlowertransblendnodeinp1g_plug)
-                    self.ctrl_mod_n.connect(riklegjntDist_plug, rightlegglobalscaleInp1Y_plug)
-                    self.ctrl_mod_n.connect(masterlctrlsy_plug, rightlegglobalscaleInp2Y_plug)
-                    self.ctrl_mod_n.connect(rigthlegglobalscaleOtpY_plug, nofliprightkneekeyinp_plug)
-                    self.ctrl_mod_n.connect(rigthlegglobalscaleOtpY_plug, nofliprightfootkeyinp_plug)
-                    self.ctrl_mod_n.connect(rigthlegglobalscaleOtpY_plug, pvrightkneekeyinp_plug)
-                    self.ctrl_mod_n.connect(rigthlegglobalscaleOtpY_plug, pvrightfootkeyinp_plug)
-                    self.ctrl_mod_n.commandToExecute('setAttr "IKNoFlipRightLegGlobalScale_Average.operation" 2')
-                    self.ctrl_mod_n.commandToExecute('setAttr "IKNoFlipRightFootGlobalScale_Average.operation" 2')
-                    self.ctrl_mod_n.commandToExecute('setAttr "IKRightLegGlobalScale_Average.operation" 2')
-                    self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, ikrightjointleggrps_plug)
+                    self.MDG2_mod.disconnect(riklegjntDist_plug, nofliprightkneekeyinp_plug)
+                    self.MDG2_mod.disconnect(riklegjntDist_plug, nofliprightfootkeyinp_plug)
+                    self.MDG2_mod.disconnect(riklegjntDist_plug, pvrightkneekeyinp_plug)
+                    self.MDG2_mod.disconnect(riklegjntDist_plug, pvrightfootkeyinp_plug)
+                    self.MDG2_mod.connect(riklowerlegjntDist_plug, nofliprightfootlobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(rikupperlegjntDist_plug, nofliprightlegglobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(riklowerlegjntDist_plug, nofliprightfootlobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, nofliprightlegglobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, nofliprightfootlobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(nofliprightlegglobalscaleOtpY_plug, rikpvuppertransblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(nofliprightfootlobalscaleOtpY_plug, rikpvlowertransblendnodeinp1g_plug)
+                    self.MDG2_mod.connect(riklegjntDist_plug, rightlegglobalscaleInp1Y_plug)
+                    self.MDG2_mod.connect(masterlctrlsy_plug, rightlegglobalscaleInp2Y_plug)
+                    self.MDG2_mod.connect(rigthlegglobalscaleOtpY_plug, nofliprightkneekeyinp_plug)
+                    self.MDG2_mod.connect(rigthlegglobalscaleOtpY_plug, nofliprightfootkeyinp_plug)
+                    self.MDG2_mod.connect(rigthlegglobalscaleOtpY_plug, pvrightkneekeyinp_plug)
+                    self.MDG2_mod.connect(rigthlegglobalscaleOtpY_plug, pvrightfootkeyinp_plug)
+                    self.MDG2_mod.commandToExecute('setAttr "IKNoFlipRightLegGlobalScale_Average.operation" 2')
+                    self.MDG2_mod.commandToExecute('setAttr "IKNoFlipRightFootGlobalScale_Average.operation" 2')
+                    self.MDG2_mod.commandToExecute('setAttr "IKRightLegGlobalScale_Average.operation" 2')
+                    self.MDG2_mod.connect(masterdecomposeOtpScale_plug, ikrightjointleggrps_plug)
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "footrollswitch" -niceName "Auto/Manual Foot Roll" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightFootOptions_ctrl')
+                # else:
+                #     self.MDG2_mod.commandToExecute('delete "IkStretchyRightJointLeg_grp"')
+                #     self.MDG2_mod.commandToExecute('delete "RightLegIkCluster_grp"')
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "autoroll" -niceName "Auto Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "roll" -niceName "Roll" -attributeType double -minValue -90 -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "bendlimitangle" -niceName "Bend Limit Angle" -attributeType double -keyable true -defaultValue 45 Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "toestraightangle" -niceName "Toe Straight Angle" -attributeType double -keyable true -defaultValue 70 Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "manualroll" -niceName "Manual Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "heelroll" -niceName "Heel Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('addAttr -longName "footrollswitch" -niceName "Auto/Manual Foot Roll" -attributeType double -minValue 0 -maxValue 1 -keyable true -defaultValue 0 Biped_RightFootOptions_ctrl')
 
-                rikheelclampnode = self.ctrl_mod_n.createNode("clamp")
-                self.ctrl_mod_n.renameNode(rikheelclampnode, "RightHeel_rotclamp")
-                rikheelblendernode = self.ctrl_mod_n.createNode("blendColors")
-                self.ctrl_mod_n.renameNode(rikheelblendernode, "RightHeel_blend")
+                self.MDG2_mod.commandToExecute('addAttr -longName "autoroll" -niceName "Auto Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "roll" -niceName "Roll" -attributeType double -minValue -90 -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "bendlimitangle" -niceName "Bend Limit Angle" -attributeType double -keyable true -defaultValue 45 Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "toestraightangle" -niceName "Toe Straight Angle" -attributeType double -keyable true -defaultValue 70 Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "manualroll" -niceName "Manual Roll" -attributeType "enum" -en "__________:" -keyable true Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "heelroll" -niceName "Heel Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.doIt()
+
+                rikheelclampnode = self.MDG2_mod.createNode("clamp")
+                self.MDG2_mod.renameNode(rikheelclampnode, "RightHeel_rotclamp")
+                rikheelblendernode = self.MDG2_mod.createNode("blendColors")
+                self.MDG2_mod.renameNode(rikheelblendernode, "RightHeel_blend")
                 leg_reverse_sl_ls = om2.MSelectionList()
                 leg_reverse_sl_ls.add("RightReverseFootHeel")
                 reverse_heel_obj = leg_reverse_sl_ls.getDependNode(0)
@@ -8903,28 +11799,28 @@ class MainWindow(QtWidgets.QDialog):
                 rikheelblendOtpR_plug = rikheelblender_fs.findPlug("outputR", False)
                 rikheelclampInpX_plug = reverseheel_fs.findPlug("rotateX", False)
 
-                self.ctrl_mod_n.connect(rlegoptionsfootrollswitch_plug, rikheelblender_plug)
-                self.ctrl_mod_n.connect(iklegctrlRoll_plug, rikheelclampInpR_plug)
-                self.ctrl_mod_n.connect(rikheelclampOtpR_plug, rikheelblendCol2R_plug)
-                self.ctrl_mod_n.connect(iklegctrlHeelRoll_plug, rikheelblendCol1R_plug)
-                self.ctrl_mod_n.connect(rikheelblendOtpR_plug, rikheelclampInpX_plug)
-                self.ctrl_mod_n.commandToExecute('setAttr "RightHeel_rotclamp.minR" -90')
+                self.MDG2_mod.connect(rlegoptionsfootrollswitch_plug, rikheelblender_plug)
+                self.MDG2_mod.connect(iklegctrlRoll_plug, rikheelclampInpR_plug)
+                self.MDG2_mod.connect(rikheelclampOtpR_plug, rikheelblendCol2R_plug)
+                self.MDG2_mod.connect(iklegctrlHeelRoll_plug, rikheelblendCol1R_plug)
+                self.MDG2_mod.connect(rikheelblendOtpR_plug, rikheelclampInpX_plug)
+                self.MDG2_mod.commandToExecute('setAttr "RightHeel_rotclamp.minR" -90')
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "footroll" -niceName "Foot Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('addAttr -longName "footroll" -niceName "Foot Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.doIt()
 
-                rikballclampnode = self.ctrl_mod_n.createNode("clamp")
-                self.ctrl_mod_n.renameNode(rikballclampnode, "RightBall_rotclamp")
-                rikballrangenode = self.ctrl_mod_n.createNode("setRange")
-                self.ctrl_mod_n.renameNode(rikballrangenode, "RightBall_range")
-                rikballblendernode = self.ctrl_mod_n.createNode("blendColors")
-                self.ctrl_mod_n.renameNode(rikballblendernode, "RightBall_blend")
-                rikballminusnode = self.ctrl_mod_n.createNode("plusMinusAverage")
-                self.ctrl_mod_n.renameNode(rikballminusnode, "RightBall_minus")
-                rikballmultnode = self.ctrl_mod_n.createNode("multiplyDivide")
-                self.ctrl_mod_n.renameNode(rikballmultnode, "RightBall_percetmult")
-                rikballrollmultnode = self.ctrl_mod_n.createNode("multiplyDivide")
-                self.ctrl_mod_n.renameNode(rikballrollmultnode, "RightBall_rollmult")
+                rikballclampnode = self.MDG2_mod.createNode("clamp")
+                self.MDG2_mod.renameNode(rikballclampnode, "RightBall_rotclamp")
+                rikballrangenode = self.MDG2_mod.createNode("setRange")
+                self.MDG2_mod.renameNode(rikballrangenode, "RightBall_range")
+                rikballblendernode = self.MDG2_mod.createNode("blendColors")
+                self.MDG2_mod.renameNode(rikballblendernode, "RightBall_blend")
+                rikballminusnode = self.MDG2_mod.createNode("plusMinusAverage")
+                self.MDG2_mod.renameNode(rikballminusnode, "RightBall_minus")
+                rikballmultnode = self.MDG2_mod.createNode("multiplyDivide")
+                self.MDG2_mod.renameNode(rikballmultnode, "RightBall_percetmult")
+                rikballrollmultnode = self.MDG2_mod.createNode("multiplyDivide")
+                self.MDG2_mod.renameNode(rikballrollmultnode, "RightBall_rollmult")
                 leg_reverse_sl_ls.add("RightReverseFootToe")
                 reverse_toe_obj = leg_reverse_sl_ls.getDependNode(1)
 
@@ -8958,37 +11854,37 @@ class MainWindow(QtWidgets.QDialog):
                 rikballblendOtpR_plug = rikballblender_fs.findPlug("outputR", False)
                 rikballclampRotX_plug = reversetoe_fs.findPlug("rotateX", False)
 
-                self.ctrl_mod_n.connect(rlegoptionsfootrollswitch_plug, rikballblender_plug)
-                self.ctrl_mod_n.connect(iklegctrlRoll_plug, rikballclampInpR_plug)
-                self.ctrl_mod_n.connect(iklegctrlBendLimit_plug, rikballclampMaxR_plug)
-                self.ctrl_mod_n.connect(rikballclampInpR_plug, rikballrangeValueX_plug)
-                self.ctrl_mod_n.connect(rikballclampMinR_plug, rikballrangeOldMinX_plug)
-                self.ctrl_mod_n.connect(rikballclampMaxR_plug, rikballrangeOldMaxX_plug)
-                self.ctrl_mod_n.connect(rikballrangeOutValueX_plug, rikballmultInp1X_plug)
-                self.ctrl_mod_n.connect(rikballsubOtp1D_plug, rikballmultInp2X_plug)
-                self.ctrl_mod_n.connect(rikballmultOtpX_plug, rikballrollmultInp1X_plug)
-                self.ctrl_mod_n.connect(iklegctrlRoll_plug, rikballrollmultInp2X_plug)
-                self.ctrl_mod_n.connect(rikballrollmultOtpX_plug, rikballblendCol2R_plug)
-                self.ctrl_mod_n.connect(iklegctrlBallRoll_plug, rikballblendCol1R_plug)
-                self.ctrl_mod_n.connect(rikballblendOtpR_plug, rikballclampRotX_plug)
-                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_range.minX" 0')
-                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_range.maxX" 1')
-                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_minus.input1D[0]" 1')
-                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_minus.operation" 2')
-                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_percetmult.operation" 1')
-                self.ctrl_mod_n.commandToExecute('setAttr "RightBall_rollmult.operation" 1')
+                self.MDG2_mod.connect(rlegoptionsfootrollswitch_plug, rikballblender_plug)
+                self.MDG2_mod.connect(iklegctrlRoll_plug, rikballclampInpR_plug)
+                self.MDG2_mod.connect(iklegctrlBendLimit_plug, rikballclampMaxR_plug)
+                self.MDG2_mod.connect(rikballclampInpR_plug, rikballrangeValueX_plug)
+                self.MDG2_mod.connect(rikballclampMinR_plug, rikballrangeOldMinX_plug)
+                self.MDG2_mod.connect(rikballclampMaxR_plug, rikballrangeOldMaxX_plug)
+                self.MDG2_mod.connect(rikballrangeOutValueX_plug, rikballmultInp1X_plug)
+                self.MDG2_mod.connect(rikballsubOtp1D_plug, rikballmultInp2X_plug)
+                self.MDG2_mod.connect(rikballmultOtpX_plug, rikballrollmultInp1X_plug)
+                self.MDG2_mod.connect(iklegctrlRoll_plug, rikballrollmultInp2X_plug)
+                self.MDG2_mod.connect(rikballrollmultOtpX_plug, rikballblendCol2R_plug)
+                self.MDG2_mod.connect(iklegctrlBallRoll_plug, rikballblendCol1R_plug)
+                self.MDG2_mod.connect(rikballblendOtpR_plug, rikballclampRotX_plug)
+                self.MDG2_mod.commandToExecute('setAttr "RightBall_range.minX" 0')
+                self.MDG2_mod.commandToExecute('setAttr "RightBall_range.maxX" 1')
+                self.MDG2_mod.commandToExecute('setAttr "RightBall_minus.input1D[0]" 1')
+                self.MDG2_mod.commandToExecute('setAttr "RightBall_minus.operation" 2')
+                self.MDG2_mod.commandToExecute('setAttr "RightBall_percetmult.operation" 1')
+                self.MDG2_mod.commandToExecute('setAttr "RightBall_rollmult.operation" 1')
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "toeroll" -niceName "Toe Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('addAttr -longName "toeroll" -niceName "Toe Roll" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.doIt()
 
-                riktoeclampnode = self.ctrl_mod_n.createNode("clamp")
-                self.ctrl_mod_n.renameNode(riktoeclampnode, "RightToe_rotclamp")
-                riktoeblendernode = self.ctrl_mod_n.createNode("blendColors")
-                self.ctrl_mod_n.renameNode(riktoeblendernode, "RightToe_blend")
-                riktoerangernode = self.ctrl_mod_n.createNode("setRange")
-                self.ctrl_mod_n.renameNode(riktoerangernode, "RightToe_range")
-                riktoemultnode = self.ctrl_mod_n.createNode("multiplyDivide")
-                self.ctrl_mod_n.renameNode(riktoemultnode, "RightToe_percetmultiply")
+                riktoeclampnode = self.MDG2_mod.createNode("clamp")
+                self.MDG2_mod.renameNode(riktoeclampnode, "RightToe_rotclamp")
+                riktoeblendernode = self.MDG2_mod.createNode("blendColors")
+                self.MDG2_mod.renameNode(riktoeblendernode, "RightToe_blend")
+                riktoerangernode = self.MDG2_mod.createNode("setRange")
+                self.MDG2_mod.renameNode(riktoerangernode, "RightToe_range")
+                riktoemultnode = self.MDG2_mod.createNode("multiplyDivide")
+                self.MDG2_mod.renameNode(riktoemultnode, "RightToe_percetmultiply")
                 leg_reverse_sl_ls.add("RightReverseFootToeEnd")
                 reverse_toeend_obj = leg_reverse_sl_ls.getDependNode(2)
 
@@ -9016,31 +11912,31 @@ class MainWindow(QtWidgets.QDialog):
                 riktoeblendOtpR_plug = riktoeblender_fs.findPlug("outputR", False)
                 riktoeclampRotX_plug = reversetoeend_fs.findPlug("rotateX", False)
 
-                self.ctrl_mod_n.connect(rlegoptionsfootrollswitch_plug, riktoeblender_plug)
-                self.ctrl_mod_n.connect(iklegctrlRoll_plug, riktoeclampInpR_plug)
-                self.ctrl_mod_n.connect(iklegctrlBendLimit_plug, riktoeclampMinR_plug)
-                self.ctrl_mod_n.connect(iklegctrlStraightLimit_plug, riktoeclampMaxR_plug)
-                self.ctrl_mod_n.connect(riktoeclampInpR_plug, riktoerangeValueX_plug)
-                self.ctrl_mod_n.connect(riktoeclampMinR_plug, riktoerangeOldMinX_plug)
-                self.ctrl_mod_n.connect(riktoeclampMaxR_plug, riktoerangeOldMaxX_plug)
-                self.ctrl_mod_n.connect(riktoerangeoOutValX_plug, riktoemultInp1X_plug)
-                self.ctrl_mod_n.connect(riktoeclampInpR_plug, riktoemultInp2X_plug)
-                self.ctrl_mod_n.connect(riktoemultOtpX_plug, riktoeblendCol2R_plug)
-                self.ctrl_mod_n.commandToExecute('connectAttr -force RightToe_range.outValueX RightBall_minus.input1D[1]')
-                self.ctrl_mod_n.connect(iklegctrlToeRoll_plug, riktoeblendCol1R_plug)
-                self.ctrl_mod_n.connect(riktoeblendOtpR_plug, riktoeclampRotX_plug)
-                self.ctrl_mod_n.commandToExecute('setAttr "RightToe_range.minX" 0')
-                self.ctrl_mod_n.commandToExecute('setAttr "RightToe_range.maxX" 1')
-                self.ctrl_mod_n.commandToExecute('setAttr "RightToe_percetmultiply.operation" 1')
+                self.MDG2_mod.connect(rlegoptionsfootrollswitch_plug, riktoeblender_plug)
+                self.MDG2_mod.connect(iklegctrlRoll_plug, riktoeclampInpR_plug)
+                self.MDG2_mod.connect(iklegctrlBendLimit_plug, riktoeclampMinR_plug)
+                self.MDG2_mod.connect(iklegctrlStraightLimit_plug, riktoeclampMaxR_plug)
+                self.MDG2_mod.connect(riktoeclampInpR_plug, riktoerangeValueX_plug)
+                self.MDG2_mod.connect(riktoeclampMinR_plug, riktoerangeOldMinX_plug)
+                self.MDG2_mod.connect(riktoeclampMaxR_plug, riktoerangeOldMaxX_plug)
+                self.MDG2_mod.connect(riktoerangeoOutValX_plug, riktoemultInp1X_plug)
+                self.MDG2_mod.connect(riktoeclampInpR_plug, riktoemultInp2X_plug)
+                self.MDG2_mod.connect(riktoemultOtpX_plug, riktoeblendCol2R_plug)
+                self.MDG2_mod.commandToExecute('connectAttr -force RightToe_range.outValueX RightBall_minus.input1D[1]')
+                self.MDG2_mod.connect(iklegctrlToeRoll_plug, riktoeblendCol1R_plug)
+                self.MDG2_mod.connect(riktoeblendOtpR_plug, riktoeclampRotX_plug)
+                self.MDG2_mod.commandToExecute('setAttr "RightToe_range.minX" 0')
+                self.MDG2_mod.commandToExecute('setAttr "RightToe_range.maxX" 1')
+                self.MDG2_mod.commandToExecute('setAttr "RightToe_percetmultiply.operation" 1')
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "common" -niceName "Common" -attributeType "enum" -en "__________:" -keyable true Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "tilt" -niceName "Tilt" -attributeType double -minValue -180 -maxValue 180 -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('addAttr -longName "common" -niceName "Common" -attributeType "enum" -en "__________:" -keyable true Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "tilt" -niceName "Tilt" -attributeType double -minValue -180 -maxValue 180 -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.doIt()
 
-                rikinnerlegtiltclampnode = self.ctrl_mod_n.createNode("clamp")
-                self.ctrl_mod_n.renameNode(rikinnerlegtiltclampnode, "RightInnerLegTilt_clamp")
-                rikouterlegtiltclampnode = self.ctrl_mod_n.createNode("clamp")
-                self.ctrl_mod_n.renameNode(rikouterlegtiltclampnode, "RightOuterLegTilt_clamp")
+                rikinnerlegtiltclampnode = self.MDG2_mod.createNode("clamp")
+                self.MDG2_mod.renameNode(rikinnerlegtiltclampnode, "RightInnerLegTilt_clamp")
+                rikouterlegtiltclampnode = self.MDG2_mod.createNode("clamp")
+                self.MDG2_mod.renameNode(rikouterlegtiltclampnode, "RightOuterLegTilt_clamp")
                 leg_reverse_sl_ls.add("RightReverseInnerFoot")
                 leg_reverse_sl_ls.add("RightReverseOuterFoot")
                 reverse_inner_obj = leg_reverse_sl_ls.getDependNode(3)
@@ -9059,17 +11955,17 @@ class MainWindow(QtWidgets.QDialog):
                 rikouterclampOtpB_plug = rikouterclamp_fs.findPlug("outputB", False)
                 rikouterclampRotZ_plug = reverseouterfoot_fs.findPlug("rotateZ", False)
 
-                self.ctrl_mod_n.connect(iklegctrlTilt_plug, rikinnerclampInpB_plug)
-                self.ctrl_mod_n.connect(iklegctrlTilt_plug, rikouterclampInpB_plug)
-                self.ctrl_mod_n.connect(rikinnerclampOtpB_plug, rikinnerclampRotZ_plug)
-                self.ctrl_mod_n.connect(rikouterclampOtpB_plug, rikouterclampRotZ_plug)
-                self.ctrl_mod_n.commandToExecute('setAttr "RightInnerLegTilt_clamp.minB" -180')
-                self.ctrl_mod_n.commandToExecute('setAttr "RightOuterLegTilt_clamp.maxB" 180')
+                self.MDG2_mod.connect(iklegctrlTilt_plug, rikinnerclampInpB_plug)
+                self.MDG2_mod.connect(iklegctrlTilt_plug, rikouterclampInpB_plug)
+                self.MDG2_mod.connect(rikinnerclampOtpB_plug, rikinnerclampRotZ_plug)
+                self.MDG2_mod.connect(rikouterclampOtpB_plug, rikouterclampRotZ_plug)
+                self.MDG2_mod.commandToExecute('setAttr "RightInnerLegTilt_clamp.minB" -180')
+                self.MDG2_mod.commandToExecute('setAttr "RightOuterLegTilt_clamp.maxB" 180')
 
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "toespin" -niceName "Toe Spin" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.commandToExecute('addAttr -longName "toewiggle" -niceName "Toe Wiggle" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
-                self.ctrl_mod_n.doIt()
+                self.MDG2_mod.commandToExecute('addAttr -longName "lean" -niceName "Lean" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "toespin" -niceName "Toe Spin" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.commandToExecute('addAttr -longName "toewiggle" -niceName "Toe Wiggle" -attributeType double -keyable true -defaultValue 0 Biped_IkRightFoot_ctrl')
+                self.MDG2_mod.doIt()
 
                 leg_reverse_sl_ls.add("RightReverseFootToeWiggle")
                 reverse_toewiggle_obj = leg_reverse_sl_ls.getDependNode(5)
@@ -9083,18 +11979,18 @@ class MainWindow(QtWidgets.QDialog):
                 iklegctrlToeWiggle_plug = iklegctrl_fs.findPlug("toewiggle", False)
                 reversetoewiggleRotX_plug = reversetoewiggle_fs.findPlug("rotateX", False)
 
-                self.ctrl_mod_n.connect(iklegctrlLean_plug, rikballclampRotZ_plug)
-                self.ctrl_mod_n.connect(iklegctrlToeSpin_plug, riktoeclampRotY_plug)
-                self.ctrl_mod_n.connect(iklegctrlToeWiggle_plug, reversetoewiggleRotX_plug)
+                self.MDG2_mod.connect(iklegctrlLean_plug, rikballclampRotZ_plug)
+                self.MDG2_mod.connect(iklegctrlToeSpin_plug, riktoeclampRotY_plug)
+                self.MDG2_mod.connect(iklegctrlToeWiggle_plug, reversetoewiggleRotX_plug)
         else:
-            self.ctrl_mod_n.commandToExecute('delete "Biped_IkRightFoot_null"')
-            self.ctrl_mod_n.commandToExecute('delete "IkRightJointLeg_grp"')
-            self.ctrl_mod_n.commandToExecute('delete "IkStretchyRightJointLeg_grp"')
-            self.ctrl_mod_n.commandToExecute('setAttr -keyable false -channelBox false Biped_RightFootOptions_ctrl.fkik')
-            self.ctrl_mod_n.doIt()
+            self.MDG2_mod.commandToExecute('delete "Biped_IkRightFoot_null"')
+            self.MDG2_mod.commandToExecute('delete "IkRightJointLeg_grp"')
+            self.MDG2_mod.commandToExecute('setAttr -keyable false -channelBox false Biped_RightFootOptions_ctrl.fkik')
+            self.MDG2_mod.doIt()
 
-        self.ctrl_mod_n.commandToExecute('delete "Draw*"')
-        self.ctrl_mod_n.doIt()
+        self.MDG2_mod.commandToExecute('delete "Draw*"')
+        self.MDG2_mod.commandToExecute('select -hierarchy "DoNotTouch"; hide -clearSelection;')
+        self.MDG2_mod.doIt()
 
     def deleteRig(self):
         rig_mod_n = om2.MDGModifier()
@@ -9115,1580 +12011,3 @@ except:
 
 display_dailog = MainWindow()
 display_dailog.show()
-n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightForeArm_null.visibility"')
-               self.ctrl_mod_n.doIt()
-        #
-           elif index == 3:
-               ctrl_rhand_line_up_points = [om2.MPoint(0.00, 0.05, 0.02), om2.MPoint(-0.60, 0.05, 0.02)]
-               ctrl_rhand_star_up_points = [om2.MPoint(-0.60, 0.05, 0.02), om2.MPoint(-0.70, 0.15, 0.20), om2.MPoint(-0.70, 0.09, 0.20), om2.MPoint(-0.70, 0.06, 0.13), om2.MPoint(-0.60, 0.00, 0.00), om2.MPoint(-0.70, 0.05, -0.13), om2.MPoint(-0.70, 0.09, -0.20), om2.MPoint(-0.70, 0.15, -0.20), om2.MPoint(-0.60, 0.05, -0.02)]
-               ctrl_rhand_line_down_points = [om2.MPoint(-0.60, 0.05, -0.02), om2.MPoint(-0.00, 0.05, -0.02)]
-
-               self.draw_rhand_tn = ctrl_tr_n.create("transform", "Draw_righthand_ctrl")
-               crv_ctrl_rhand_line_up = ctrl_cv_n.createWithEditPoints(ctrl_rhand_line_up_points, 1, 1, False, True, True, self.draw_rhand_tn)
-               crv_ctrl_rhand_star = ctrl_cv_n.createWithEditPoints(ctrl_rhand_star_up_points, 1, 1, False, True, True, self.draw_rhand_tn)
-               crv_ctrl_rhand_line_down = ctrl_cv_n.createWithEditPoints(ctrl_rhand_line_down_points, 1, 1, False, True, True, self.draw_rhand_tn)
-
-               self.rhandnull_tn = ctrl_tr_n.create("transform", "Biped_FkRightHand_null", self.rforearmctrl_tn)
-               self.rhandctrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightHand_ctrl", self.rhandnull_tn)
-               ctrl_rhandpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandctrl_tn)
-               ctrl_rhandnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandctrl_tn)
-
-               self.rfingernull_tn = ctrl_tr_n.create("transform", "Biped_RightFingers_null", self.masterctrl_tn)
-               self.rhandoption_tn = ctrl_tr_n.create("transform", "Biped_RightHandOptions_ctrl", rarm_sl_ls.getDependNode(2))
-               ctrl_rhandoption_cv = ctrl_cv_n.createWithEditPoints(ctrl_lhandoption_line, 1, 1, False, True, True, self.rhandoption_tn)
-
-               rhandnull_transform = om2.MFnTransform(self.rhandnull_tn)
-               rhandnull_transform.setRotatePivotTranslation(jnt_rhand_t, om2.MSpace.kTransform)
-
-               rfingernull_transform = om2.MFnTransform(self.rfingernull_tn)
-               rfingernull_transform.setTranslation(jnt_rhand_t, om2.MSpace.kTransform)
-
-               rhandoptionctrl_transform = om2.MFnTransform(self.rhandoption_tn)
-               rhandoptionctrl_transform.setRotatePivotTranslation(jnt_rhand_t, om2.MSpace.kTransform)
-
-               jnt_rhand_r = cmds.xform("RightHand", query=True, rotation=True, worldSpace=True)
-
-               radian_rhand_x = (jnt_rhand_r[0]/180)*3.1415
-               radian_rhand_y = (jnt_rhand_r[1]/180)*3.1415
-               radian_rhand_z = (jnt_rhand_r[2]/180)*3.1415
-
-               rhandnull_transform_r = rhandnull_transform.rotation(om2.MSpace.kTransform)
-               rhandnull_transform_r[0], rhandnull_transform_r[1], rhandnull_transform_r[2] = radian_rhand_x, radian_rhand_y, radian_rhand_z
-               rhandnull_transform.setRotation(rhandnull_transform_r, om2.MSpace.kTransform)
-
-               rfingernull_transform_r = rfingernull_transform.rotation(om2.MSpace.kTransform)
-               rfingernull_transform_r[0], rfingernull_transform_r[1], rfingernull_transform_r[2] = radian_rhand_x, radian_rhand_y, radian_rhand_z
-               rfingernull_transform.setRotation(rfingernull_transform_r, om2.MSpace.kTransform)
-
-               rhandctrl_transform = om2.MFnTransform(self.rhandctrl_tn)
-
-               rhandctrl_transform_r = rhandctrl_transform.rotation(om2.MSpace.kTransform)
-               rhandctrl_transform_r[1] = 1.57079
-               rhandctrl_transform.setRotation(rhandctrl_transform_r, om2.MSpace.kTransform)
-
-               rhandoptionctrl_transform_t = rhandoptionctrl_transform.translation(om2.MSpace.kTransform)
-               rhandoptionctrl_transform_t[2] = jnt_lhand_t[2]-3
-               rhandoptionctrl_transform.setTranslation(rhandoptionctrl_transform_t, om2.MSpace.kTransform)
-
-               rhandoptionctrl_transform_r = rhandoptionctrl_transform.rotation(om2.MSpace.kTransform)
-               rhandoptionctrl_transform_r[0], rhandoptionctrl_transform_r[1], rhandoptionctrl_transform_r[2] = radian_rhand_x-1.57079, radian_rhand_y, radian_rhand_z
-               rhandoptionctrl_transform.setRotation(rhandoptionctrl_transform_r, om2.MSpace.kTransform)
-
-               rhandctrl_transform_s = rhandctrl_transform.findPlug("scale", False)
-               if rhandctrl_transform_s.isCompound:
-                   for i in range(rhandctrl_transform_s.numChildren()):
-                       child_plug = rhandctrl_transform_s.child(i)
-                       attr_value = child_plug.setDouble(box_transform_s[0]/4)
-
-               rhandnull_transform_trans = rhandnull_transform.transformation()
-               rhandnull_transform_worldmatrix = rhandnull_transform_trans.asMatrix()
-
-               rhandnull_transform_localmatrix = rhandnull_transform_worldmatrix * spinenull_parentinvtransform_matrix * spinenull_childtransform_localmatrix.inverse() * rshouldernullnull_transform_localmatrix.inverse() * rarmnull_transform_localmatrix.inverse() * rforearmnull_transform_localmatrix.inverse()
-
-               rhandnull_transform.setTransformation(om2.MTransformationMatrix(rhandnull_transform_localmatrix))
-
-               rhandoptionctrl_transform_trans = rhandoptionctrl_transform.transformation()
-               rhandoptionctrl_transform_worldmatrix = rhandoptionctrl_transform_trans.asMatrix()
-
-               rhandoptionctrl_transform_localmatrix = rhandoptionctrl_transform_worldmatrix * spinenull_parentinvtransform_matrix * spinenull_childtransform_localmatrix.inverse() * rshouldernullnull_transform_localmatrix.inverse() * rarmnull_transform_localmatrix.inverse() * rforearmnull_transform_localmatrix.inverse() * rhandnull_transform_localmatrix.inverse()
-
-               rhandoptionctrl_transform.setTransformation(om2.MTransformationMatrix(rhandoptionctrl_transform_localmatrix))
-
-               self.ctrl_mod_n.renameNode(ctrl_rhandpositive_comb_cv, "FkRightHand_shape1")
-               self.ctrl_mod_n.renameNode(ctrl_rhandnegative_comb_cv, "FkRightHand_shape2")
-               self.ctrl_mod_n.renameNode(ctrl_rhandoption_cv, "RightHandOptions_shape")
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightHand_ctrl"')
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 1 1 0 "Biped_RightHandOptions_ctrl"')
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightHand_ctrl"')
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightHandOptions_ctrl"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightHand_null.visibility"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingers_null.visibility"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightHandOptions_ctrl.visibility"')
-               self.ctrl_mod_n.doIt()
-
-               self.rikhandnull_tn = ctrl_tr_n.create("transform", "Biped_IkRightHand_null", self.masterctrl_tn)
-               self.rikhandctrl_tn = ctrl_tr_n.create("transform", "Biped_IkRightHand_ctrl", self.rikhandnull_tn)
-               ctrl_rikhand_comb_cv = ctrl_cv_n.create([crv_ctrl_hand_line_l, crv_ctrl_hand_line, crv_ctrl_hand_line_r], self.rikhandctrl_tn)
-
-               rikhandnull_transform = om2.MFnTransform(self.rikhandnull_tn)
-               rikhandnull_transform.setRotatePivotTranslation(jnt_rhand_t, om2.MSpace.kTransform)
-
-               rikhandnull_transform_r = rikhandnull_transform.rotation(om2.MSpace.kTransform)
-               rikhandnull_transform_r[0], rikhandnull_transform_r[1], rikhandnull_transform_r[2] = radian_rhand_x, radian_rhand_y, radian_rhand_z
-               rikhandnull_transform.setRotation(rikhandnull_transform_r, om2.MSpace.kTransform)
-
-               rikhandctrl_transform = om2.MFnTransform(self.rikhandctrl_tn)
-
-               rikhandctrl_transform_t = rikhandctrl_transform.rotatePivotTranslation(om2.MSpace.kTransform)
-               rikhandctrl_transform_t[2] = -((jnt_rhand_t[1]+4)-jnt_rhand_t[1])
-               rikhandctrl_transform.setRotatePivotTranslation(rikhandctrl_transform_t, om2.MSpace.kTransform)
-
-               rikhandctrl_transform_r = rikhandctrl_transform.rotation(om2.MSpace.kTransform)
-               rikhandctrl_transform_r[0], rikhandctrl_transform_r[2] = 1.57079, 1.57079
-               rikhandctrl_transform.setRotation(rikhandctrl_transform_r, om2.MSpace.kTransform)
-
-               rikhandctrl_transform_s = rikhandctrl_transform.findPlug("scale", False)
-               if rikhandctrl_transform_s.isCompound:
-                   for i in range(rikhandctrl_transform_s.numChildren()):
-                       child_plug = rikhandctrl_transform_s.child(i)
-                       attr_value = child_plug.setDouble(box_transform_s[0]/3)
-
-               self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_IkRightHand_ctrl"')
-               self.ctrl_mod_n.doIt()
-
-               # rikhandnull_transform_trans = rikhandnull_transform.transformation()
-               # rikhandnull_transform_worldmatrix = rikhandnull_transform_trans.asMatrix()
-               #
-               # rikhandnull_transform_localmatrix = rikhandnull_transform_worldmatrix * spinenull_parentinvtransform_matrix * spinenull_childtransform_localmatrix.inverse() * rshouldernullnull_transform_localmatrix.inverse() * rarmnull_transform_localmatrix.inverse() * rforearmnull_transform_localmatrix.inverse() * rhandnull_transform_localmatrix.inverse()
-               #
-               # rikhandnull_transform.setTransformation(om2.MTransformationMatrix(rikhandnull_transform_localmatrix))
-
-               rikhandnull_path_n = om2.MDagPath()
-               rikhandnull_path = rikhandnull_path_n.getAPathTo(self.rikhandctrl_tn)
-               rikhandnull_worldtransform = om2.MFnTransform(rikhandnull_path)
-
-               rikhandnull_worldtransform.setRotatePivot(om2.MPoint(jnt_rhand_t), om2.MSpace.kWorld, False)
-
-               self.ctrl_mod_n.renameNode(ctrl_rikhand_comb_cv, "IkRightHand_shape")
-               self.ctrl_mod_n.commandToExecute('color -rgbColor 1 0 0 "Biped_IkRightHand_ctrl"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.translateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.translateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.translateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.rotateX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.rotateY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.rotateZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.scaleX"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.scaleY"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.scaleZ"')
-               self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightHand_null.visibility"')
-               self.ctrl_mod_n.doIt()
-
-        try:
-            rhandthumb_sl_ls = om2.MSelectionList()
-            rhandthumb_sl_ls.add("RightFingerThumb*")
-
-            for index in range(rhandthumb_sl_ls.length()):
-                jnt_rhandthumb_obj = rhandthumb_sl_ls.getDependNode(index)
-                jnt_rhandthumb_path_n = om2.MDagPath()
-                jnt_rhandthumb_path = jnt_rhandthumb_path_n.getAPathTo(jnt_rhandthumb_obj)
-                jnt_rhandthumb_transform = om2.MFnTransform(jnt_rhandthumb_path)
-                jnt_rhandthumb_t = jnt_rhandthumb_transform.translation(om2.MSpace.kWorld)
-
-                self.rhandthumbnull_tn = ctrl_tr_n.create("transform", "Biped_RightFingerThumb{0}_null".format(index + 1))
-                self.rhandthumbctrl_tn = ctrl_tr_n.create("transform", "Biped_RightFingerThumb{0}_ctrl".format(index + 1), self.rhandthumbnull_tn)
-                ctrl_rhandthumbpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandthumbctrl_tn)
-                ctrl_rhandthumbnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandthumbctrl_tn)
-
-                rhandthumbnull_transform = om2.MFnTransform(self.rhandthumbnull_tn)
-                rhandthumbnull_transform.setRotatePivotTranslation(jnt_rhandthumb_t, om2.MSpace.kTransform)
-
-                jnt_rhandthumb_r = cmds.xform("RightFingerThumb{0}".format(index+1), query=True, rotation=True, worldSpace=True)
-
-                radian_rhandthumb_x = (jnt_rhandthumb_r[0]/180)*3.1415
-                radian_rhandthumb_y = (jnt_rhandthumb_r[1]/180)*3.1415
-                radian_rhandthumb_z = (jnt_rhandthumb_r[2]/180)*3.1415
-
-                rhandthumbnull_transform_r = rhandthumbnull_transform.rotation(om2.MSpace.kTransform)
-                rhandthumbnull_transform_r[0], rhandthumbnull_transform_r[1], rhandthumbnull_transform_r[2] = radian_rhandthumb_x, radian_rhandthumb_y, radian_rhandthumb_z
-                rhandthumbnull_transform.setRotation(rhandthumbnull_transform_r, om2.MSpace.kTransform)
-
-                rhandthumbctrl_transform = om2.MFnTransform(self.rhandthumbctrl_tn)
-
-                rhandthumbctrl_transform_s = rhandthumbctrl_transform.findPlug("scale", False)
-                if rhandthumbctrl_transform_s.isCompound:
-                    for i in range(rhandthumbctrl_transform_s.numChildren()):
-                        child_plug = rhandthumbctrl_transform_s.child(i)
-                        attr_value = child_plug.setDouble(box_transform_s[0]/14)
-
-                rhandthumbctrl_transform_r = rhandthumbctrl_transform.rotation(om2.MSpace.kTransform)
-                rhandthumbctrl_transform_r[1] = 1.57079
-                rhandthumbctrl_transform.setRotation(rhandthumbctrl_transform_r, om2.MSpace.kTransform)
-
-                if index == 0:
-                    rhand_tr_n = om2.MFnDagNode(self.rfingernull_tn)
-                    rhand_tr_n.addChild(self.rhandthumbnull_tn)
-
-                    rfingernull_transform_trans = rfingernull_transform.transformation()
-                    rfingernull_transform_worldmatrix = rfingernull_transform_trans.asMatrixInverse()
-
-                    rhandthumbnull_transform_trans = rhandthumbnull_transform.transformation()
-                    rhandthumbnull_transform_worldmatrix = rhandthumbnull_transform_trans.asMatrix()
-
-                    rhandthumbnull_transform_localmatrix = rhandthumbnull_transform_worldmatrix * rfingernull_transform_worldmatrix
-
-                    rhandthumbnull_transform.setTransformation(om2.MTransformationMatrix(rhandthumbnull_transform_localmatrix))
-
-                else:
-                    rhandthumbctrl_sl_ls = om2.MSelectionList()
-                    rhandthumbctrl_sl_ls.add("Biped_RightFingerThumb*_ctrl")
-                    rhandthumbctrl_obj = rhandthumbctrl_sl_ls.getDependNode(index-1)
-
-                    rhandthumbnull_sl_ls = om2.MSelectionList()
-                    rhandthumbnull_sl_ls.add("Biped_RightFingerThumb*_null")
-
-                    rhandthumb_tr_n = om2.MFnDagNode(rhandthumbctrl_obj)
-                    rhandthumb_tr_n.addChild(self.rhandthumbnull_tn)
-
-                    rhandthumbnull_parentinvtransform_matrix = om2.MMatrix()
-                    for i in range(rhandthumbnull_sl_ls.length()-1):
-                        parentobj = rhandthumbnull_sl_ls.getDependNode(i)
-                        parentinvtransform = om2.MFnTransform(parentobj)
-                        parentinvtransform_trans = parentinvtransform.transformation()
-                        null_Matrix = parentinvtransform_trans.asMatrixInverse()
-
-                        rhandthumbnull_parentinvtransform_matrix = rhandthumbnull_parentinvtransform_matrix * null_Matrix
-
-                    rhandthumbnull_childtransform_trans = rhandthumbnull_transform.transformation()
-                    rhandthumbnull_childtransform_worldmatrix = rhandthumbnull_childtransform_trans.asMatrix()
-
-                    lhandthumbnull_childtransform_localmatrix = rhandthumbnull_childtransform_worldmatrix * rfingernull_transform_worldmatrix * rhandthumbnull_parentinvtransform_matrix
-
-                    rhandthumbnull_transform.setTransformation(om2.MTransformationMatrix(lhandthumbnull_childtransform_localmatrix))
-
-                self.ctrl_mod_n.renameNode(ctrl_rhandthumbpositive_comb_cv, "RightFingerThumb{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_rhandthumbnegative_comb_cv, "RightFingerThumb{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerThumb{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerThumb{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerThumb{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
-
-        except:
-            pass
-
-        try:
-            rhandindex_sl_ls = om2.MSelectionList()
-            rhandindex_sl_ls.add("RightFingerIndex*")
-
-            for index in range(rhandindex_sl_ls.length()):
-                jnt_rhandindex_obj = rhandindex_sl_ls.getDependNode(index)
-                jnt_rhandindex_path_n = om2.MDagPath()
-                jnt_rhandindex_path = jnt_rhandindex_path_n.getAPathTo(jnt_rhandindex_obj)
-                jnt_rhandindex_transform = om2.MFnTransform(jnt_rhandindex_path)
-                jnt_rhandindex_t = jnt_rhandindex_transform.translation(om2.MSpace.kWorld)
-
-                self.rhandindexnull_tn = ctrl_tr_n.create("transform", "Biped_RightFingerIndex{0}_null".format(index + 1))
-                self.rhandindexctrl_tn = ctrl_tr_n.create("transform", "Biped_RightFingerIndex{0}_ctrl".format(index + 1), self.rhandindexnull_tn)
-                ctrl_rhandIndexpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandindexctrl_tn)
-                ctrl_rhandIndexnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandindexctrl_tn)
-
-                rhandindexnull_transform = om2.MFnTransform(self.rhandindexnull_tn)
-                rhandindexnull_transform.setRotatePivotTranslation(jnt_rhandindex_t, om2.MSpace.kTransform)
-
-                jnt_rhandindex_r = cmds.xform("RightFingerIndex{0}".format(index+1), query=True, rotation=True, worldSpace=True)
-
-                radian_rhandIndex_x = (jnt_rhandindex_r[0]/180)*3.1415
-                radian_rhandIndex_y = (jnt_rhandindex_r[1]/180)*3.1415
-                radian_rhandIndex_z = (jnt_rhandindex_r[2]/180)*3.1415
-
-                rhandindexnull_transform_r = rhandindexnull_transform.rotation(om2.MSpace.kTransform)
-                rhandindexnull_transform_r[0], rhandindexnull_transform_r[1], rhandindexnull_transform_r[2] = radian_rhandIndex_x, radian_rhandIndex_y, radian_rhandIndex_z
-                rhandindexnull_transform.setRotation(rhandindexnull_transform_r, om2.MSpace.kTransform)
-
-                rhandindexctrl_transform = om2.MFnTransform(self.rhandindexctrl_tn)
-
-                rhandindexctrl_transform_s = rhandindexctrl_transform.findPlug("scale", False)
-                if rhandindexctrl_transform_s.isCompound:
-                    for i in range(rhandindexctrl_transform_s.numChildren()):
-                        child_plug = rhandindexctrl_transform_s.child(i)
-                        attr_value = child_plug.setDouble(box_transform_s[0]/14)
-
-                rhandindexctrl_transform_r = rhandindexctrl_transform.rotation(om2.MSpace.kTransform)
-                rhandindexctrl_transform_r[1] = 1.57079
-                rhandindexctrl_transform.setRotation(rhandindexctrl_transform_r, om2.MSpace.kTransform)
-
-                if index == 0:
-                    rhand_tr_n = om2.MFnDagNode(self.rfingernull_tn)
-                    rhand_tr_n.addChild(self.rhandindexnull_tn)
-
-                    rhandindexnull_transform_trans = rhandindexnull_transform.transformation()
-                    rhandindexnull_transform_worldmatrix = rhandindexnull_transform_trans.asMatrix()
-
-                    rhandindexnull_transform_localmatrix = rhandindexnull_transform_worldmatrix * rfingernull_transform_worldmatrix
-
-                    rhandindexnull_transform.setTransformation(om2.MTransformationMatrix(rhandindexnull_transform_localmatrix))
-
-                else:
-                    rhandIndexctrl_sl_ls = om2.MSelectionList()
-                    rhandIndexctrl_sl_ls.add("Biped_RightFingerIndex*_ctrl")
-                    rhandIndexctrl_obj = rhandIndexctrl_sl_ls.getDependNode(index-1)
-
-                    rhandIndexnull_sl_ls = om2.MSelectionList()
-                    rhandIndexnull_sl_ls.add("Biped_RightFingerIndex*_null")
-
-                    rhandIndex_tr_n = om2.MFnDagNode(rhandIndexctrl_obj)
-                    rhandIndex_tr_n.addChild(self.rhandindexnull_tn)
-
-                    rhandIndexnull_parentinvtransform_matrix = om2.MMatrix()
-                    for i in range(rhandIndexnull_sl_ls.length()-1):
-                        parentobj = rhandIndexnull_sl_ls.getDependNode(i)
-                        parentinvtransform = om2.MFnTransform(parentobj)
-                        parentinvtransform_trans = parentinvtransform.transformation()
-                        null_Matrix = parentinvtransform_trans.asMatrixInverse()
-
-                        rhandIndexnull_parentinvtransform_matrix = rhandIndexnull_parentinvtransform_matrix * null_Matrix
-
-                    rhandindexnull_childtransform_trans = rhandindexnull_transform.transformation()
-                    rhandindexnull_childtransform_worldmatrix = rhandindexnull_childtransform_trans.asMatrix()
-
-                    rhandindexnull_childtransform_localmatrix = rhandindexnull_childtransform_worldmatrix * rfingernull_transform_worldmatrix * rhandIndexnull_parentinvtransform_matrix
-
-                    rhandindexnull_transform.setTransformation(om2.MTransformationMatrix(rhandindexnull_childtransform_localmatrix))
-
-                self.ctrl_mod_n.renameNode(ctrl_rhandIndexpositive_comb_cv, "RightFingerIndex{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_rhandIndexnegative_comb_cv, "RightFingerIndex{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerIndex{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerIndex{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerIndex{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
-
-        except:
-            pass
-
-        try:
-            rhandmiddle_sl_ls = om2.MSelectionList()
-            rhandmiddle_sl_ls.add("RightFingerMiddle*")
-
-            for index in range(rhandmiddle_sl_ls.length()):
-                jnt_rhandmiddle_obj = rhandmiddle_sl_ls.getDependNode(index)
-                jnt_rhandmiddle_path_n = om2.MDagPath()
-                jnt_rhandmiddle_path = jnt_rhandmiddle_path_n.getAPathTo(jnt_rhandmiddle_obj)
-                jnt_rhandmiddle_transform = om2.MFnTransform(jnt_rhandmiddle_path)
-                jnt_rhandmiddle_t = jnt_rhandmiddle_transform.translation(om2.MSpace.kWorld)
-
-                self.rhandmiddlenull_tn = ctrl_tr_n.create("transform", "Biped_RightFingerMiddle{0}_null".format(index + 1))
-                self.rhandmiddlectrl_tn = ctrl_tr_n.create("transform", "Biped_RightFingerMiddle{0}_ctrl".format(index + 1), self.rhandmiddlenull_tn)
-                ctrl_rhandmiddlepositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandmiddlectrl_tn)
-                ctrl_rhandmiddlenegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandmiddlectrl_tn)
-
-                rhandmiddlenull_transform = om2.MFnTransform(self.rhandmiddlenull_tn)
-                rhandmiddlenull_transform.setRotatePivotTranslation(jnt_rhandmiddle_t, om2.MSpace.kTransform)
-
-                jnt_rhandmiddle_r = cmds.xform("RightFingerMiddle{0}".format(index+1), query=True, rotation=True, worldSpace=True)
-
-                radian_rhandmiddle_x = (jnt_rhandmiddle_r[0]/180)*3.1415
-                radian_rhandmiddle_y = (jnt_rhandmiddle_r[1]/180)*3.1415
-                radian_rhandmiddle_z = (jnt_rhandmiddle_r[2]/180)*3.1415
-
-                rhandmiddlenull_transform_r = rhandmiddlenull_transform.rotation(om2.MSpace.kTransform)
-                rhandmiddlenull_transform_r[0], rhandmiddlenull_transform_r[1], rhandmiddlenull_transform_r[2] = radian_rhandmiddle_x, radian_rhandmiddle_y, radian_rhandmiddle_z
-                rhandmiddlenull_transform.setRotation(rhandmiddlenull_transform_r, om2.MSpace.kTransform)
-
-                rhandmiddlectrl_transform = om2.MFnTransform(self.rhandmiddlectrl_tn)
-
-                rhandmiddlectrl_transform_s = rhandmiddlectrl_transform.findPlug("scale", False)
-                if rhandmiddlectrl_transform_s.isCompound:
-                    for i in range(rhandmiddlectrl_transform_s.numChildren()):
-                        child_plug = rhandmiddlectrl_transform_s.child(i)
-                        attr_value = child_plug.setDouble(box_transform_s[0]/14)
-
-                rhandmiddlectrl_transform_r = rhandmiddlectrl_transform.rotation(om2.MSpace.kTransform)
-                rhandmiddlectrl_transform_r[1] = 1.57079
-                rhandmiddlectrl_transform.setRotation(rhandmiddlectrl_transform_r, om2.MSpace.kTransform)
-
-                if index == 0:
-                    rhand_tr_n = om2.MFnDagNode(self.rfingernull_tn)
-                    rhand_tr_n.addChild(self.rhandmiddlenull_tn)
-
-                    rhandmiddlenull_transform_trans = rhandmiddlenull_transform.transformation()
-                    rhandmiddlenull_transform_worldmatrix = rhandmiddlenull_transform_trans.asMatrix()
-
-                    rhandmiddlenull_transform_localmatrix = rhandmiddlenull_transform_worldmatrix * rfingernull_transform_worldmatrix
-
-                    rhandmiddlenull_transform.setTransformation(om2.MTransformationMatrix(rhandmiddlenull_transform_localmatrix))
-
-                else:
-                    rhandmiddlectrl_sl_ls = om2.MSelectionList()
-                    rhandmiddlectrl_sl_ls.add("Biped_RightFingerMiddle*_ctrl")
-                    rhandmiddlectrl_obj = rhandmiddlectrl_sl_ls.getDependNode(index-1)
-
-                    rhandmiddlenull_sl_ls = om2.MSelectionList()
-                    rhandmiddlenull_sl_ls.add("Biped_RightFingerMiddle*_null")
-
-                    rhandmiddle_tr_n = om2.MFnDagNode(rhandmiddlectrl_obj)
-                    rhandmiddle_tr_n.addChild(self.rhandmiddlenull_tn)
-
-                    rhandmiddlenull_parentinvtransform_matrix = om2.MMatrix()
-                    for i in range(rhandmiddlenull_sl_ls.length()-1):
-                        parentobj = rhandmiddlenull_sl_ls.getDependNode(i)
-                        parentinvtransform = om2.MFnTransform(parentobj)
-                        parentinvtransform_trans = parentinvtransform.transformation()
-                        null_Matrix = parentinvtransform_trans.asMatrixInverse()
-
-                        rhandmiddlenull_parentinvtransform_matrix = rhandmiddlenull_parentinvtransform_matrix * null_Matrix
-
-                    rhandmiddlenull_childtransform_trans = rhandmiddlenull_transform.transformation()
-                    rhandmiddlenull_childtransform_worldmatrix = rhandmiddlenull_childtransform_trans.asMatrix()
-
-                    rhandmiddlenull_childtransform_localmatrix = rhandmiddlenull_childtransform_worldmatrix * rfingernull_transform_worldmatrix * rhandmiddlenull_parentinvtransform_matrix
-
-                    rhandmiddlenull_transform.setTransformation(om2.MTransformationMatrix(rhandmiddlenull_childtransform_localmatrix))
-
-                self.ctrl_mod_n.renameNode(ctrl_rhandmiddlepositive_comb_cv, "RightFingerMiddle{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_rhandmiddlenegative_comb_cv, "RightFingerMiddle{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerMiddle{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerMiddle{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerMiddle{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
-
-        except:
-            pass
-
-        try:
-            rhandring_sl_ls = om2.MSelectionList()
-            rhandring_sl_ls.add("RightFingerRing*")
-
-            for index in range(rhandring_sl_ls.length()):
-                jnt_rhandring_obj = rhandring_sl_ls.getDependNode(index)
-                jnt_rhandring_path_n = om2.MDagPath()
-                jnt_rhandring_path = jnt_rhandring_path_n.getAPathTo(jnt_rhandring_obj)
-                jnt_rhandring_transform = om2.MFnTransform(jnt_rhandring_path)
-                jnt_rhandring_t = jnt_rhandring_transform.translation(om2.MSpace.kWorld)
-
-                self.rhandringnull_tn = ctrl_tr_n.create("transform", "Biped_RightFingerRing{0}_null".format(index + 1))
-                self.rhandringctrl_tn = ctrl_tr_n.create("transform", "Biped_RightFingerRing{0}_ctrl".format(index + 1), self.rhandringnull_tn)
-                ctrl_rhandringpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandringctrl_tn)
-                ctrl_rhandringnegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandringctrl_tn)
-
-                rhandringnull_transform = om2.MFnTransform(self.rhandringnull_tn)
-                rhandringnull_transform.setRotatePivotTranslation(jnt_rhandring_t, om2.MSpace.kTransform)
-
-                jnt_rhandring_r = cmds.xform("RightFingerRing{0}".format(index+1), query=True, rotation=True, worldSpace=True)
-
-                radian_rhandring_x = (jnt_rhandring_r[0]/180)*3.1415
-                radian_rhandring_y = (jnt_rhandring_r[1]/180)*3.1415
-                radian_rhandring_z = (jnt_rhandring_r[2]/180)*3.1415
-
-                rhandringnull_transform_r = rhandringnull_transform.rotation(om2.MSpace.kTransform)
-                rhandringnull_transform_r[0], rhandringnull_transform_r[1], rhandringnull_transform_r[2] = radian_rhandring_x, radian_rhandring_y, radian_rhandring_z
-                rhandringnull_transform.setRotation(rhandringnull_transform_r, om2.MSpace.kTransform)
-
-                rhandringctrl_transform = om2.MFnTransform(self.rhandringctrl_tn)
-
-                rhandringctrl_transform_s = rhandringctrl_transform.findPlug("scale", False)
-                if rhandringctrl_transform_s.isCompound:
-                    for i in range(rhandringctrl_transform_s.numChildren()):
-                        child_plug = rhandringctrl_transform_s.child(i)
-                        attr_value = child_plug.setDouble(box_transform_s[0]/14)
-
-                rhandringctrl_transform_r = rhandringctrl_transform.rotation(om2.MSpace.kTransform)
-                rhandringctrl_transform_r[1] = 1.57079
-                rhandringctrl_transform.setRotation(rhandringctrl_transform_r, om2.MSpace.kTransform)
-
-                if index == 0:
-                    rhand_tr_n = om2.MFnDagNode(self.rfingernull_tn)
-                    rhand_tr_n.addChild(self.rhandringnull_tn)
-
-                    rhandringnull_transform_trans = rhandringnull_transform.transformation()
-                    rhandringnull_transform_worldmatrix = rhandringnull_transform_trans.asMatrix()
-
-                    rhandringnull_transform_localmatrix = rhandringnull_transform_worldmatrix * rfingernull_transform_worldmatrix
-
-                    rhandringnull_transform.setTransformation(om2.MTransformationMatrix(rhandringnull_transform_localmatrix))
-
-                else:
-                    rhandringctrl_sl_ls = om2.MSelectionList()
-                    rhandringctrl_sl_ls.add("Biped_RightFingerRing*_ctrl")
-                    rhandringctrl_obj = rhandringctrl_sl_ls.getDependNode(index-1)
-
-                    rhandringnull_sl_ls = om2.MSelectionList()
-                    rhandringnull_sl_ls.add("Biped_RightFingerRing*_null")
-
-                    rhandring_tr_n = om2.MFnDagNode(rhandringctrl_obj)
-                    rhandring_tr_n.addChild(self.rhandringnull_tn)
-
-                    rhandringnull_parentinvtransform_matrix = om2.MMatrix()
-                    for i in range(rhandringnull_sl_ls.length()-1):
-                        parentobj = rhandringnull_sl_ls.getDependNode(i)
-                        parentinvtransform = om2.MFnTransform(parentobj)
-                        parentinvtransform_trans = parentinvtransform.transformation()
-                        null_Matrix = parentinvtransform_trans.asMatrixInverse()
-
-                        rhandringnull_parentinvtransform_matrix = rhandringnull_parentinvtransform_matrix * null_Matrix
-
-                    rhandringnull_childtransform_trans = rhandringnull_transform.transformation()
-                    rhandringnull_childtransform_worldmatrix = rhandringnull_childtransform_trans.asMatrix()
-
-                    rhandringnull_childtransform_localmatrix = rhandringnull_childtransform_worldmatrix * rfingernull_transform_worldmatrix * rhandringnull_parentinvtransform_matrix
-
-                    rhandringnull_transform.setTransformation(om2.MTransformationMatrix(rhandringnull_childtransform_localmatrix))
-
-                self.ctrl_mod_n.renameNode(ctrl_rhandringpositive_comb_cv, "RightFingerRing{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_rhandringnegative_comb_cv, "RightFingerRing{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerRing{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerRing{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerRing{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
-
-        except:
-            pass
-
-        try:
-            rhandpinky_sl_ls = om2.MSelectionList()
-            rhandpinky_sl_ls.add("RightFingerPinky*")
-
-            for index in range(rhandpinky_sl_ls.length()):
-                jnt_rhandpinky_obj = rhandpinky_sl_ls.getDependNode(index)
-                jnt_rhandpinky_path_n = om2.MDagPath()
-                jnt_rhandpinky_path = jnt_rhandpinky_path_n.getAPathTo(jnt_rhandpinky_obj)
-                jnt_rhandpinky_transform = om2.MFnTransform(jnt_rhandpinky_path)
-                jnt_rhandpinky_t = jnt_rhandpinky_transform.translation(om2.MSpace.kWorld)
-
-                self.rhandpinkynull_tn = ctrl_tr_n.create("transform", "Biped_RightFingerPinky{0}_null".format(index + 1))
-                self.rhandpinkyctrl_tn = ctrl_tr_n.create("transform", "Biped_RightFingerPinky{0}_ctrl".format(index + 1), self.rhandpinkynull_tn)
-                ctrl_rhandpinkypositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rhandpinkyctrl_tn)
-                ctrl_rhandpinkynegative_comb_cv = ctrl_cv_n.create([crv_ctrl_rhand_line_up, crv_ctrl_rhand_star, crv_ctrl_rhand_line_down], self.rhandpinkyctrl_tn)
-
-                rhandpinkynull_transform = om2.MFnTransform(self.rhandpinkynull_tn)
-                rhandpinkynull_transform.setRotatePivotTranslation(jnt_rhandpinky_t, om2.MSpace.kTransform)
-
-                jnt_rhandpinky_r = cmds.xform("RightFingerPinky{0}".format(index+1), query=True, rotation=True, worldSpace=True)
-
-                radian_rhandpinky_x = (jnt_rhandpinky_r[0]/180)*3.1415
-                radian_rhandpinky_y = (jnt_rhandpinky_r[1]/180)*3.1415
-                radian_rhandpinky_z = (jnt_rhandpinky_r[2]/180)*3.1415
-
-                rhandpinkynull_transform_r = rhandpinkynull_transform.rotation(om2.MSpace.kTransform)
-                rhandpinkynull_transform_r[0], rhandpinkynull_transform_r[1], rhandpinkynull_transform_r[2] = radian_rhandpinky_x, radian_rhandpinky_y, radian_rhandpinky_z
-                rhandpinkynull_transform.setRotation(rhandpinkynull_transform_r, om2.MSpace.kTransform)
-
-                rhandpinkyctrl_transform = om2.MFnTransform(self.rhandpinkyctrl_tn)
-
-                rhandpinkyctrl_transform_s = rhandpinkyctrl_transform.findPlug("scale", False)
-                if rhandpinkyctrl_transform_s.isCompound:
-                    for i in range(rhandpinkyctrl_transform_s.numChildren()):
-                        child_plug = rhandpinkyctrl_transform_s.child(i)
-                        attr_value = child_plug.setDouble(box_transform_s[0]/14)
-
-                rhandpinkyctrl_transform_r = rhandpinkyctrl_transform.rotation(om2.MSpace.kTransform)
-                rhandpinkyctrl_transform_r[1] = 1.57079
-                rhandpinkyctrl_transform.setRotation(rhandpinkyctrl_transform_r, om2.MSpace.kTransform)
-
-                if index == 0:
-                    rhand_tr_n = om2.MFnDagNode(self.rfingernull_tn)
-                    rhand_tr_n.addChild(self.rhandpinkynull_tn)
-
-                    rhandpinkynull_transform_trans = rhandpinkynull_transform.transformation()
-                    rhandpinkynull_transform_worldmatrix = rhandpinkynull_transform_trans.asMatrix()
-
-                    rhandpinkynull_transform_localmatrix = rhandpinkynull_transform_worldmatrix * rfingernull_transform_worldmatrix
-
-                    rhandpinkynull_transform.setTransformation(om2.MTransformationMatrix(rhandpinkynull_transform_localmatrix))
-
-                else:
-                    rhandpinkyctrl_sl_ls = om2.MSelectionList()
-                    rhandpinkyctrl_sl_ls.add("Biped_RightFingerPinky*_ctrl")
-                    rhandpinkyctrl_obj = rhandpinkyctrl_sl_ls.getDependNode(index-1)
-
-                    rhandpinkynull_sl_ls = om2.MSelectionList()
-                    rhandpinkynull_sl_ls.add("Biped_RightFingerPinky*_null")
-
-                    rhandpinky_tr_n = om2.MFnDagNode(rhandpinkyctrl_obj)
-                    rhandpinky_tr_n.addChild(self.rhandpinkynull_tn)
-
-                    rhandpinkynull_parentinvtransform_matrix = om2.MMatrix()
-                    for i in range(rhandpinkynull_sl_ls.length()-1):
-                        parentobj = rhandpinkynull_sl_ls.getDependNode(i)
-                        parentinvtransform = om2.MFnTransform(parentobj)
-                        parentinvtransform_trans = parentinvtransform.transformation()
-                        null_Matrix = parentinvtransform_trans.asMatrixInverse()
-
-                        rhandpinkynull_parentinvtransform_matrix = rhandpinkynull_parentinvtransform_matrix * null_Matrix
-
-                    rhandpinkynull_childtransform_trans = rhandpinkynull_transform.transformation()
-                    rhandpinkynull_childtransform_worldmatrix = rhandpinkynull_childtransform_trans.asMatrix()
-
-                    rhandpinkynull_childtransform_localmatrix = rhandpinkynull_childtransform_worldmatrix * rfingernull_transform_worldmatrix * rhandpinkynull_parentinvtransform_matrix
-
-                    rhandpinkynull_transform.setTransformation(om2.MTransformationMatrix(rhandpinkynull_childtransform_localmatrix))
-
-                self.ctrl_mod_n.renameNode(ctrl_rhandpinkypositive_comb_cv, "RightFingerPinky{0}_shape1".format(index+1))
-                self.ctrl_mod_n.renameNode(ctrl_rhandpinkynegative_comb_cv, "RightFingerPinky{0}_shape2".format(index+1))
-                self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 0 "Biped_RightFingerPinky{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFingerPinky{0}_ctrl"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.translateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.translateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.translateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.rotateX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.rotateY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.rotateZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.scaleX"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.scaleY"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.scaleZ"'.format(index+1))
-                self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFingerPinky{0}_null.visibility"'.format(index+1))
-                self.ctrl_mod_n.doIt()
-
-        except:
-            pass
-
-        rleg_sl_ls = om2.MSelectionList()
-        rleg_sl_ls.add("RightUpLeg")
-        rleg_sl_ls.add("RightLeg")
-        rleg_sl_ls.add("RightFoot")
-        rleg_sl_ls.add("RightToeBase")
-
-        fkrleg_sl_ls = om2.MSelectionList()
-        fkrleg_sl_ls.add("FkRightUpLeg")
-        fkrleg_sl_ls.add("FkRightLeg")
-        fkrleg_sl_ls.add("FkRightFoot")
-        fkrleg_sl_ls.add("FkRightToeBase")
-
-        for index in range(fkrleg_sl_ls.length()):
-                jnt_rleg_obj = fkrleg_sl_ls.getDependNode(index)
-                jnt_rleg_path_n = om2.MDagPath()
-                jnt_rleg_path = jnt_rleg_path_n.getAPathTo(jnt_rleg_obj)
-                jnt_rleg_transform = om2.MFnTransform(jnt_rleg_path)
-                jnt_rleg_t = jnt_rleg_transform.translation(om2.MSpace.kWorld)
-
-                if index == 0:
-                    self.ruplegnull_tn = ctrl_tr_n.create("transform", "Biped_FkRightUpLeg_null", self.rootctrl_tn)
-                    self.ruplegupctrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightUpLeg_ctrl", self.ruplegnull_tn)
-                    ctrl_ruplegpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.ruplegupctrl_tn)
-
-                    ruplegnull_transform = om2.MFnTransform(self.ruplegnull_tn)
-                    ruplegnull_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
-
-                    jnt_rupleg_r = cmds.xform("RightUpLeg", query=True, rotation=True, worldSpace=True)
-
-                    radian_rlegtoebasenull_x = (jnt_rupleg_r[0]/180)*3.1415
-                    radian_rlegtoebasenull_y = (jnt_rupleg_r[1]/180)*3.1415
-                    radian_rlegtoebasenull_z = (jnt_rupleg_r[2]/180)*3.1415
-
-                    ruplegnull_transform_r = ruplegnull_transform.rotation(om2.MSpace.kTransform)
-                    ruplegnull_transform_r[0], ruplegnull_transform_r[1], ruplegnull_transform_r[2] = radian_rlegtoebasenull_x, radian_rlegtoebasenull_y, radian_rlegtoebasenull_z
-                    ruplegnull_transform.setRotation(ruplegnull_transform_r, om2.MSpace.kTransform)
-
-                    ruplegnctrl_transform = om2.MFnTransform(self.ruplegupctrl_tn)
-
-                    ruplegnctrl_transform_r = ruplegnull_transform.rotation(om2.MSpace.kTransform)
-                    ruplegnctrl_transform_r[0], ruplegnctrl_transform_r[1], ruplegnctrl_transform_r[2] = 0, 1.57079, 0
-                    ruplegnctrl_transform.setRotation(ruplegnctrl_transform_r, om2.MSpace.kTransform)
-
-                    ruplegnctrl_transform_s = ruplegnctrl_transform.findPlug("scale", False)
-                    if ruplegnctrl_transform_s.isCompound:
-                        for i in range(ruplegnctrl_transform_s.numChildren()):
-                            child_plug = ruplegnctrl_transform_s.child(i)
-                            attr_value = child_plug.setDouble(box_transform_s[0]/2)
-
-                    ruplegnull_transform_trans = ruplegnull_transform.transformation()
-                    ruplegnull_transform_worldmatrix = ruplegnull_transform_trans.asMatrix()
-
-                    ruplegnull_transform_localmatrix = ruplegnull_transform_worldmatrix * rootctrl_transform_worldmatrix
-
-                    ruplegnull_transform.setTransformation(om2.MTransformationMatrix(ruplegnull_transform_localmatrix))
-
-                    self.ctrl_mod_n.renameNode(ctrl_ruplegpositive_comb_cv, "FkRightUpLeg_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightUpLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightUpLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightUpLeg_null.visibility"')
-                    self.ctrl_mod_n.doIt()
-
-                elif index == 1:
-                    self.rlegnull_tn = ctrl_tr_n.create("transform", "Biped_FkRightLeg_null", self.ruplegupctrl_tn)
-                    self.rlegctrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightLeg_ctrl", self.rlegnull_tn)
-                    ctrl_rlegpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rlegctrl_tn)
-
-                    self.pvrlegkneenull_tn = ctrl_tr_n.create("transform", "Biped_PVRightKnee_null", self.masterctrl_tn)
-                    self.pvrlegknectrl_tn = ctrl_tr_n.create("transform", "Biped_PVRightKnee_ctrl", self.pvrlegkneenull_tn)
-                    crv_ctrl_knee_triangle_l = ctrl_cv_n.createWithEditPoints(ctrl_knee_triangle_points, 1, 1, False, True, True, self.pvrlegknectrl_tn)
-                    crv_ctrl_knee_arrow_l = ctrl_cv_n.createWithEditPoints(ctrl_knee_arrow_points, 1, 1, False, True, True, self.pvrlegknectrl_tn)
-
-                    rlegnull_transform = om2.MFnTransform(self.rlegnull_tn)
-                    rlegnull_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
-
-                    pvrlegkneenull_transform = om2.MFnTransform(self.pvrlegkneenull_tn)
-                    pvrlegkneenull_transform.setTranslation(jnt_rleg_t, om2.MSpace.kTransform)
-
-                    jnt_rleg_r = cmds.xform("RightLeg", query=True, rotation=True, worldSpace=True)
-
-                    radian_rlegnull_x = (jnt_rleg_r[0]/180)*3.1415
-                    radian_rlegnull_y = (jnt_rleg_r[1]/180)*3.1415
-                    radian_rlegnull_z = (jnt_rleg_r[2]/180)*3.1415
-
-                    rlegnull_transform_r = rlegnull_transform.rotation(om2.MSpace.kTransform)
-                    rlegnull_transform_r[0], rlegnull_transform_r[1], rlegnull_transform_r[2] = radian_rlegnull_x, radian_rlegnull_y, radian_rlegnull_z
-                    rlegnull_transform.setRotation(rlegnull_transform_r, om2.MSpace.kTransform)
-
-                    rlegctrl_transform = om2.MFnTransform(self.rlegctrl_tn)
-
-                    pvrlegknectrl_transform = om2.MFnTransform(self.pvrlegknectrl_tn)
-
-                    rlegctrl_transform_r = rlegnull_transform.rotation(om2.MSpace.kTransform)
-                    rlegctrl_transform_r[0], rlegctrl_transform_r[1], rlegctrl_transform_r[2] = 0, 1.57079, 0
-                    rlegctrl_transform.setRotation(rlegctrl_transform_r, om2.MSpace.kTransform)
-
-                    pvrlegkneenull_transform_t = pvrlegkneenull_transform.translation(om2.MSpace.kTransform)
-                    pvrlegkneenull_transform_t[2] = pvrlegkneenull_transform_t[2]+8
-                    pvrlegkneenull_transform.setTranslation(pvrlegkneenull_transform_t, om2.MSpace.kTransform)
-
-                    pvrlegknectrl_transform_r = pvrlegknectrl_transform.rotation(om2.MSpace.kTransform)
-                    pvrlegknectrl_transform_r[0] = 1.57079
-                    pvrlegknectrl_transform.setRotation(pvrlegknectrl_transform_r, om2.MSpace.kTransform)
-
-                    rlegctrl_transform_s = rlegctrl_transform.findPlug("scale", False)
-                    if rlegctrl_transform_s.isCompound:
-                        for i in range(rlegctrl_transform_s.numChildren()):
-                            child_plug = rlegctrl_transform_s.child(i)
-                            attr_value = child_plug.setDouble(box_transform_s[0]/2)
-
-                    rlegnull_transform_trans = rlegnull_transform.transformation()
-                    rlegnull_transform_worldmatrix = rlegnull_transform_trans.asMatrix()
-
-                    rlegnull_transform_localmatrix = rlegnull_transform_worldmatrix * rootctrl_transform_worldmatrix * ruplegnull_transform_localmatrix.inverse()
-
-                    rlegnull_transform.setTransformation(om2.MTransformationMatrix(rlegnull_transform_localmatrix))
-
-                    self.ctrl_mod_n.renameNode(ctrl_rlegpositive_comb_cv, "FkRightLeg_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 1 1 0 "Biped_PVRightKnee_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightLeg_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_PVRightKnee_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightLeg_null.visibility"')
-                    self.ctrl_mod_n.doIt()
-
-                elif index == 2:
-                    self.rlegfootnull_tn = ctrl_tr_n.create("transform", "Biped_FkRightFoot_null", self.rlegctrl_tn)
-                    self.rlegfootctrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightFoot_ctrl", self.rlegfootnull_tn)
-                    ctrl_rlegfootpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rlegfootctrl_tn)
-
-                    self.riklegfootnull_tn = ctrl_tr_n.create("transform", "Biped_IkRightFoot_null", self.masterctrl_tn)
-                    self.riklegfootoffsetnull_tn = ctrl_tr_n.create("transform", "Biped_IkRightFootOffset_null", self.riklegfootnull_tn)
-                    self.riklegfootctrl_tn = ctrl_tr_n.create("transform", "Biped_IkRightFoot_ctrl", self.riklegfootoffsetnull_tn)
-                    ctrl_riklegfootpositive_comb_cv = ctrl_cv_n.create([crv_ctrl_hand_line_l, crv_ctrl_hand_line, crv_ctrl_hand_line_r], self.riklegfootctrl_tn)
-
-                    self.rfootoption_tn = ctrl_tr_n.create("transform", "Biped_RightFootOptions_ctrl", rleg_sl_ls.getDependNode(2))
-                    ctrl_rfootoption_cv = ctrl_cv_n.createWithEditPoints(ctrl_lhandoption_line, 1, 1, False, True, True, self.rfootoption_tn)
-
-                    self.nofliprlegkneenull_tn = ctrl_tr_n.create("transform", "Biped_NoFlipRightKnee_null", self.riklegfootoffsetnull_tn)
-                    self.nofliprlegkneectrl_tn = ctrl_tr_n.create("transform", "Biped_NoFlipRightKnee_ctrl", self.nofliprlegkneenull_tn)
-                    self.nofliprlegknectrl_tn = ctrl_tr_n.create("locator", "NoFlipRightKnee_shape", self.nofliprlegkneectrl_tn)
-
-                    rlegfootnull_transform = om2.MFnTransform(self.rlegfootnull_tn)
-                    rlegfootnull_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
-
-                    riklegfootnull_transform = om2.MFnTransform(self.riklegfootnull_tn)
-                    riklegfootnull_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
-
-                    riklegfootoffsetnull_transform = om2.MFnTransform(self.riklegfootoffsetnull_tn)
-
-                    rfootoptionctrl_transform = om2.MFnTransform(self.rfootoption_tn)
-                    rfootoptionctrl_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
-
-                    jnt_rlegfoot_r = cmds.xform("RightFoot", query=True, rotation=True, worldSpace=True)
-
-                    radian_rlegfootnull_x = (jnt_rlegfoot_r[0]/180)*3.1415
-                    radian_rlegfootnull_y = (jnt_rlegfoot_r[1]/180)*3.1415
-                    radian_rlegfootnull_z = (jnt_rlegfoot_r[2]/180)*3.1415
-
-                    rlegfootnull_transform_r = rlegfootnull_transform.rotation(om2.MSpace.kTransform)
-                    rlegfootnull_transform_r[0], rlegfootnull_transform_r[1], rlegfootnull_transform_r[2] = radian_rlegfootnull_x, radian_rlegfootnull_y, radian_rlegfootnull_z
-                    rlegfootnull_transform.setRotation(rlegfootnull_transform_r, om2.MSpace.kTransform)
-
-                    riklegfootnull_transform.setRotation(rlegfootnull_transform_r, om2.MSpace.kTransform)
-
-                    riklegfootoffsetnull_transform.setRotation(rlegfootnull_transform_r, om2.MSpace.kTransform)
-
-                    rlegfootctrl_transform = om2.MFnTransform(self.rlegfootctrl_tn)
-
-                    riklegfootctrl_transform = om2.MFnTransform(self.riklegfootctrl_tn)
-
-                    nofliprlegkneenull_transform = om2.MFnTransform(self.nofliprlegkneectrl_tn)
-
-                    rlegfootctrl_transform_r = rlegfootctrl_transform.rotation(om2.MSpace.kTransform)
-                    rlegfootctrl_transform_r[0], rlegfootctrl_transform_r[1], rlegfootctrl_transform_r[2] = -1.57079, 0, -1.57079
-                    rlegfootctrl_transform.setRotation(rlegfootctrl_transform_r, om2.MSpace.kTransform)
-
-                    riklegfootctrl_transform_t = riklegfootctrl_transform.translation(om2.MSpace.kTransform)
-                    riklegfootctrl_transform_t[1], riklegfootctrl_transform_t[2] = -1, -(jnt_rleg_t[2]+2)
-                    riklegfootctrl_transform.setTranslation(riklegfootctrl_transform_t, om2.MSpace.kTransform)
-
-                    riklegfootctrl_transform_r = riklegfootctrl_transform.rotation(om2.MSpace.kTransform)
-                    riklegfootctrl_transform_r[1] = -1.57079
-                    riklegfootctrl_transform.setRotation(riklegfootctrl_transform_r, om2.MSpace.kTransform)
-
-                    rfootoptionctrl_transform_t = rfootoptionctrl_transform.translation(om2.MSpace.kTransform)
-                    rfootoptionctrl_transform_t[0] = jnt_rleg_t[0]-7
-                    rfootoptionctrl_transform.setTranslation(rfootoptionctrl_transform_t, om2.MSpace.kTransform)
-
-                    rfootoptionctrl_transform_r = rfootoptionctrl_transform.rotation(om2.MSpace.kTransform)
-                    rfootoptionctrl_transform_r[0] = -1.57079
-                    rfootoptionctrl_transform.setRotation(rfootoptionctrl_transform_r, om2.MSpace.kTransform)
-
-                    nofliprlegkneenull_transform_t = nofliprlegkneenull_transform.translation(om2.MSpace.kTransform)
-                    nofliprlegkneenull_transform_t[0] = 7
-                    nofliprlegkneenull_transform.setTranslation(nofliprlegkneenull_transform_t, om2.MSpace.kTransform)
-
-                    rlegfootctrl_transform_s = rlegfootctrl_transform.findPlug("scale", False)
-                    if rlegfootctrl_transform_s.isCompound:
-                        for i in range(rlegfootctrl_transform_s.numChildren()):
-                            child_plug = rlegfootctrl_transform_s.child(i)
-                            attr_value = child_plug.setDouble(box_transform_s[0]/2)
-
-                    riklegfootctrl_transform_s = riklegfootctrl_transform.findPlug("scale", False)
-                    if riklegfootctrl_transform_s.isCompound:
-                        for i in range(riklegfootctrl_transform_s.numChildren()):
-                            child_plug = riklegfootctrl_transform_s.child(i)
-                            attr_value = child_plug.setDouble(box_transform_s[0]/2)
-
-                    rlegfootnull_transform_trans = rlegfootnull_transform.transformation()
-                    rlegfootnull_transform_worldmatrix = rlegfootnull_transform_trans.asMatrix()
-
-                    rlegfootnull_transform_localmatrix = rlegfootnull_transform_worldmatrix * rootctrl_transform_worldmatrix * ruplegnull_transform_localmatrix.inverse() * rlegnull_transform_localmatrix.inverse()
-
-                    rlegfootnull_transform.setTransformation(om2.MTransformationMatrix(rlegfootnull_transform_localmatrix))
-
-                    rfootoptionctrl_transform_trans = rfootoptionctrl_transform.transformation()
-                    rfootoptionctrl_transform_worldmatrix = rfootoptionctrl_transform_trans.asMatrix()
-
-                    rfootoptionctrl_transform_localmatrix = rfootoptionctrl_transform_worldmatrix * rootctrl_transform_worldmatrix * ruplegnull_transform_localmatrix.inverse() * rlegnull_transform_localmatrix.inverse() * rlegfootnull_transform_localmatrix.inverse()
-
-                    rfootoptionctrl_transform.setTransformation(om2.MTransformationMatrix(rfootoptionctrl_transform_localmatrix))
-
-                    self.ctrl_mod_n.renameNode(ctrl_rlegfootpositive_comb_cv, "RightLegFoot_shape")
-                    self.ctrl_mod_n.renameNode(ctrl_riklegfootpositive_comb_cv, "RightIkLegFoot_shape")
-                    self.ctrl_mod_n.renameNode(ctrl_rfootoption_cv, "RightFootOptions_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 1 0 1 "Biped_IkRightFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 1 1 0 "Biped_RightFootOptions_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_IkRightFoot_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_RightFootOptions_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightFoot_null.visibility"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFoot_null.visibility"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_IkRightFootOffset_null.visibility"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_RightFootOptions_ctrl.visibility"')
-                    self.ctrl_mod_n.doIt()
-
-                    riklegfootctrl_path_n = om2.MDagPath()
-                    riklegfootctrl_path = riklegfootctrl_path_n.getAPathTo(self.riklegfootctrl_tn)
-                    riklegfootctrl_worldtransform = om2.MFnTransform(riklegfootctrl_path)
-
-                    riklegfootctrl_worldtransform.setRotatePivot(om2.MPoint(jnt_rleg_t), om2.MSpace.kWorld, False)
-
-                elif index == 3:
-                    self.rlegtoebasenull_tn = ctrl_tr_n.create("transform", "Biped_FkRightToeBase_null", self.rlegfootctrl_tn)
-                    self.rlegtoebasectrl_tn = ctrl_tr_n.create("transform", "Biped_FkRightToeBase_ctrl", self.rlegtoebasenull_tn)
-                    ctrl_rlegtoepositive_comb_cv = ctrl_cv_n.create([crv_ctrl_neck_line_up, crv_ctrl_neck_star, crv_ctrl_neck_line_down], self.rlegtoebasectrl_tn)
-
-                    rlegtoebasenull_transform = om2.MFnTransform(self.rlegtoebasenull_tn)
-                    rlegtoebasenull_transform.setRotatePivotTranslation(jnt_rleg_t, om2.MSpace.kTransform)
-
-                    jnt_rlegtoebase_r = cmds.xform("RightToeBase", query=True, rotation=True, worldSpace=True)
-
-                    radian_rlegtoebasenull_x = (jnt_rlegtoebase_r[0]/180)*3.1415
-                    radian_rlegtoebasenull_y = (jnt_rlegtoebase_r[1]/180)*3.1415
-                    radian_rlegtoebasenull_z = (jnt_rlegtoebase_r[2]/180)*3.1415
-
-                    rlegtoebasenull_transform_r = rlegtoebasenull_transform.rotation(om2.MSpace.kTransform)
-                    rlegtoebasenull_transform_r[0], rlegtoebasenull_transform_r[1], rlegtoebasenull_transform_r[2] = radian_rlegtoebasenull_x, radian_rlegtoebasenull_y, radian_rlegtoebasenull_z
-                    rlegtoebasenull_transform.setRotation(rlegtoebasenull_transform_r, om2.MSpace.kTransform)
-
-                    rlegtoebasectrl_transform = om2.MFnTransform(self.rlegtoebasectrl_tn)
-
-                    rlegtoebasectrl_transform_r = rlegtoebasectrl_transform.rotation(om2.MSpace.kTransform)
-                    rlegtoebasectrl_transform_r[1] = -1.57079
-                    rlegtoebasectrl_transform.setRotation(rlegtoebasectrl_transform_r, om2.MSpace.kTransform)
-
-                    rlegtoebasectrl_transform_s = rlegtoebasectrl_transform.findPlug("scale", False)
-                    if rlegtoebasectrl_transform_s.isCompound:
-                        for i in range(rlegtoebasectrl_transform_s.numChildren()):
-                            child_plug = rlegtoebasectrl_transform_s.child(i)
-                            attr_value = child_plug.setDouble(box_transform_s[0]/4)
-
-                    rlegtoebasenull_transform_trans = rlegtoebasenull_transform.transformation()
-                    rlegtoebasenull_transform_worldmatrix = rlegtoebasenull_transform_trans.asMatrix()
-
-                    rlegtoebasenull_transform_localmatrix = rlegtoebasenull_transform_worldmatrix * rootctrl_transform_worldmatrix * ruplegnull_transform_localmatrix.inverse() * rlegnull_transform_localmatrix.inverse() * rlegfootnull_transform_localmatrix.inverse()
-
-                    rlegtoebasenull_transform.setTransformation(om2.MTransformationMatrix(rlegtoebasenull_transform_localmatrix))
-
-                    self.ctrl_mod_n.renameNode(ctrl_rlegtoepositive_comb_cv, "FkRightLegToeBase_shape")
-                    self.ctrl_mod_n.commandToExecute('color -rgbColor 0 1 1 "Biped_FkRightToeBase_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 -pn 1 "Biped_FkRightToeBase_ctrl"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.translateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.translateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.translateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.rotateX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.rotateY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.rotateZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.scaleX"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.scaleY"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.scaleZ"')
-                    self.ctrl_mod_n.commandToExecute('setAttr -lock true -keyable false -channelBox false "Biped_FkRightToeBase_null.visibility"')
-                    self.ctrl_mod_n.doIt()
-
-        obj_root = om1.MObject()
-        obj_endspine = om1.MObject()
-        obj_masterctrl1 = om1.MObject()
-        ik_system = omanim1.MIkSystem()
-        ik_effector = omanim1.MFnIkEffector()
-        ik_handle = omanim1.MFnIkHandle()
-        ikspline_cv_n = om1.MFnNurbsCurve()
-
-        masterctrl_sl_lst2 = om2.MSelectionList()
-        masterctrl_sl_lst2.add("Biped_Master_ctrl")
-        obj_masterctrl2 = masterctrl_sl_lst2.getDependNode(0)
-
-        if self.autostretch.currentIndex() == 1:
-            if cmds.objExists("IkHip") and cmds.objExists("IkCvHip") and cmds.objExists("IkCvSpine"):
-                ikspineiksolver_lst = om1.MSelectionList()
-                ikspinedag_n = om1.MFnDagNode()
-                ikspineobj_path_n = om1.MDagPath()
-                ikspinedg_modifier = om1.MDGModifier()
-
-                ikspine_sl_lst = om1.MSelectionList()
-                ikspine_sl_lst.add("IkHip")
-                ikspine_sl_lst.add("IkSpin*")
-                ikspine_sl_lst.getDependNode(0, obj_root)
-                ikspine_sl_lst.getDependNode(ikspine_sl_lst.length()-1, obj_endspine)
-
-                masterctrl_sl_lst1 = om1.MSelectionList()
-                masterctrl_sl_lst1.add("Biped_Master_ctrl")
-                masterctrl_sl_lst1.getDependNode(0, obj_masterctrl1)
-
-                spine_pathnode = om1.MDagPath()
-                rootspine_path = spine_pathnode.getAPathTo(obj_root)
-
-                try:
-                    ikspineiksolver_lst.add("ikSplineSolver")
-                except:
-                    cmds.createNode("ikSplineSolver")
-
-                self.ikspline_effector = ik_effector.create(obj_endspine)
-                ikspine_effector_path = spine_pathnode.getAPathTo(self.ikspline_effector)
-
-                self.spine_ik = ik_handle.create(rootspine_path, ikspine_effector_path)
-
-                obj_array = om1.MPointArray()
-                obj_lst_mpoint = []
-                obj = om1.MObject()
-                for index in range(ikspine_sl_lst.length()):
-                    ikspine_sl_lst.getDependNode(index, obj)
-                    obj_path = ikspineobj_path_n.getAPathTo(obj)
-                    obj_tn = om1.MFnTransform(obj_path)
-                    obj_t = obj_tn.translation(om1.MSpace.kWorld)
-                    obj_lst_mpoint.append(om1.MPoint(obj_t))
-                    obj_array.append(obj_lst_mpoint[index])
-
-                self.ikspline_cv_tn = ikspinedag_n.create("transform", "BackBone_SplineCv")
-                ikspline_cv = ikspline_cv_n.createWithEditPoints(obj_array, 1, 1, False, True, True, self.ikspline_cv_tn)
-                cmds.parent("BackBone_SplineCv", "DoNotTouch")
-
-                spinecrv_info = ikspinedg_modifier.createNode("curveInfo")
-                spinestretchpercent = ikspinedg_modifier.createNode("multiplyDivide")
-                spinestretchpow = ikspinedg_modifier.createNode("multiplyDivide")
-                spinestretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
-                spinescalediv = ikspinedg_modifier.createNode("multiplyDivide")
-
-                spinecrvinfo_fs = om1.MFnDependencyNode(spinecrv_info)
-                spinestretchpercent_fs = om1.MFnDependencyNode(spinestretchpercent)
-                spinestretchpow_fs = om1.MFnDependencyNode(spinestretchpow)
-                spinestretchdiv_fs = om1.MFnDependencyNode(spinestretchdiv)
-                spinescalediv_fs = om1.MFnDependencyNode(spinescalediv)
-                masterctrl_fs = om1.MFnDependencyNode(obj_masterctrl1)
-
-                spinecrvinfoarc_plug = spinecrvinfo_fs.findPlug("arcLength")
-                spinestretchpercentinp1y_plug = spinestretchpercent_fs.findPlug("input1Y")
-                spinestretchpercentotp_plug = spinestretchpercent_fs.findPlug("outputY")
-                spinestretchpowinp1x_plug = spinestretchpow_fs.findPlug("input1X")
-                spinestretchpowinp1z_plug = spinestretchpow_fs.findPlug("input1Z")
-                spinestretchpowotpx_plug = spinestretchpow_fs.findPlug("outputX")
-                spinestretchpowotpz_plug = spinestretchpow_fs.findPlug("outputZ")
-                spinestretchdivinp2x_plug = spinestretchdiv_fs.findPlug("input2X")
-                spinestretchdivinp2z_plug = spinestretchdiv_fs.findPlug("input2Z")
-                spinestretchdivotox_plug = spinestretchdiv_fs.findPlug("outputX")
-                spinestretchdivotpz_plug = spinestretchdiv_fs.findPlug("outputZ")
-                spinescaledivinp1y_plug = spinescalediv_fs.findPlug("input1Y")
-                spinescaledivinp2y_plug = spinescalediv_fs.findPlug("input2Y")
-                spinescaledivotpy_plug = spinescalediv_fs.findPlug("outputY")
-                masterctrlsy_plug = masterctrl_fs.findPlug("scaleY")
-
-                objparent = om1.MObject()
-                objchild = om1.MObject()
-                for index in range(ikspine_sl_lst.length()):
-                    if index < ikspine_sl_lst.length()-1:
-                        ikspine_sl_lst.getDependNode(index, objparent)
-                        ikspine_sl_lst.getDependNode(index+1, objchild)
-                        spineparentjnt_fs = om1.MFnDependencyNode(objparent)
-                        spinechildjnt_fs = om1.MFnDependencyNode(objchild)
-                        spinejnt_syplug = spineparentjnt_fs.findPlug("scaleY")
-                        spinejnt_sxplug = spineparentjnt_fs.findPlug("scaleX")
-                        spinejnt_szplug = spineparentjnt_fs.findPlug("scaleZ")
-                        spinejnt_sotpplug = spineparentjnt_fs.findPlug("scale")
-                        spinejnt_invsplug = spinechildjnt_fs.findPlug("inverseScale")
-                        ikspinedg_modifier.connect(spinestretchpercentotp_plug, spinejnt_syplug)
-                        ikspinedg_modifier.connect(spinestretchdivotox_plug, spinejnt_sxplug)
-                        ikspinedg_modifier.connect(spinestretchdivotpz_plug, spinejnt_szplug)
-                        ikspinedg_modifier.connect(spinejnt_sotpplug, spinejnt_invsplug)
-
-                ikspinedg_modifier.renameNode(spinecrv_info, "BackBoneSpline_Info")
-                ikspinedg_modifier.renameNode(spinestretchpercent, "BackBoneStretch_Percent")
-                ikspinedg_modifier.renameNode(spinestretchpow, "BackBoneStretch_Power")
-                ikspinedg_modifier.renameNode(spinestretchdiv, "BackBoneStretch_Divide")
-                ikspinedg_modifier.renameNode(ikspline_cv, "BackBone_SplineCvShape")
-                ikspinedg_modifier.renameNode(self.spine_ik, "BackBone_Ik")
-                ikspinedg_modifier.renameNode(self.ikspline_effector, "BackBone_effector")
-                ikspinedg_modifier.renameNode(spinescalediv, "IkSpineGlobalScale_Average")
-                ikspinedg_modifier.commandToExecute('parent "BackBone_Ik" "DoNotTouch"')
-                ikspinedg_modifier.commandToExecute('connectAttr -f BackBone_SplineCvShape.worldSpace[0] BackBone_Ik.inCurve')
-                ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "SpineIk_skin" IkCvHip IkCvSpine BackBone_SplineCv')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBone_Ik.dTwistControlEnable" 1')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBone_Ik.dWorldUpType" 4')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBone_Ik.dForwardAxis" 2')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBone_Ik.dWorldUpAxis" 4')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBone_Ik.dWorldUpVectorY" 0')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBone_Ik.dWorldUpVectorEndY" 0')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBone_Ik.dWorldUpVectorZ" -1')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBone_Ik.dWorldUpVectorEndZ" -1')
-                ikspinedg_modifier.commandToExecute('connectAttr -f IkCvHip.worldMatrix[0] BackBone_Ik.dWorldUpMatrix')
-                ikspinedg_modifier.commandToExecute('connectAttr -f IkCvSpine.worldMatrix[0] BackBone_Ik.dWorldUpMatrixEnd')
-                ikspinedg_modifier.commandToExecute('connectAttr -f BackBone_SplineCvShape.worldSpace[0] BackBoneSpline_Info.inputCurve')
-                ikspinedg_modifier.connect(spinecrvinfoarc_plug, spinescaledivinp1y_plug)
-                ikspinedg_modifier.connect(masterctrlsy_plug, spinescaledivinp2y_plug)
-                ikspinedg_modifier.connect(spinescaledivotpy_plug, spinestretchpercentinp1y_plug)
-                ikspinedg_modifier.connect(spinestretchpercentotp_plug, spinestretchpowinp1x_plug)
-                ikspinedg_modifier.connect(spinestretchpercentotp_plug, spinestretchpowinp1z_plug)
-                ikspinedg_modifier.connect(spinestretchpowotpx_plug, spinestretchdivinp2x_plug)
-                ikspinedg_modifier.connect(spinestretchpowotpz_plug, spinestretchdivinp2z_plug)
-                ikspinedg_modifier.commandToExecute('float $backbonestretchinput1Y = `getAttr "BackBoneStretch_Percent.input1Y"`; setAttr "BackBoneStretch_Percent.input2Y" $backbonestretchinput1Y')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Power.input2X" 0.5')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Power.input2Z" 0.5')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Divide.input1X" 1')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Divide.input1Z" 1')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Percent.operation" 2')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Power.operation" 3')
-                ikspinedg_modifier.commandToExecute('setAttr "BackBoneStretch_Divide.operation" 2')
-                ikspinedg_modifier.commandToExecute('setAttr "IkSpineGlobalScale_Average.operation" 2')
-                ikspinedg_modifier.doIt()
-
-                ikspline_solver = ik_system.findSolver("ikSplineSolver")
-                ik_handle.setSolver(ikspline_solver)
-
-            # ikspine_sl_lst2 = om2.MSelectionList()
-            # ikspine_sl_lst2.add("IkHip")
-            # ikspine_sl_lst2.add("IkSpin*")
-            #
-            # for index in range(ikspine_sl_lst2.length()):
-            #     jnt_obj = ikspine_sl_lst2.getDependNode(index)
-            #     jnt_string = ikspine_sl_lst2.getSelectionStrings(index)
-            #
-            #     if jnt_obj.hasFn(om2.MFn.kJoint):
-            #         if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
-
-        iksplinegrp_sl_ls = om2.MSelectionList()
-        iksplinegrp_sl_ls.add("SplineIk_grp")
-
-        masterscale_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-        masterscale_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-        self.ctrl_mod_n.renameNode(masterscale_multMatrix, "MasterScale_multMatrix")
-        self.ctrl_mod_n.renameNode(masterscale_decomposeMatrix, "MasterScale_decomposeMatrix")
-
-        masterscalemultMatrix_fs = om2.MFnDependencyNode(masterscale_multMatrix)
-        masterscaledecomposeMatrix_fs = om2.MFnDependencyNode(masterscale_decomposeMatrix)
-        splineik_fs = om2.MFnDependencyNode(iksplinegrp_sl_ls.getDependNode(0))
-
-        mastermultMatrixSum_plug = masterscalemultMatrix_fs.findPlug("matrixSum", False)
-        masterdecomposeInpMatrix_plug = masterscaledecomposeMatrix_fs.findPlug("inputMatrix", False)
-        masterdecomposeOtpScale_plug = masterscaledecomposeMatrix_fs.findPlug("outputScale", False)
-        splineikScale_plug = splineik_fs.findPlug("scale", False)
-
-        self.ctrl_mod_n.commandToExecute('connectAttr - force Biped_Master_ctrl.worldMatrix[0] MasterScale_multMatrix.matrixIn[0]')
-        self.ctrl_mod_n.connect(mastermultMatrixSum_plug, masterdecomposeInpMatrix_plug)
-        self.ctrl_mod_n.connect(masterdecomposeOtpScale_plug, splineikScale_plug)
-
-        rootctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-        rootctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-        self.ctrl_mod_n.renameNode(rootctrl_multMatrix, "Hip_multMatrix")
-        self.ctrl_mod_n.renameNode(rootctrl_decomposeMatrix, "Hip_decomposeMatrix")
-
-        rootmultMatrix_fs = om2.MFnDependencyNode(rootctrl_multMatrix)
-        rootdecomposeMatrix_fs = om2.MFnDependencyNode(rootctrl_decomposeMatrix)
-        hipjnt_fs = om2.MFnDependencyNode(hip_obj)
-
-        mastermultMatrixSum_plug = rootmultMatrix_fs.findPlug("matrixSum", False)
-        masterdecomposeInpMatrix_plug = rootdecomposeMatrix_fs.findPlug("inputMatrix", False)
-        rootdecomposeOtpTrans_plug = rootdecomposeMatrix_fs.findPlug("outputTranslate", False)
-        rootdecomposeOtpRot_plug = rootdecomposeMatrix_fs.findPlug("outputRotate", False)
-        hipjntTrans_plug = hipjnt_fs.findPlug("translate", False)
-        hipjntRot_plug = hipjnt_fs.findPlug("rotate", False)
-
-        self.ctrl_mod_n.commandToExecute('connectAttr - force Biped_Root_ctrl.worldMatrix[0] Hip_multMatrix.matrixIn[0]')
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Hip.parentInverseMatrix[0] Hip_multMatrix.matrixIn[1]')
-        self.ctrl_mod_n.connect(mastermultMatrixSum_plug, masterdecomposeInpMatrix_plug)
-        self.ctrl_mod_n.connect(rootdecomposeOtpTrans_plug, hipjntTrans_plug)
-        self.ctrl_mod_n.connect(rootdecomposeOtpRot_plug, hipjntRot_plug)
-
-        if self.autostretch.currentIndex() == 1:
-            if cmds.objExists("IkHip") and cmds.objExists("IkCvHip") and cmds.objExists("IkCvSpine"):
-                ikcvspinespline_sl_lst = om2.MSelectionList()
-                ikcvspinespline_sl_lst.add("IkCvHip")
-                ikcvspinespline_sl_lst.add("IkCvSpine")
-
-                hipctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                hipctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(hipctrl_multMatrix, "Hiprot_multMatrix")
-                self.ctrl_mod_n.renameNode(hipctrl_decomposeMatrix, "Hiprot_decomposeMatrix")
-
-                hipmultMatrix_fs = om2.MFnDependencyNode(hipctrl_multMatrix)
-                hipdecomposeMatrix_fs = om2.MFnDependencyNode(hipctrl_decomposeMatrix)
-                hiprotjnt_fs = om2.MFnDependencyNode(ikcvspinespline_sl_lst.getDependNode(0))
-
-                hipmultMatrixSum_plug = hipmultMatrix_fs.findPlug("matrixSum", False)
-                hipdecomposeInpMatrix_plug = hipdecomposeMatrix_fs.findPlug("inputMatrix", False)
-                hipdecomposeOtpTrans_plug = hipdecomposeMatrix_fs.findPlug("outputTranslate", False)
-                hipdecomposeOtpRot_plug = hipdecomposeMatrix_fs.findPlug("outputRotate", False)
-                hiprotjntTrans_plug = hiprotjnt_fs.findPlug("translate", False)
-                hiprotjntRot_plug = hiprotjnt_fs.findPlug("rotate", False)
-
-                self.ctrl_mod_n.commandToExecute('connectAttr - force Biped_Hip_ctrl.worldMatrix[0] Hiprot_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.commandToExecute('connectAttr -force IkCvHip.parentInverseMatrix[0] Hiprot_multMatrix.matrixIn[1]')
-                self.ctrl_mod_n.connect(hipmultMatrixSum_plug, hipdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(hipdecomposeOtpTrans_plug, hiprotjntTrans_plug)
-                self.ctrl_mod_n.connect(hipdecomposeOtpRot_plug, hiprotjntRot_plug)
-                if cmds.getAttr("IkCvSpine.jointOrientX") != 0 or cmds.getAttr("IkCvSpine.jointOrientX") != 0 or cmds.getAttr("IkCvSpine.jointOrientX") != 0:
-                    self.ctrl_mod_n.commandToExecute('setAttr "IkCvSpine.jointOrientX" 0')
-                    self.ctrl_mod_n.commandToExecute('setAttr "IkCvSpine.jointOrientY" 0')
-                    self.ctrl_mod_n.commandToExecute('setAttr "IkCvSpine.jointOrientZ" 0')
-
-        elif cmds.objExists("IkCvHip"):
-            self.ctrl_mod_n.commandToExecute('delete "IkCvHip"')
-            self.ctrl_mod_n.commandToExecute('delete "IkHip"')
-            self.ctrl_mod_n.commandToExecute('delete "Biped_Hip_ctrl"')
-            self.ctrl_mod_n.commandToExecute('delete "Biped_StretchySpine_ctrl"')
-
-        elif cmds.objExists("Biped_StretchySpine_ctrl"):
-            self.ctrl_mod_n.commandToExecute('delete "Biped_StretchySpine_ctrl"')
-
-        for index in range(spine_sl_lst.length()):
-            spinectrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-            spinectrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-            self.ctrl_mod_n.renameNode(spinectrl_multMatrix, "Spine{0}_multMatrix".format(index))
-            self.ctrl_mod_n.renameNode(spinectrl_decomposeMatrix, "Spine{0}_decomposeMatrix".format(index))
-
-            spinemultMatrix_fs = om2.MFnDependencyNode(spinectrl_multMatrix)
-            spinedecomposeMatrix_fs = om2.MFnDependencyNode(spinectrl_decomposeMatrix)
-            spinejnt_fs = om2.MFnDependencyNode(spine_sl_lst.getDependNode(index))
-
-            spinemultMatrixSum_plug = spinemultMatrix_fs.findPlug("matrixSum", False)
-            spinedecomposeInpMatrix_plug = spinedecomposeMatrix_fs.findPlug("inputMatrix", False)
-            spinedecomposeOtpTrans_plug = spinedecomposeMatrix_fs.findPlug("outputTranslate", False)
-            spinedecomposeOtpRot_plug = spinedecomposeMatrix_fs.findPlug("outputRotate", False)
-            spinejntTrans_plug = spinejnt_fs.findPlug("translate", False)
-            spinejntRot_plug = spinejnt_fs.findPlug("rotate", False)
-
-            self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_Spine{0}_ctrl.worldMatrix[0] Spine{0}_multMatrix.matrixIn[0]'.format(index))
-            self.ctrl_mod_n.commandToExecute('connectAttr -force Spine{0}.parentInverseMatrix[0] Spine{0}_multMatrix.matrixIn[1]'.format(index))
-            self.ctrl_mod_n.connect(spinemultMatrixSum_plug, spinedecomposeInpMatrix_plug)
-            self.ctrl_mod_n.connect(spinedecomposeOtpTrans_plug, spinejntTrans_plug)
-            self.ctrl_mod_n.connect(spinedecomposeOtpRot_plug, spinejntRot_plug)
-
-            jnt_string = spine_sl_lst.getSelectionStrings(index)
-            if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-                self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-                self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
-
-        if self.autostretch.currentIndex() == 1:
-            if cmds.objExists("IkHip") and cmds.objExists("IkCvHip") and cmds.objExists("IkCvSpine"):
-                ikspinectrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                ikspinectrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(ikspinectrl_multMatrix, "IkSpine_multMatrix")
-                self.ctrl_mod_n.renameNode(ikspinectrl_decomposeMatrix, "IkSpine_decomposeMatrix")
-
-                spinesplinemultMatrix_fs = om2.MFnDependencyNode(ikspinectrl_multMatrix)
-                spinesplinedecomposeMatrix_fs = om2.MFnDependencyNode(ikspinectrl_decomposeMatrix)
-                spinesplinejnt_fs = om2.MFnDependencyNode(ikcvspinespline_sl_lst.getDependNode(1))
-
-                spinesplinemultMatrixSum_plug = spinesplinemultMatrix_fs.findPlug("matrixSum", False)
-                spinesplinedecomposeInpMatrix_plug = spinesplinedecomposeMatrix_fs.findPlug("inputMatrix", False)
-                spinesplinedecomposeOtpTrans_plug = spinesplinedecomposeMatrix_fs.findPlug("outputTranslate", False)
-                spinesplinedecomposeOtpRot_plug = spinesplinedecomposeMatrix_fs.findPlug("outputRotate", False)
-                spinesplinejntTrans_plug = spinesplinejnt_fs.findPlug("translate", False)
-                spinesplinejntRot_plug = spinesplinejnt_fs.findPlug("rotate", False)
-
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_StretchySpine_ctrl.worldMatrix[0] IkSpine_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.commandToExecute('connectAttr -force IkCvSpine.parentInverseMatrix[0] IkSpine_multMatrix.matrixIn[1]')
-                self.ctrl_mod_n.connect(spinesplinemultMatrixSum_plug, spinesplinedecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(spinesplinedecomposeOtpTrans_plug, spinesplinejntTrans_plug)
-                self.ctrl_mod_n.connect(spinesplinedecomposeOtpRot_plug, spinesplinejntRot_plug)
-
-        elif cmds.objExists("IkCvSpine"):
-            self.ctrl_mod_n.commandToExecute('delete "IkCvSpine"')
-
-        if self.autostretch.currentIndex() == 1:
-            if cmds.objExists("IkNeck*") and cmds.objExists("IkCvNeck") and cmds.objExists("IkCvHead"):
-                ikneckspline_sl_lst = om1.MSelectionList()
-                ikneckspline_sl_lst.add("IkNeck*")
-                ikneckspline_sl_lst.getDependNode(0, obj_root)
-                ikneckspline_sl_lst.getDependNode(ikneckspline_sl_lst.length()-1, obj_endspine)
-
-                neck_pathnode = om1.MDagPath()
-                neck_path = neck_pathnode.getAPathTo(obj_root)
-
-                self.ikneckspline_effector = ik_effector.create(obj_endspine)
-                ikneckspine_effector_path = neck_pathnode.getAPathTo(self.ikneckspline_effector)
-
-                self.neckspine_ik = ik_handle.create(neck_path, ikneckspine_effector_path)
-
-                neckobj_array = om1.MPointArray()
-                neckobj_lst_mpoint = []
-                neckobj = om1.MObject()
-                for index in range(ikneckspline_sl_lst.length()):
-                    ikneckspline_sl_lst.getDependNode(index, neckobj)
-                    obj_path = ikspineobj_path_n.getAPathTo(neckobj)
-                    obj_tn = om1.MFnTransform(obj_path)
-                    obj_t = obj_tn.translation(om1.MSpace.kWorld)
-                    neckobj_lst_mpoint.append(om1.MPoint(obj_t))
-                    neckobj_array.append(neckobj_lst_mpoint[index])
-
-                self.ikneckspline_cv_tn = ikspinedag_n.create("transform", "Neck_SplineCv")
-                ikneckspline_cv = ikspline_cv_n.createWithEditPoints(neckobj_array, 1, 1, False, True, True, self.ikneckspline_cv_tn)
-                cmds.parent("Neck_SplineCv", "DoNotTouch")
-
-                neckcrv_info = ikspinedg_modifier.createNode("curveInfo")
-                neckstretchpercent = ikspinedg_modifier.createNode("multiplyDivide")
-                neckstretchpow = ikspinedg_modifier.createNode("multiplyDivide")
-                neckstretchdiv = ikspinedg_modifier.createNode("multiplyDivide")
-                neckscalediv = ikspinedg_modifier.createNode("multiplyDivide")
-
-                neckcrvinfo_fs = om1.MFnDependencyNode(neckcrv_info)
-                neckstretchpercent_fs = om1.MFnDependencyNode(neckstretchpercent)
-                neckstretchpow_fs = om1.MFnDependencyNode(neckstretchpow)
-                neckstretchdiv_fs = om1.MFnDependencyNode(neckstretchdiv)
-                neckscale_fs = om1.MFnDependencyNode(neckscalediv)
-
-                neckcrvinfoarc_plug = neckcrvinfo_fs.findPlug("arcLength")
-                neckstretchpercentinp_plug = neckstretchpercent_fs.findPlug("input1Y")
-                neckstretchpercentotp_plug = neckstretchpercent_fs.findPlug("outputY")
-                neckstretchpowinpx_plug = neckstretchpow_fs.findPlug("input1X")
-                neckstretchpowinpz_plug = neckstretchpow_fs.findPlug("input1Z")
-                neckstretchpowotpx_plug = neckstretchpow_fs.findPlug("outputX")
-                neckstretchpowotpz_plug = neckstretchpow_fs.findPlug("outputZ")
-                neckstretchdivinpx_plug = neckstretchdiv_fs.findPlug("input2X")
-                neckstretchdivinpz_plug = neckstretchdiv_fs.findPlug("input2Z")
-                neckstretchdivotox_plug = neckstretchdiv_fs.findPlug("outputX")
-                neckstretchdivotpz_plug = neckstretchdiv_fs.findPlug("outputZ")
-                neckscaledivinp1y_plug = neckscale_fs.findPlug("input1Y")
-                neckscaledivinp2y_plug = neckscale_fs.findPlug("input2Y")
-                neckscaledivotpy_plug = neckscale_fs.findPlug("outputY")
-
-                objparent = om1.MObject()
-                objchild = om1.MObject()
-                for index in range(ikneckspline_sl_lst.length()):
-                    if index < ikneckspline_sl_lst.length()-1:
-                        ikneckspline_sl_lst.getDependNode(index, objparent)
-                        ikneckspline_sl_lst.getDependNode(index+1, objchild)
-                        neckparentjnt_fs = om1.MFnDependencyNode(objparent)
-                        neckchildjnt_fs = om1.MFnDependencyNode(objchild)
-                        neckjnt_syplug = neckparentjnt_fs.findPlug("scaleY")
-                        neckjnt_sxplug = neckparentjnt_fs.findPlug("scaleX")
-                        neckjnt_szplug = neckparentjnt_fs.findPlug("scaleZ")
-                        neckjnt_sotpplug = neckparentjnt_fs.findPlug("scale")
-                        neckjnt_invsplug = neckchildjnt_fs.findPlug("inverseScale")
-                        ikspinedg_modifier.connect(neckstretchpercentotp_plug, neckjnt_syplug)
-                        ikspinedg_modifier.connect(neckstretchdivotox_plug, neckjnt_sxplug)
-                        ikspinedg_modifier.connect(neckstretchdivotpz_plug, neckjnt_szplug)
-                        ikspinedg_modifier.connect(neckjnt_sotpplug, neckjnt_invsplug)
-
-                ikspinedg_modifier.renameNode(neckcrv_info, "NeckSpline_Info")
-                ikspinedg_modifier.renameNode(neckstretchpercent, "NeckStretch_Percent")
-                ikspinedg_modifier.renameNode(neckstretchpow, "NeckStretch_Power")
-                ikspinedg_modifier.renameNode(neckstretchdiv, "NeckStretch_Divide")
-                ikspinedg_modifier.renameNode(ikneckspline_cv, "Neck_SplineCvShape")
-                ikspinedg_modifier.renameNode(self.neckspine_ik, "Neck_Ik")
-                ikspinedg_modifier.renameNode(self.ikneckspline_effector, "Neck_effector")
-                ikspinedg_modifier.renameNode(neckscalediv, "IkNeckGlobalScale_Average")
-                ikspinedg_modifier.commandToExecute('parent "Neck_Ik" "DoNotTouch"')
-                ikspinedg_modifier.commandToExecute('connectAttr -f Neck_SplineCvShape.worldSpace[0] Neck_Ik.inCurve')
-                ikspinedg_modifier.commandToExecute('skinCluster -bm 3 -sm 1 -dr 2.0 -name "NeckIk_skin" IkCvNeck IkCvHead Neck_SplineCv')
-                ikspinedg_modifier.commandToExecute('setAttr "Neck_Ik.dTwistControlEnable" 1')
-                ikspinedg_modifier.commandToExecute('setAttr "Neck_Ik.dWorldUpType" 4')
-                ikspinedg_modifier.commandToExecute('setAttr "Neck_Ik.dForwardAxis" 2')
-                ikspinedg_modifier.commandToExecute('setAttr "Neck_Ik.dWorldUpAxis" 4')
-                ikspinedg_modifier.commandToExecute('setAttr "Neck_Ik.dWorldUpVectorY" 0')
-                ikspinedg_modifier.commandToExecute('setAttr "Neck_Ik.dWorldUpVectorEndY" 0')
-                ikspinedg_modifier.commandToExecute('setAttr "Neck_Ik.dWorldUpVectorZ" -1')
-                ikspinedg_modifier.commandToExecute('setAttr "Neck_Ik.dWorldUpVectorEndZ" -1')
-                ikspinedg_modifier.commandToExecute('connectAttr -f IkCvNeck.worldMatrix[0] Neck_Ik.dWorldUpMatrix')
-                ikspinedg_modifier.commandToExecute('connectAttr -f IkCvHead.worldMatrix[0] Neck_Ik.dWorldUpMatrixEnd')
-                ikspinedg_modifier.commandToExecute('connectAttr -f Neck_SplineCvShape.worldSpace[0] NeckSpline_Info.inputCurve')
-                ikspinedg_modifier.connect(neckcrvinfoarc_plug, neckscaledivinp1y_plug)
-                ikspinedg_modifier.connect(masterctrlsy_plug, neckscaledivinp2y_plug)
-                ikspinedg_modifier.connect(neckscaledivotpy_plug, neckstretchpercentinp_plug)
-                ikspinedg_modifier.connect(neckstretchpercentotp_plug, neckstretchpowinpx_plug)
-                ikspinedg_modifier.connect(neckstretchpercentotp_plug, neckstretchpowinpz_plug)
-                ikspinedg_modifier.connect(neckstretchpowotpx_plug, neckstretchdivinpx_plug)
-                ikspinedg_modifier.connect(neckstretchpowotpz_plug, neckstretchdivinpz_plug)
-                ikspinedg_modifier.commandToExecute('float $neckstretchinput1Y = `getAttr "NeckStretch_Percent.input1Y"`; setAttr "NeckStretch_Percent.input2Y" $neckstretchinput1Y')
-                ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Power.input2X" 0.5')
-                ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Power.input2Z" 0.5')
-                ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Divide.input1X" 1')
-                ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Divide.input1Z" 1')
-                ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Percent.operation" 2')
-                ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Power.operation" 3')
-                ikspinedg_modifier.commandToExecute('setAttr "NeckStretch_Divide.operation" 2')
-                ikspinedg_modifier.commandToExecute('setAttr "IkNeckGlobalScale_Average.operation" 2')
-                ikspinedg_modifier.doIt()
-
-                ikspline_solver = ik_system.findSolver("ikSplineSolver")
-                ik_handle.setSolver(ikspline_solver)
-
-            # ikneckspline_sl_lst2 = om2.MSelectionList()
-            # ikneckspline_sl_lst2.add("IkNeck*")
-            #
-            # for index in range(ikneckspline_sl_lst2.length()):
-            #     jnt_obj = ikneckspline_sl_lst2.getDependNode(index)
-            #     jnt_string = ikneckspline_sl_lst2.getSelectionStrings(index)
-            #
-            #     if jnt_obj.hasFn(om2.MFn.kJoint):
-            #         if cmds.getAttr("{0}.jointOrientX".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientY".format(str(jnt_string)[3:][:-3])) != 0 or cmds.getAttr("{0}.jointOrientZ".format(str(jnt_string)[3:][:-3])) != 0:
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientX" 0'.format(str(jnt_string)[3:][:-3]))
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientY" 0'.format(str(jnt_string)[3:][:-3]))
-            #             self.ctrl_mod_n.commandToExecute('setAttr "{0}.jointOrientZ" 0'.format(str(jnt_string)[3:][:-3]))
-
-        neckctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-        neckctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-        self.ctrl_mod_n.renameNode(neckctrl_multMatrix, "Neck_multMatrix")
-        self.ctrl_mod_n.renameNode(neckctrl_decomposeMatrix, "Neck_decomposeMatrix")
-
-        neckmultMatrix_fs = om2.MFnDependencyNode(neckctrl_multMatrix)
-        neckdecomposeMatrix_fs = om2.MFnDependencyNode(neckctrl_decomposeMatrix)
-        neckjnt_fs = om2.MFnDependencyNode(jnt_neck_obj)
-
-        neckmultMatrixSum_plug = neckmultMatrix_fs.findPlug("matrixSum", False)
-        neckdecomposeInpMatrix_plug = neckdecomposeMatrix_fs.findPlug("inputMatrix", False)
-        neckdecomposeOtpTrans_plug = neckdecomposeMatrix_fs.findPlug("outputTranslate", False)
-        neckdecomposeOtpRot_plug = neckdecomposeMatrix_fs.findPlug("outputRotate", False)
-        neckjntTrans_plug = neckjnt_fs.findPlug("translate", False)
-        neckjntRot_plug = neckjnt_fs.findPlug("rotate", False)
-
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_Neck_ctrl.worldMatrix[0] Neck_multMatrix.matrixIn[0]')
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Neck.parentInverseMatrix[0] Neck_multMatrix.matrixIn[1]')
-        self.ctrl_mod_n.connect(neckmultMatrixSum_plug, neckdecomposeInpMatrix_plug)
-        self.ctrl_mod_n.connect(neckdecomposeOtpTrans_plug, neckjntTrans_plug)
-        self.ctrl_mod_n.connect(neckdecomposeOtpRot_plug, neckjntRot_plug)
-
-        if self.autostretch.currentIndex() == 1:
-            if cmds.objExists("IkNeck*") and cmds.objExists("IkCvNeck") and cmds.objExists("IkCvHead"):
-                ikneckspline_sl_lst = om2.MSelectionList()
-                ikneckspline_sl_lst.add("IkCvNeck")
-                ikneckspline_sl_lst.add("IkCvHead")
-                obj_first = ikneckspline_sl_lst.getDependNode(0)
-
-                ikcvneck_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                ikcvneck_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(ikcvneck_multMatrix, "IkCvNeck_multMatrix")
-                self.ctrl_mod_n.renameNode(ikcvneck_decomposeMatrix, "IkCvNeck_decomposeMatrix")
-
-                ikcvneckmultMatrix_fs = om2.MFnDependencyNode(ikcvneck_multMatrix)
-                ikcvneckdecomposeMatrix_fs = om2.MFnDependencyNode(ikcvneck_decomposeMatrix)
-                ikcvneckjnt_fs = om2.MFnDependencyNode(obj_first)
-
-                ikcvneckmultMatrixSum_plug = ikcvneckmultMatrix_fs.findPlug("matrixSum", False)
-                ikcvneckdecomposeInpMatrix_plug = ikcvneckdecomposeMatrix_fs.findPlug("inputMatrix", False)
-                ikcvneckdecomposeOtpTrans_plug = ikcvneckdecomposeMatrix_fs.findPlug("outputTranslate", False)
-                ikcvneckdecomposeOtpRot_plug = ikcvneckdecomposeMatrix_fs.findPlug("outputRotate", False)
-                ikcvneckjntTrans_plug = ikcvneckjnt_fs.findPlug("translate", False)
-                ikcvneckjntRot_plug = ikcvneckjnt_fs.findPlug("rotate", False)
-
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Neck.worldMatrix[0] IkCvNeck_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.connect(ikcvneckmultMatrixSum_plug, ikcvneckdecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(ikcvneckdecomposeOtpTrans_plug, ikcvneckjntTrans_plug)
-                self.ctrl_mod_n.connect(ikcvneckdecomposeOtpRot_plug, ikcvneckjntRot_plug)
-
-                obj_lastspine = ikneckspline_sl_lst.getDependNode(1)
-
-                ikcvhead_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                ikcvhead_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(ikcvhead_multMatrix, "IkCvHead_multMatrix")
-                self.ctrl_mod_n.renameNode(ikcvhead_decomposeMatrix, "IkCvHead_decomposeMatrix")
-
-                ikcvheadmultMatrix_fs = om2.MFnDependencyNode(ikcvhead_multMatrix)
-                ikcvheaddecomposeMatrix_fs = om2.MFnDependencyNode(ikcvhead_decomposeMatrix)
-                ikcvheadjnt_fs = om2.MFnDependencyNode(obj_lastspine)
-
-                ikcvheadmultMatrixSum_plug = ikcvheadmultMatrix_fs.findPlug("matrixSum", False)
-                ikcvheaddecomposeInpMatrix_plug = ikcvheaddecomposeMatrix_fs.findPlug("inputMatrix", False)
-                ikcvheaddecomposeOtpTrans_plug = ikcvheaddecomposeMatrix_fs.findPlug("outputTranslate", False)
-                ikcvheaddecomposeOtpRot_plug = ikcvheaddecomposeMatrix_fs.findPlug("outputRotate", False)
-                ikcvheadjntTrans_plug = ikcvheadjnt_fs.findPlug("translate", False)
-                ikcvheadjntRot_plug = ikcvheadjnt_fs.findPlug("rotate", False)
-
-                self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_StretchyNeck_ctrl.worldMatrix[0] IkCvHead_multMatrix.matrixIn[0]')
-                self.ctrl_mod_n.connect(ikcvheadmultMatrixSum_plug, ikcvheaddecomposeInpMatrix_plug)
-                self.ctrl_mod_n.connect(ikcvheaddecomposeOtpTrans_plug, ikcvheadjntTrans_plug)
-                self.ctrl_mod_n.connect(ikcvheaddecomposeOtpRot_plug, ikcvheadjntRot_plug)
-
-        elif cmds.objExists("IkCvNeck") and cmds.objExists("IkCvHead"):
-            self.ctrl_mod_n.commandToExecute('delete "IkCvNeck"')
-            self.ctrl_mod_n.commandToExecute('delete "IkCvHead"')
-            self.ctrl_mod_n.commandToExecute('delete "IkNeck0"')
-            self.ctrl_mod_n.commandToExecute('delete "Biped_StretchyNeck_ctrl"')
-
-        elif cmds.objExists("Biped_StretchyNeck_ctrl"):
-            self.ctrl_mod_n.commandToExecute('delete "Biped_StretchyNeck_ctrl"')
-
-        headctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-        headctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-        self.ctrl_mod_n.renameNode(headctrl_multMatrix, "Head_multMatrix")
-        self.ctrl_mod_n.renameNode(headctrl_decomposeMatrix, "Head_decomposeMatrix")
-
-        headmultMatrix_fs = om2.MFnDependencyNode(headctrl_multMatrix)
-        headdecomposeMatrix_fs = om2.MFnDependencyNode(headctrl_decomposeMatrix)
-        headjnt_fs = om2.MFnDependencyNode(jnt_head_obj)
-
-        headmultMatrixSum_plug = headmultMatrix_fs.findPlug("matrixSum", False)
-        headdecomposeInpMatrix_plug = headdecomposeMatrix_fs.findPlug("inputMatrix", False)
-        headdecomposeOtpTrans_plug = headdecomposeMatrix_fs.findPlug("outputTranslate", False)
-        headdecomposeOtpRot_plug = headdecomposeMatrix_fs.findPlug("outputRotate", False)
-        headjntTrans_plug = headjnt_fs.findPlug("translate", False)
-        headjntRot_plug = headjnt_fs.findPlug("rotate", False)
-
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Biped_Head_ctrl.worldMatrix[0] Head_multMatrix.matrixIn[0]')
-        self.ctrl_mod_n.commandToExecute('connectAttr -force Head.parentInverseMatrix[0] Head_multMatrix.matrixIn[1]')
-        self.ctrl_mod_n.connect(headmultMatrixSum_plug, headdecomposeInpMatrix_plug)
-        self.ctrl_mod_n.connect(headdecomposeOtpTrans_plug, headjntTrans_plug)
-        self.ctrl_mod_n.connect(headdecomposeOtpRot_plug, headjntRot_plug)
-
-        for index in range(fklarm_sl_ls.length()):
-            jnt_obj = fklarm_sl_ls.getDependNode(index)
-            jnt_string = fklarm_sl_ls.getSelectionStrings(index)
-
-            if jnt_obj.hasFn(om2.MFn.kJoint):
-                larmctrl_multMatrix = self.ctrl_mod_n.createNode("multMatrix")
-                larmctrl_decomposeMatrix = self.ctrl_mod_n.createNode("decomposeMatrix")
-                self.ctrl_mod_n.renameNode(larmctrl_multMatrix, str(jnt_string)[2:][:-3]+"_multMatrix")
-                self.ctrl_mod_n.renameNode(larmctrl_decomposeMatrix, str(jnt_string)[2:][:-3]+"_decomposeMatrix")
-
-                larmmultMatrix_fs = om2.MFnDependencyNode(larmctrl_multMatrix)
-                larmdecomposeMatrix_fs = om2.MFnDependencyNode(larmctrl_decomposeMatrix)
-
-                larmjnt_fs = om2.MFnDependencyNode(jnt_obj)
-
-                larmmultMat
